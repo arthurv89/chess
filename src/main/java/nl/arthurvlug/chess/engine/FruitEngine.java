@@ -7,10 +7,10 @@ import nl.arthurvlug.chess.events.ShutdownEvent;
 import com.google.common.eventbus.Subscribe;
 
 @EventHandler
-public class RybkaEngine extends AbstractEngine {
-	private static final String RYBKA_PATH = "Rybkav2.3.2a.mp.x64.exe";
+public class FruitEngine extends AbstractEngine {
+	private static final String RYBKA_PATH = "Fruit-2-3-1.exe";
 
-	public RybkaEngine() {
+	public FruitEngine() {
 		super(RYBKA_PATH);
 	}
 	

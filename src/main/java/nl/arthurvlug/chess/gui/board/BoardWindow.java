@@ -10,11 +10,13 @@ import javax.swing.JPanel;
 import nl.arthurvlug.chess.domain.game.BoardInitializedEvent;
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.domain.pieces.ColoredPiece;
+import nl.arthurvlug.chess.events.BoardVisible;
 import nl.arthurvlug.chess.events.EventHandler;
 import nl.arthurvlug.chess.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.Window;
 
 import com.atlassian.fugue.Option;
+import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 
@@ -22,6 +24,7 @@ import com.google.inject.Inject;
 @EventHandler
 public class BoardWindow extends Window {
 	@Inject private Game game;
+	@Inject private EventBus eventBus;
 
 	@Override
 	public void open() {
@@ -29,6 +32,7 @@ public class BoardWindow extends Window {
 		
 		setSize(500, 500);
 		setVisible(true);
+		eventBus.post(new BoardVisible());
 	}
 	
 	public class DrawPane extends JPanel {

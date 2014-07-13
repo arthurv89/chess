@@ -3,6 +3,7 @@ package nl.arthurvlug.chess;
 import java.util.Set;
 
 import nl.arthurvlug.chess.events.EventHandler;
+import nl.arthurvlug.chess.events.ShutdownEvent;
 import nl.arthurvlug.chess.events.StartupEvent;
 
 import org.reflections.Reflections;
@@ -14,20 +15,32 @@ import com.google.inject.Injector;
 
 public class Main {
 	private final static Injector injector = Guice.createInjector(new ApplicationModule());
-	
+
 	@Inject
 	private EventBus eventBus;
 
-
 	private void start() {
 		bindEventHandlers();
+
+		addShutdownHook();
+
 		eventBus.post(new StartupEvent());
+
+	}
+
+	private void addShutdownHook() {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				System.out.println("Shutting down...");
+				eventBus.post(new ShutdownEvent());
+			}
+		});
 	}
 
 	private void bindEventHandlers() {
 		Reflections reflections = new Reflections("nl.arthurvlug.chess");
 		Set<Class<?>> eventHandlers = reflections.getTypesAnnotatedWith(EventHandler.class);
-		for(Class<?> eventHandlerClass : eventHandlers) {
+		for (Class<?> eventHandlerClass : eventHandlers) {
 			Object eventHandler = injector.getInstance(eventHandlerClass);
 			eventBus.register(eventHandler);
 		}

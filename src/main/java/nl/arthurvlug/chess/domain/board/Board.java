@@ -23,7 +23,7 @@ public abstract class Board {
 		for (int y = 0; y < 8; y++) {
 			Builder<Field> row = new ImmutableList.Builder<Field>();
 			for (int x = 0; x < 8; x++) {
-				row.add(new Field(x, y, Option.none()));
+				row.add(new Field(x, y, Option.<ColoredPiece>none()));
 			}
 			boardBuilder.add(row.build());
 		}
@@ -46,7 +46,7 @@ public abstract class Board {
 		ColoredPiece coloredPiece = Preconditions.checkNotNull(getPiece(move.getFrom()).getOrNull());
 		
 		getField(move.getTo()).setPiece(Option.some(coloredPiece));
-		getField(move.getFrom()).setPiece(Option.none());
+		getField(move.getFrom()).setPiece(Option.<ColoredPiece>none());
 	}
 
 	private Option<ColoredPiece> getPiece(Coordinates coordinates) {
