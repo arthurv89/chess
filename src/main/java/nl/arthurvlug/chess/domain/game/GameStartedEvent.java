@@ -8,7 +8,7 @@ import nl.arthurvlug.chess.domain.board.Board;
 @AllArgsConstructor
 @Value
 @Getter
-public class BoardInitializedEvent {
+public class GameStartedEvent {
 	private final Board board;
 	private final Player toMove;
 }

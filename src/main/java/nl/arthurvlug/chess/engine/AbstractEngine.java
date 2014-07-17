@@ -10,8 +10,10 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.arthurvlug.chess.domain.board.Coordinates;
+import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.domain.game.Move;
-import nl.arthurvlug.chess.events.ShutdownEvent;
+import nl.arthurvlug.chess.domain.pieces.Piece;
+import nl.arthurvlug.chess.domain.pieces.Pieces;
 
 import org.apache.commons.io.IOUtils;
 
@@ -19,36 +21,60 @@ import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
 
+import com.atlassian.fugue.Option;
+
 public abstract class AbstractEngine implements Engine {
 	private Process p;
 	private BufferedReader output;
 	private BufferedWriter input;
-	private final String fileName;
 	
-	private final List<Subscriber<? super Move>> subscribers = new ArrayList<Subscriber<? super Move>>();
-
+	private final String fileName;
+	private final List<Subscriber<? super Move>> moveSubscribers = new ArrayList<Subscriber<? super Move>>();
+	private final List<Subscriber<? super String>> engineOutputSubscribers = new ArrayList<Subscriber<? super String>>();
+	private boolean started = false;
+	
 	public AbstractEngine(String fileName) {
 		this.fileName = fileName;
 	}
 	
-	protected void startEngine() {
-		try {
-			startProcess();
-			processOutput();
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
+	public void startEngine() {
+		if(!started) {
+			try {
+				startProcess();
+				processOutput();
+			} catch (IOException | InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
+		started = true;
+	}
+
+	public Observable<Move> registerMoveSubscriber() {
+		return Observable.create(new OnSubscribe<Move>() {
+			@Override
+			public void call(Subscriber<? super Move> subscriber) {
+				moveSubscribers.add(subscriber);
+			}
+		});
+	};
+
+	public void determineNextMove(final Game game) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				sendCommand("position moves " + MoveUtils.toEngineMoves(game.getMoves()));
+				sendCommand("go wtime 60000 btime 60000");
+			}
+		}).start();
 	}
 	
-	protected Observable<Move> bestMove = Observable.create(new OnSubscribe<Move>() {
-		@Override
-		public void call(Subscriber<? super Move> subscriber) {
-			subscribers.add(subscriber);
-		}
-	});
-	
-	public Observable<Move> nextMove() {
-		return bestMove;
+	public Observable<String> subscribeEngineOutput() {
+		return Observable.create(new OnSubscribe<String>() {
+			@Override
+			public void call(Subscriber<? super String> subscriber) {
+				engineOutputSubscribers.add(subscriber);
+			}
+		});
 	};
 	
 	
@@ -62,13 +88,6 @@ public abstract class AbstractEngine implements Engine {
 		input = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 
 		runOutputThread();
-		
-		sendCommand("uci");
-
-		sendCommand("go ponder");
-		
-		Thread.sleep(3000);
-		sendCommand("stop");
 	}
 
 	private void runOutputThread() {
@@ -82,7 +101,7 @@ public abstract class AbstractEngine implements Engine {
 						}
 					}
 				} catch (IOException e) {
-					e.printStackTrace();
+					System.err.println(e.getMessage());
 				}
 			}
 		}).start();
@@ -99,15 +118,18 @@ public abstract class AbstractEngine implements Engine {
 			String y = tokenizer.nextToken();
 			Coordinates from = toField(y.substring(0, 2));
 			Coordinates to = toField(y.substring(2, 4));
-			Move move = new Move(from, to);
+			Option<Piece> promotionPiece = y.length() == 5 ? Option.<Piece> some(Pieces.fromChar(y.charAt(4))) : Option.<Piece> none();
+			Move move = new Move(from, to, promotionPiece);
 
-			for(Subscriber<? super Move> subscriber : subscribers) {
-				subscriber.onNext(move);
-				subscriber.onCompleted();
+			for(Subscriber<? super Move> moveSubscriber : moveSubscribers) {
+				System.out.println("Sent " + move);
+				moveSubscriber.onNext(move);
 			}
 		}
-		
-//		System.out.println(Thread.currentThread().getId() + ": "+ line);
+
+		for(Subscriber<? super String> engineSubscriber : engineOutputSubscribers) {
+			engineSubscriber.onNext(line);
+		}
 		
 	}
 	
@@ -127,7 +149,7 @@ public abstract class AbstractEngine implements Engine {
 		try {
 			input.write(command + "\n");
 			input.flush();
-			System.err.println(Thread.currentThread().getName() + " - Sending command: " + command);
+			System.err.println(getClass().getSimpleName() + " - Sent command: " + command);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -139,6 +161,4 @@ public abstract class AbstractEngine implements Engine {
 		IOUtils.closeQuietly(input);
 		System.out.println("Engine down");
 	}
-
-	public abstract void on(ShutdownEvent event);
 }

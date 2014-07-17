@@ -2,18 +2,24 @@ package nl.arthurvlug.chess.gui.board;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.io.IOException;
+import java.net.URL;
 
 import javax.swing.JPanel;
 
-import nl.arthurvlug.chess.domain.game.BoardInitializedEvent;
 import nl.arthurvlug.chess.domain.game.Game;
+import nl.arthurvlug.chess.domain.game.GameStartedEvent;
 import nl.arthurvlug.chess.domain.pieces.ColoredPiece;
-import nl.arthurvlug.chess.events.BoardVisible;
+import nl.arthurvlug.chess.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.events.EventHandler;
 import nl.arthurvlug.chess.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.Window;
+import rx.Observable;
+import rx.observers.EmptyObserver;
 
 import com.atlassian.fugue.Option;
 import com.google.common.eventbus.EventBus;
@@ -23,28 +29,51 @@ import com.google.inject.Inject;
 @SuppressWarnings("serial")
 @EventHandler
 public class BoardWindow extends Window {
+	private static final String CHESS_FONT_FILE_NAME = "chess.ttf";
 	@Inject private Game game;
 	@Inject private EventBus eventBus;
+	private final Font chessFont;
+	
+	public BoardWindow() throws FontFormatException, IOException {
+		chessFont = initializeFont();
+	}
 
 	@Override
-	public void open() {
-		add(new DrawPane());
+	public void open() throws FontFormatException, IOException {
+		setLayout(null);
 		
-		setSize(500, 500);
+		BoardPane boardPane = new BoardPane();
+		boardPane.setBounds(50, 50, 420, 420);
+		add(boardPane);
+		
+//		ClockPane clockPane = new ClockPane();
+//		clockPane.setBounds(500, 50, 120, 100);
+//		add(clockPane);
+
+		EnginePane enginePane = new EnginePane();
+		enginePane.setBounds(50, 500, 120, 100);
+		add(enginePane);
+		
+		setSize(800, 800);
+		setLocation(500, 50);
 		setVisible(true);
-		eventBus.post(new BoardVisible());
 	}
-	
-	public class DrawPane extends JPanel {
+
+	public class BoardPane extends JPanel {
+		public BoardPane() {
+			setLocation(0,  0);
+			setLayout(null);
+		}
+		
 		@Override
 		public void paint(Graphics g1) {
 			Graphics2D g = (Graphics2D) g1;
 			
+			g.setBackground(Color.WHITE);
 			drawBoard(g);
 		}
 
 		private void drawBoard(Graphics2D g) {
-//			System.out.println(game.getBoard().toString());
 			g.setColor(Color.RED);
 
 			for (int y = 0; y < 8; y++) {
@@ -61,7 +90,7 @@ public class BoardWindow extends Window {
 				String pieceString = coloredPieceOption.get().getCharacterString();
 				
 				// Determine font and position of the string
-				Font font = g.getFont().deriveFont((float) fontSize());
+				Font font = chessFont.deriveFont((float) fontSize());
 				int stringWidth = g.getFontMetrics(font).stringWidth(pieceString);
 				int xPos = (int) Math.round(x * fieldSize() + 0.5 * fieldSize() - 0.5 * stringWidth);
 				int yPos = (7-y) * fieldSize() + fontSize();
@@ -74,13 +103,6 @@ public class BoardWindow extends Window {
 		}
 
 		private void drawSquare(Graphics2D g, int x, int y) {
-			if((x+y) % 2 == 0) {
-				g.setColor(Color.BLUE);
-			} else {
-				g.setColor(Color.YELLOW);
-			}
-			g.fillRect(x * fieldSize()+1, (7-y) * fieldSize()+1, fieldSize()-1, fieldSize()-1);
-
 			g.setColor(Color.BLACK);
 			g.drawRect(x * fieldSize(), (7-y) * fieldSize(), fieldSize(), fieldSize());
 		}
@@ -95,8 +117,31 @@ public class BoardWindow extends Window {
 	}
 
 	@Subscribe
-	public void on(BoardInitializedEvent event) throws InterruptedException {
+	public void on(GameStartedEvent event) throws InterruptedException, FontFormatException, IOException {
 		open();
+
+		listenToEngine(game.getWhitePlayer());
+		listenToEngine(game.getBlackPlayer());
+		eventBus.post(new BoardWindowInitializedEvent());
+	}
+
+	private void listenToEngine(ComputerPlayer player) {
+		final Observable<String> engineOutput = player.getEngineOutput();
+		engineOutput.subscribe(new EmptyObserver<String>() {
+			public void onNext(final String line) {
+				if(line.contains(" score")) {
+					System.out.println("    " + line);
+				}
+			}
+		});
+	}
+	
+	private Font initializeFont() throws FontFormatException, IOException {
+		URL fontUrl = getClass().getResource("/" + CHESS_FONT_FILE_NAME);
+		Font chessFont = Font.createFont(Font.TRUETYPE_FONT, fontUrl.openStream());
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		ge.registerFont(chessFont);
+		return chessFont;
 	}
 
 	@Subscribe

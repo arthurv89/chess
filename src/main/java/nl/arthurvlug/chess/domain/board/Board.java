@@ -2,10 +2,13 @@ package nl.arthurvlug.chess.domain.board;
 
 import nl.arthurvlug.chess.domain.game.Move;
 import nl.arthurvlug.chess.domain.pieces.ColoredPiece;
+import nl.arthurvlug.chess.domain.pieces.King;
+import nl.arthurvlug.chess.domain.pieces.Piece;
 
 import com.atlassian.fugue.Option;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
@@ -44,9 +47,43 @@ public abstract class Board {
 
 	public void move(Move move) {
 		ColoredPiece coloredPiece = Preconditions.checkNotNull(getPiece(move.getFrom()).getOrNull());
+
+		int fieldDistance = Math.abs(move.getTo().getX() - move.getFrom().getX());
+		if(containsPiece(move.getFrom(), King.class)) {
+			if(fieldDistance == 2) {
+				// Castle kingside
+				moveRook(move.getTo().getY(), 7, 5);
+			} else {
+				// Castle queenside
+				moveRook(move.getTo().getY(), 0, 3);
+			}
+		}
 		
-		getField(move.getTo()).setPiece(Option.some(coloredPiece));
+		if(move.getPromotionPiece().isDefined()) {
+			// Promotion
+			Piece promotionPiece = move.getPromotionPiece().get();
+			getField(move.getTo()).setPiece(Option.some(new ColoredPiece(promotionPiece, coloredPiece.getColor())));
+		} else {
+			getField(move.getTo()).setPiece(Option.some(coloredPiece));
+		}
+		
 		getField(move.getFrom()).setPiece(Option.<ColoredPiece>none());
+	}
+
+	private void moveRook(int y, int fromX, int toX) {
+		Coordinates rookFrom = getField(fromX, y).getCoordinates();
+		Coordinates rookTo = getField(toX, y).getCoordinates();
+		move(new Move(rookFrom, rookTo, Option.<Piece> none()));
+	}
+
+	private boolean containsPiece(Coordinates coordinates, Class<King> pieceType) {
+		Predicate<ColoredPiece> containsPiece = new Predicate<ColoredPiece>() {
+			@Override
+			public boolean apply(ColoredPiece input) {
+				return input.getPiece() instanceof King;
+			}
+		};
+		return getPiece(coordinates).exists(containsPiece);
 	}
 
 	private Option<ColoredPiece> getPiece(Coordinates coordinates) {

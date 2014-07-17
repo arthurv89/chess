@@ -10,11 +10,10 @@ import com.google.inject.AbstractModule;
 public class ApplicationModule extends AbstractModule {
 	@Override
 	protected void configure() {
+		WhitePlayer whitePlayer = new WhitePlayer(new FruitEngine());
+		BlackPlayer blackPlayer = new BlackPlayer(new RybkaEngine());
+		
 		bind(EventBus.class).toInstance(new EventBus("Default eventbus"));
-		bind(Game.class).toInstance(new Game());
-		bind(WhitePlayer.class).toInstance(new WhitePlayer());
-		bind(BlackPlayer.class).toInstance(new BlackPlayer());
-		bind(FruitEngine.class).toInstance(new FruitEngine());
-		bind(RybkaEngine.class).toInstance(new RybkaEngine());
+		bind(Game.class).toInstance(new Game(whitePlayer, blackPlayer));
 	}
 }

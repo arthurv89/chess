@@ -8,9 +8,11 @@ import nl.arthurvlug.chess.BlackPlayer;
 import nl.arthurvlug.chess.WhitePlayer;
 import nl.arthurvlug.chess.domain.board.Board;
 import nl.arthurvlug.chess.domain.pieces.InitialBoard;
+import nl.arthurvlug.chess.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.events.EventHandler;
 import nl.arthurvlug.chess.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.events.StartupEvent;
+import nl.arthurvlug.chess.gui.board.ComputerPlayer;
 import rx.observers.EmptyObserver;
 
 import com.google.common.collect.ImmutableList;
@@ -23,10 +25,13 @@ public class Game {
 	@Inject
 	private EventBus eventBus;
 	
-	@Inject
+	@Getter
 	private WhitePlayer whitePlayer;
-	@Inject
+
+	@Getter
 	private BlackPlayer blackPlayer;
+	
+	@Getter
 	private Player toMove;
 
 	@Getter
@@ -34,6 +39,11 @@ public class Game {
 	
 	private final List<Move> moves = new ArrayList<Move>();
 	
+	public Game(WhitePlayer whitePlayer, BlackPlayer blackPlayer) {
+		this.whitePlayer = whitePlayer;
+		this.blackPlayer = blackPlayer;
+	}
+
 	public List<Move> getMoves() {
 		return ImmutableList.copyOf(moves);
 	}
@@ -43,12 +53,19 @@ public class Game {
 		this.board = new InitialBoard();
 		this.toMove = whitePlayer;
 
-		eventBus.post(new BoardInitializedEvent(board, toMove));
-		findNextMove();
+		eventBus.post(new GameStartedEvent(board, toMove));
 	}
 	
-	private void findNextMove() {
-		toMove.findMove().subscribe(new EmptyObserver<Move>() {
+	@Subscribe
+	public void on(BoardWindowInitializedEvent event) throws InterruptedException {
+		startEngine(whitePlayer);
+		startEngine(blackPlayer);
+		toMove.determineNextMove(this);
+	}
+
+	private void startEngine(ComputerPlayer player) {
+		player.startEngine();
+		player.registerMoveSubscriber().subscribe(new EmptyObserver<Move>() {
 			public void onNext(Move move) {
 				applyMove(move);
 			}
@@ -61,6 +78,7 @@ public class Game {
 		toMove = other(toMove);
 		
 		eventBus.post(new MoveAppliedEvent());
+		toMove.determineNextMove(this);
 	}
 
 	private Player other(Player toMove) {

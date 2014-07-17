@@ -25,7 +25,6 @@ public class Main {
 		addShutdownHook();
 
 		eventBus.post(new StartupEvent());
-
 	}
 
 	private void addShutdownHook() {
