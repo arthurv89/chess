@@ -59,7 +59,7 @@ public abstract class AbstractEngine implements Engine {
 	};
 
 	public void determineNextMove(final Game game) {
-		new Thread(new Runnable() {
+		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				sendCommand("position moves " + MoveUtils.toEngineMoves(game.getMoves()));
@@ -67,7 +67,9 @@ public abstract class AbstractEngine implements Engine {
 				long blackMillis = game.getBlackClock().getCurrentClock().getMillis();
 				sendCommand("go wtime " + whileMillis + " btime " + blackMillis);
 			}
-		}).start();
+		});
+		thread.setPriority(Thread.MIN_PRIORITY);
+		thread.start();
 	}
 	
 	public Observable<String> subscribeEngineOutput() {

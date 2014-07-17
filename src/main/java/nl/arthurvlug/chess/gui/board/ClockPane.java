@@ -6,6 +6,9 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import nl.arthurvlug.chess.domain.game.Clock;
 import nl.arthurvlug.chess.domain.game.GameStartedEvent;
 import nl.arthurvlug.chess.events.EventHandler;
@@ -15,9 +18,11 @@ import com.google.common.eventbus.Subscribe;
 @SuppressWarnings("serial")
 @EventHandler
 public class ClockPane extends JPanel {
+	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("HH:mm:ss:SSS");
+	
 	private Clock whiteClock;
 	private Clock blackClock;
-
+	
 	public ClockPane() {
 		startClockThread();
 	}
@@ -55,22 +60,19 @@ public class ClockPane extends JPanel {
 			public void run() {
 				while(true) {
 					repaint();
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-					}
 				}
 			}
 		}).start();
 	}
 
 	private String clockString(Clock clock) {
-		long totalMillis = clock.getCurrentClock().getMillis();
-		long minutes = totalMillis / 60000;
-		long seconds = totalMillis / 1000 - minutes * 60;
-		long millis = totalMillis % 1000;
+//		long totalMillis = clock.getCurrentClock().getMillis();
+//		long minutes = totalMillis / 60000;
+//		long seconds = totalMillis / 1000 - minutes * 60;
+//		long millis = totalMillis % 1000;
 		
-		return minutes + " : " + seconds + " : " + millis/10;
+		return dateTimeFormatter.print(clock.getCurrentClock());
+//		return minutes + " : " + seconds + " : " + millis/10;
 	}
 
 	@Subscribe
