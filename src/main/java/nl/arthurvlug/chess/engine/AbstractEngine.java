@@ -63,7 +63,9 @@ public abstract class AbstractEngine implements Engine {
 			@Override
 			public void run() {
 				sendCommand("position moves " + MoveUtils.toEngineMoves(game.getMoves()));
-				sendCommand("go wtime 60000 btime 60000");
+				long whileMillis = game.getWhiteClock().getCurrentClock().getMillis();
+				long blackMillis = game.getBlackClock().getCurrentClock().getMillis();
+				sendCommand("go wtime " + whileMillis + " btime " + blackMillis);
 			}
 		}).start();
 	}

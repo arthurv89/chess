@@ -26,10 +26,10 @@ public class Game {
 	private EventBus eventBus;
 	
 	@Getter
-	private WhitePlayer whitePlayer;
+	private final WhitePlayer whitePlayer;
 
 	@Getter
-	private BlackPlayer blackPlayer;
+	private final BlackPlayer blackPlayer;
 	
 	@Getter
 	private Player toMove;
@@ -38,10 +38,17 @@ public class Game {
 	private Board board;
 	
 	private final List<Move> moves = new ArrayList<Move>();
+
+	@Getter
+	private final Clock whiteClock = new Clock(3, 0);
+	@Getter
+	private final Clock blackClock = new Clock(3, 0);
 	
 	public Game(WhitePlayer whitePlayer, BlackPlayer blackPlayer) {
 		this.whitePlayer = whitePlayer;
 		this.blackPlayer = blackPlayer;
+		this.toMove = whitePlayer;
+		this.board = new InitialBoard();
 	}
 
 	public List<Move> getMoves() {
@@ -50,16 +57,14 @@ public class Game {
 
 	@Subscribe
 	public void on(StartupEvent event) {
-		this.board = new InitialBoard();
-		this.toMove = whitePlayer;
-
-		eventBus.post(new GameStartedEvent(board, toMove));
+		eventBus.post(new GameStartedEvent(this));
 	}
 	
 	@Subscribe
 	public void on(BoardWindowInitializedEvent event) throws InterruptedException {
 		startEngine(whitePlayer);
 		startEngine(blackPlayer);
+		this.whiteClock.start();
 		toMove.determineNextMove(this);
 	}
 
@@ -73,15 +78,25 @@ public class Game {
 	}
 	
 	private void applyMove(Move move) {
+		// Stop old clock
+		getToMoveClock().stop();
+		
 		board.move(move);
 		moves.add(move);
 		toMove = other(toMove);
 		
 		eventBus.post(new MoveAppliedEvent());
 		toMove.determineNextMove(this);
+
+		// Start new clock
+		getToMoveClock().start();
 	}
 
 	private Player other(Player toMove) {
 		return toMove == whitePlayer ? blackPlayer : whitePlayer;
+	}
+
+	public Clock getToMoveClock() {
+		return toMove == whitePlayer ? whiteClock : blackClock;
 	}
 }
