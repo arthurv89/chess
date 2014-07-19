@@ -55,14 +55,11 @@ public class BoardWindow extends Window {
 	}
 
 	private void listenToEngine(ComputerPlayer player) {
-		final Observable<String> engineOutput = player.getEngineOutput();
-		engineOutput.subscribe(new EmptyObserver<String>() {
-			public void onNext(final String line) {
-				if(line.contains(" score")) {
-					log.info("    " + line);
-				}
-			}
-		});
+//		final Observable<String> engineOutput = player.getEngineOutput();
+//		engineOutput.subscribe(new EmptyObserver<String>() {
+//			public void onNext(final String line) {
+//			}
+//		});
 	}
 
 	@Subscribe

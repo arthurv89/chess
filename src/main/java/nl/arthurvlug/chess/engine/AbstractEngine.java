@@ -124,14 +124,17 @@ public abstract class AbstractEngine implements Engine {
 			String y = tokenizer.nextToken();
 			Coordinates from = toField(y.substring(0, 2));
 			Coordinates to = toField(y.substring(2, 4));
-			Option<Piece> promotionPiece = y.length() == 5 ? Option.<Piece> some(Pieces.fromChar(y.charAt(4))) : Option.<Piece> none();
+			Option<Piece> promotionPiece = y.length() == 5
+					? Option.<Piece> some(Pieces.fromChar(y.charAt(4)))
+					: Option.<Piece> none();
 			Move move = new Move(from, to, promotionPiece);
 
 			for(Subscriber<? super Move> moveSubscriber : moveSubscribers) {
-				log.info("Sent " + move);
+				log.info(Markers.MOVE, "Sent " + move);
 				moveSubscriber.onNext(move);
 			}
 		}
+		log.info(Markers.ENGINE, line);
 
 		for(Subscriber<? super String> engineSubscriber : engineOutputSubscribers) {
 			engineSubscriber.onNext(line);
