@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.domain.board.Coordinates;
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.domain.game.Move;
@@ -23,6 +24,7 @@ import rx.Subscriber;
 
 import com.atlassian.fugue.Option;
 
+@Slf4j
 public abstract class AbstractEngine implements Engine {
 	private Process p;
 	private BufferedReader output;
@@ -105,7 +107,7 @@ public abstract class AbstractEngine implements Engine {
 						}
 					}
 				} catch (IOException e) {
-					System.err.println(e.getMessage());
+					log.error(e.getMessage());
 				}
 			}
 		}).start();
@@ -126,7 +128,7 @@ public abstract class AbstractEngine implements Engine {
 			Move move = new Move(from, to, promotionPiece);
 
 			for(Subscriber<? super Move> moveSubscriber : moveSubscribers) {
-				System.out.println("Sent " + move);
+				log.info("Sent " + move);
 				moveSubscriber.onNext(move);
 			}
 		}
@@ -153,7 +155,7 @@ public abstract class AbstractEngine implements Engine {
 		try {
 			input.write(command + "\n");
 			input.flush();
-			System.err.println(getClass().getSimpleName() + " - Sent command: " + command);
+			log.info(getClass().getSimpleName() + " - Sent command: " + command);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -163,6 +165,6 @@ public abstract class AbstractEngine implements Engine {
 		p.destroy();
 		IOUtils.closeQuietly(output);
 		IOUtils.closeQuietly(input);
-		System.out.println("Engine down");
+		log.info("Engine down");
 	}
 }

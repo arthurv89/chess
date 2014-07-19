@@ -6,12 +6,12 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
 import nl.arthurvlug.chess.domain.game.Clock;
 import nl.arthurvlug.chess.domain.game.GameStartedEvent;
 import nl.arthurvlug.chess.events.EventHandler;
+
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import com.google.common.eventbus.Subscribe;
 

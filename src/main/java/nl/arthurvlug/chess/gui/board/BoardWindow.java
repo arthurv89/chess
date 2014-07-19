@@ -3,6 +3,7 @@ package nl.arthurvlug.chess.gui.board;
 import java.awt.FontFormatException;
 import java.io.IOException;
 
+import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.domain.game.GameStartedEvent;
 import nl.arthurvlug.chess.events.BoardWindowInitializedEvent;
@@ -16,6 +17,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 
+@Slf4j
 @SuppressWarnings("serial")
 @EventHandler
 public class BoardWindow extends Window {
@@ -57,7 +59,7 @@ public class BoardWindow extends Window {
 		engineOutput.subscribe(new EmptyObserver<String>() {
 			public void onNext(final String line) {
 				if(line.contains(" score")) {
-					System.out.println("    " + line);
+					log.info("    " + line);
 				}
 			}
 		});

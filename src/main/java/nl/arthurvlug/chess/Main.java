@@ -2,6 +2,7 @@ package nl.arthurvlug.chess;
 
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.events.EventHandler;
 import nl.arthurvlug.chess.events.ShutdownEvent;
 import nl.arthurvlug.chess.events.StartupEvent;
@@ -13,6 +14,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+@Slf4j
 public class Main {
 	private final static Injector injector = Guice.createInjector(new ApplicationModule());
 
@@ -30,7 +32,7 @@ public class Main {
 	private void addShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
-				System.out.println("Shutting down...");
+				log.info("Shutting down...");
 				eventBus.post(new ShutdownEvent());
 			}
 		});

@@ -2,12 +2,12 @@ package nl.arthurvlug.chess.engine;
 
 import java.util.List;
 
+import nl.arthurvlug.chess.domain.board.Coordinates;
+import nl.arthurvlug.chess.domain.game.Move;
+
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-
-import nl.arthurvlug.chess.domain.board.Coordinates;
-import nl.arthurvlug.chess.domain.game.Move;
 
 public class MoveUtils {
 	private static final Function<Move, String> TO_ENGINE_MOVES = new Function<Move, String>() {
