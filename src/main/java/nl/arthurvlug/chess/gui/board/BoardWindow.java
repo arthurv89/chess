@@ -32,14 +32,14 @@ public class BoardWindow extends Window {
 		setLayout(null);
 		
 		BoardPane boardPane = new BoardPane(game);
-		boardPane.setBounds(50, 50, 420, 420);
+		boardPane.setBounds(50, 50, 420, 820);
 		add(boardPane);
 		
-		clockPane.setBounds(500, 50, 200, 420);
+		clockPane.setBounds(550, 50, 200, 420);
 		add(clockPane);
 
 		EnginePane enginePane = new EnginePane();
-		enginePane.setBounds(50, 500, 120, 100);
+		enginePane.setBounds(50, 600, 120, 100);
 		add(enginePane);
 		
 		setSize(800, 800);

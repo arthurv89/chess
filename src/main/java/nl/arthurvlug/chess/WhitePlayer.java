@@ -10,6 +10,6 @@ public class WhitePlayer extends ComputerPlayer {
 
 	@Override
 	public String getName() {
-		return engine.getName();
+		return "Computer player with engine " + engine.getName();
 	}
 }

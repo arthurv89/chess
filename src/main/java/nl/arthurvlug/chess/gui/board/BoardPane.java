@@ -19,6 +19,8 @@ import com.atlassian.fugue.Option;
 @SuppressWarnings("serial")
 public class BoardPane extends JPanel {
 	private static final String CHESS_FONT_FILE_NAME = "chess.ttf";
+
+	private static final int BOARD_OFFSET = 80;
 	
 	private final Font chessFont;
 	private final Game game;
@@ -40,8 +42,9 @@ public class BoardPane extends JPanel {
 	}
 
 	private void drawBoard(Graphics2D g) {
-		g.setColor(Color.RED);
-
+		g.drawString(game.getBlackPlayer().getName(), 0, 20);
+		g.drawString(game.getWhitePlayer().getName(), 0, 520);
+		
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
 				drawSquare(g, x, y);
@@ -59,7 +62,7 @@ public class BoardPane extends JPanel {
 			Font font = chessFont.deriveFont((float) fontSize());
 			int stringWidth = g.getFontMetrics(font).stringWidth(pieceString);
 			int xPos = (int) Math.round(x * fieldSize() + 0.5 * fieldSize() - 0.5 * stringWidth);
-			int yPos = (7-y) * fieldSize() + fontSize();
+			int yPos = (7-y) * fieldSize() + fontSize() + BOARD_OFFSET;
 			
 			g.setBackground(Color.WHITE);
 			g.setColor(Color.BLACK);
@@ -70,7 +73,7 @@ public class BoardPane extends JPanel {
 
 	private void drawSquare(Graphics2D g, int x, int y) {
 		g.setColor(Color.BLACK);
-		g.drawRect(x * fieldSize(), (7-y) * fieldSize(), fieldSize(), fieldSize());
+		g.drawRect(x * fieldSize(), BOARD_OFFSET + (7-y) * fieldSize(), fieldSize(), fieldSize());
 	}
 
 	private int fieldSize() {
