@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import nl.arthurvlug.chess.domain.game.Clock;
 import nl.arthurvlug.chess.domain.game.GameStartedEvent;
 import nl.arthurvlug.chess.events.EventHandler;
+import nl.arthurvlug.chess.events.GameFinishedEvent;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -22,6 +23,7 @@ public class ClockPane extends JPanel {
 	
 	private Clock whiteClock;
 	private Clock blackClock;
+	private volatile boolean runThread = true;
 	
 	public ClockPane() {
 		startClockThread();
@@ -32,33 +34,25 @@ public class ClockPane extends JPanel {
 		if(whiteClock != null && blackClock != null) {
 			Graphics2D g = (Graphics2D) g1;
 
-			drawBlackClock(g);
-			drawWhiteClock(g);
+			drawClock(g, blackClock, 0);
+			drawClock(g, whiteClock, 370);
 		}
 	}
 
-	private void drawBlackClock(Graphics2D g) {
+	private void drawClock(Graphics2D g, Clock clock, int yOffset) {
 		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, 100, 30);
+		g.fillRect(0, yOffset, 100, 30);
 
 		g.setColor(Color.BLACK);
-		g.drawRect(0, 0, 100, 30);
-		g.drawString(clockString(blackClock), 10, 20);
-	}
-
-	private void drawWhiteClock(Graphics2D g) {
-		g.setColor(Color.WHITE);
-		g.fillRect(0, 370, 100, 30);
-
-		g.setColor(Color.BLACK);
-		g.drawRect(0, 370, 100, 30);
-		g.drawString(clockString(whiteClock), 10, 390);
+		g.drawRect(0, yOffset, 100, 30);
+		g.drawString(clockString(clock), 10, 20 + yOffset);
 	}
 
 	private void startClockThread() {
 		new Thread(new Runnable() {
+
 			public void run() {
-				while(true) {
+				while(runThread) {
 					repaint();
 				}
 			}
@@ -66,7 +60,7 @@ public class ClockPane extends JPanel {
 	}
 
 	private String clockString(Clock clock) {
-		return dateTimeFormatter.print(clock.getCurrentClock());
+		return dateTimeFormatter.print(clock.getRemainingTime());
 	}
 
 	@Subscribe
@@ -74,5 +68,10 @@ public class ClockPane extends JPanel {
 		this.whiteClock = event.getGame().getWhiteClock();
 		this.blackClock = event.getGame().getBlackClock();
 		repaint();
+	}
+	
+	@Subscribe
+	public void on(GameFinishedEvent event) {
+		runThread = false;
 	}
 }

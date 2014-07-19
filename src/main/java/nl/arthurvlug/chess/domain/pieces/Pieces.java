@@ -1,5 +1,7 @@
 package nl.arthurvlug.chess.domain.pieces;
 
+
+
 public class Pieces {
 	public static final Piece PAWN = new Pawn();
 	public static final Piece KNIGHT = new Knight();
@@ -11,7 +13,7 @@ public class Pieces {
 	public static Piece fromChar(char character) {
 		Piece[] x = new Piece[] {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING};
 		for(Piece piece : x) {
-			if(piece.getCharacter() == character) {
+			if(Character.toLowerCase(piece.getCharacter()) == Character.toLowerCase(character)) {
 				return piece;
 			}
 		}

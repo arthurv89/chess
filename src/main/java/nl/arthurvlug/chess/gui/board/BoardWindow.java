@@ -1,26 +1,28 @@
 package nl.arthurvlug.chess.gui.board;
 
+import java.awt.Font;
 import java.awt.FontFormatException;
 import java.io.IOException;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.swing.JOptionPane;
+
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.domain.game.GameStartedEvent;
 import nl.arthurvlug.chess.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.events.EventHandler;
+import nl.arthurvlug.chess.events.GameFinishedEvent;
 import nl.arthurvlug.chess.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.Window;
-import rx.Observable;
-import rx.observers.EmptyObserver;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 
-@Slf4j
 @SuppressWarnings("serial")
 @EventHandler
 public class BoardWindow extends Window {
+	static Font DEFAULT_FONT = new Font("Arial", Font.PLAIN, 11);
+	
 	@Inject private Game game;
 	@Inject private EventBus eventBus;
 	@Inject private ClockPane clockPane;
@@ -65,5 +67,10 @@ public class BoardWindow extends Window {
 	@Subscribe
 	public void on(MoveAppliedEvent event) {
 		repaint();
+	}
+	
+	@Subscribe
+	public void on(GameFinishedEvent event) {
+		JOptionPane.showMessageDialog(this, "Game finished!");
 	}
 }

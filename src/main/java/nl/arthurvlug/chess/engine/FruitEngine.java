@@ -10,4 +10,9 @@ public class FruitEngine extends AbstractEngine {
 	public FruitEngine() {
 		super(FRUIT_ENGINE);
 	}
+
+	@Override
+	public String getName() {
+		return "Fruit 2.3.1";
+	}
 }

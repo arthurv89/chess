@@ -8,8 +8,8 @@ import nl.arthurvlug.chess.engine.AbstractEngine;
 import rx.Observable;
 
 @AllArgsConstructor
-public class ComputerPlayer extends Player {
-	private final AbstractEngine engine;
+public abstract class ComputerPlayer extends Player {
+	protected final AbstractEngine engine;
 	
 	public Observable<String> getEngineOutput(){
 		return engine.subscribeEngineOutput();

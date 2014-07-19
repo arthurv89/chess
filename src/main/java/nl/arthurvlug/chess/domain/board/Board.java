@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess.domain.board;
 
+import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.domain.game.Move;
 import nl.arthurvlug.chess.domain.pieces.ColoredPiece;
 import nl.arthurvlug.chess.domain.pieces.King;
@@ -12,6 +13,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
+@Slf4j
 public abstract class Board {
 	private static final Function<ColoredPiece, String> PIECE_TO_STRING = new Function<ColoredPiece, String>() {
 		@Override
@@ -48,14 +50,15 @@ public abstract class Board {
 	public void move(Move move) {
 		ColoredPiece coloredPiece = Preconditions.checkNotNull(getPiece(move.getFrom()).getOrNull());
 
-		int fieldDistance = Math.abs(move.getTo().getX() - move.getFrom().getX());
 		if(containsPiece(move.getFrom(), King.class)) {
-			if(fieldDistance == 2) {
-				// Castle kingside
-				moveRook(move.getTo().getY(), 7, 5);
-			} else {
-				// Castle queenside
-				moveRook(move.getTo().getY(), 0, 3);
+			if(Math.abs(move.getTo().getX() - move.getFrom().getX()) == 2) {
+				if(move.getTo().getX() == 6) {
+					// Castle kingside
+					moveRook(move.getTo().getY(), 7, 5);
+				} else if(move.getTo().getX() == 2) {
+					// Castle queenside
+					moveRook(move.getTo().getY(), 0, 3);
+				}
 			}
 		}
 		
@@ -66,7 +69,7 @@ public abstract class Board {
 		} else {
 			getField(move.getTo()).setPiece(Option.some(coloredPiece));
 		}
-		
+
 		getField(move.getFrom()).setPiece(Option.<ColoredPiece>none());
 	}
 
@@ -74,6 +77,7 @@ public abstract class Board {
 		Coordinates rookFrom = getField(fromX, y).getCoordinates();
 		Coordinates rookTo = getField(toX, y).getCoordinates();
 		move(new Move(rookFrom, rookTo, Option.<Piece> none()));
+		log.debug("Castled");
 	}
 
 	private boolean containsPiece(Coordinates coordinates, Class<King> pieceType) {

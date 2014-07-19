@@ -61,17 +61,17 @@ public abstract class AbstractEngine implements Engine {
 	};
 
 	public void determineNextMove(final Game game) {
-		Thread thread = new Thread(new Runnable() {
+		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				sendCommand("position moves " + MoveUtils.toEngineMoves(game.getMoves()));
-				long whiteMillis = game.getWhiteClock().getCurrentClock().getMillis();
-				long blackMillis = game.getBlackClock().getCurrentClock().getMillis();
-				sendCommand("go wtime " + whiteMillis + " btime " + blackMillis);
+				long whiteMillis = game.getWhiteClock().getRemainingTime().getMillis();
+				long blackMillis = game.getBlackClock().getRemainingTime().getMillis();
+				if(whiteMillis > 0 && blackMillis > 0) {
+					sendCommand("go wtime " + whiteMillis + " btime " + blackMillis);
+				}
 			}
-		});
-		thread.setPriority(Thread.MIN_PRIORITY);
-		thread.start();
+		}).start();
 	}
 	
 	public Observable<String> subscribeEngineOutput() {
@@ -130,8 +130,12 @@ public abstract class AbstractEngine implements Engine {
 			Move move = new Move(from, to, promotionPiece);
 
 			for(Subscriber<? super Move> moveSubscriber : moveSubscribers) {
-				log.info(Markers.MOVE, "Sent " + move);
-				moveSubscriber.onNext(move);
+				if(move.getFrom().equals(move.getTo())) {
+					moveSubscriber.onNext(new GameFinished());
+				} else {
+					moveSubscriber.onNext(move);
+				}
+				log.info(Markers.MOVE, "Sent " + move + " to " + moveSubscriber);
 			}
 		}
 		log.info(Markers.ENGINE, line);
@@ -150,7 +154,7 @@ public abstract class AbstractEngine implements Engine {
 
 	private void startProcess() throws IOException {
 		String resourcePath = getClass().getResource("/" + fileName).getFile().toString();
-		String command = "wine " + resourcePath;
+		String command = "wine64 " + resourcePath;
 		p = Runtime.getRuntime().exec(command);
 	}
 
@@ -158,7 +162,7 @@ public abstract class AbstractEngine implements Engine {
 		try {
 			input.write(command + "\n");
 			input.flush();
-			log.info(getClass().getSimpleName() + " - Sent command: " + command);
+			log.info(Markers.ENGINE, getClass().getSimpleName() + " - Sent command: " + command);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -168,6 +172,8 @@ public abstract class AbstractEngine implements Engine {
 		p.destroy();
 		IOUtils.closeQuietly(output);
 		IOUtils.closeQuietly(input);
-		log.info("Engine down");
+		log.info(Markers.ENGINE, "Engine down");
 	}
+
+	public abstract String getName();
 }

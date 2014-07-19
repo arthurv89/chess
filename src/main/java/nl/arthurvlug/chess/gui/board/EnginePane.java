@@ -14,6 +14,7 @@ public class EnginePane extends JPanel {
 	}
 
 	private void drawPane(Graphics2D g) {
+		g.setFont(BoardWindow.DEFAULT_FONT);
 		g.drawString("Blabla", 20, 20);
 	}
 }

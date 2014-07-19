@@ -9,4 +9,9 @@ public class RybkaEngine extends AbstractEngine {
 	public RybkaEngine() {
 		super(RYBKA_PATH);
 	}
+
+	@Override
+	public String getName() {
+		return "Rybka 2.3.2a, 64 bit";
+	}
 }

@@ -7,4 +7,9 @@ public class WhitePlayer extends ComputerPlayer {
 	public WhitePlayer(AbstractEngine engine) {
 		super(engine);
 	}
+
+	@Override
+	public String getName() {
+		return engine.getName();
+	}
 }

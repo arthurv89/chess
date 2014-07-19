@@ -6,4 +6,6 @@ public abstract class Player {
 	protected abstract Observable<Move> registerMoveSubscriber();
 
 	public abstract void determineNextMove(Game game);
+
+	public abstract String getName();
 }

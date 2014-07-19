@@ -8,6 +8,7 @@
 
 	<appender name="FILE_ALL" class="ch.qos.logback.core.FileAppender">
 		<file>/home/coding/chess.log</file>
+		<append>false</append>
 		<encoder>
 			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
 		</encoder>
@@ -15,6 +16,7 @@
 
 	<appender name="FILE_ENGINE" class="ch.qos.logback.core.FileAppender">
 		<file>/home/coding/chess-engine.log</file>
+		<append>false</append>
 		<encoder>
 			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
 		</encoder>
@@ -28,6 +30,7 @@
 	</appender>
 
 	<appender name="FILE_MOVE" class="ch.qos.logback.core.FileAppender">
+		<append>false</append>
 		<file>/home/coding/chess-move.log</file>
 		<encoder>
 			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
@@ -41,10 +44,26 @@
 		</filter>
 	</appender>
 
+	<appender name="FILE_GAME" class="ch.qos.logback.core.FileAppender">
+		<append>false</append>
+		<file>/home/coding/chess-game.log</file>
+		<encoder>
+			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+				<marker>GAME</marker>
+			</evaluator>
+			<onMismatch>DENY</onMismatch>
+			<onMatch>NEUTRAL</onMatch>
+		</filter>
+	</appender>
+
 	<root>
-<!-- 		<appender-ref ref="CONSOLE" /> -->
+		<appender-ref ref="CONSOLE" />
 		<appender-ref ref="FILE_ALL" />
 		<appender-ref ref="FILE_ENGINE" />
 		<appender-ref ref="FILE_MOVE" />
+		<appender-ref ref="FILE_GAME" />
 	</root>
 </configuration>  
