@@ -3,7 +3,6 @@ package nl.arthurvlug.chess;
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.engine.FruitEngine;
 import nl.arthurvlug.chess.engine.RybkaEngine;
-import nl.arthurvlug.chess.gui.board.BoardWindow;
 import nl.arthurvlug.chess.gui.board.ClockPane;
 
 import com.google.common.eventbus.EventBus;
