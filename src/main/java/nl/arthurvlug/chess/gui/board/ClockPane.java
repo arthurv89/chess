@@ -7,9 +7,9 @@ import java.awt.Graphics2D;
 import javax.swing.JPanel;
 
 import nl.arthurvlug.chess.domain.game.Clock;
-import nl.arthurvlug.chess.domain.game.GameStartedEvent;
 import nl.arthurvlug.chess.events.EventHandler;
 import nl.arthurvlug.chess.events.GameFinishedEvent;
+import nl.arthurvlug.chess.events.GameStartedEvent;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;

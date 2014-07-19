@@ -7,10 +7,10 @@ import java.io.IOException;
 import javax.swing.JOptionPane;
 
 import nl.arthurvlug.chess.domain.game.Game;
-import nl.arthurvlug.chess.domain.game.GameStartedEvent;
 import nl.arthurvlug.chess.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.events.EventHandler;
 import nl.arthurvlug.chess.events.GameFinishedEvent;
+import nl.arthurvlug.chess.events.GameStartedEvent;
 import nl.arthurvlug.chess.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.Window;
 

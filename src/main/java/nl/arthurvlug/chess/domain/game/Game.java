@@ -14,6 +14,7 @@ import nl.arthurvlug.chess.engine.Markers;
 import nl.arthurvlug.chess.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.events.EventHandler;
 import nl.arthurvlug.chess.events.GameFinishedEvent;
+import nl.arthurvlug.chess.events.GameStartedEvent;
 import nl.arthurvlug.chess.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.events.StartupEvent;
 import nl.arthurvlug.chess.gui.board.ComputerPlayer;
