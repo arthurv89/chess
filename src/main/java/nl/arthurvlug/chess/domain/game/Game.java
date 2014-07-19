@@ -40,9 +40,9 @@ public class Game {
 	private final List<Move> moves = new ArrayList<Move>();
 
 	@Getter
-	private final Clock whiteClock = new Clock(3, 0);
+	private final Clock whiteClock = new Clock(1, 0);
 	@Getter
-	private final Clock blackClock = new Clock(3, 0);
+	private final Clock blackClock = new Clock(1, 0);
 	
 	public Game(WhitePlayer whitePlayer, BlackPlayer blackPlayer) {
 		this.whitePlayer = whitePlayer;

@@ -66,13 +66,7 @@ public class ClockPane extends JPanel {
 	}
 
 	private String clockString(Clock clock) {
-//		long totalMillis = clock.getCurrentClock().getMillis();
-//		long minutes = totalMillis / 60000;
-//		long seconds = totalMillis / 1000 - minutes * 60;
-//		long millis = totalMillis % 1000;
-		
 		return dateTimeFormatter.print(clock.getCurrentClock());
-//		return minutes + " : " + seconds + " : " + millis/10;
 	}
 
 	@Subscribe

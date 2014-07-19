@@ -1,6 +1,7 @@
 package nl.arthurvlug.chess.domain.game;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 
 
@@ -9,7 +10,10 @@ public class Clock {
 	private DateTime startTime;
 	
 	public Clock(int minutes, int seconds) {
-		this.totalClockTimeAvailable = new DateTime(0).plusMinutes(minutes).plusSeconds(seconds);
+		this.totalClockTimeAvailable = new DateTime(DateTimeZone.UTC)
+			.withMillis(0)
+			.plusMinutes(minutes)
+			.plusSeconds(seconds);
 	}
 
 	public void stop() {
