@@ -27,6 +27,8 @@ public class BoardWindow extends Window {
 	@Inject private EventBus eventBus;
 	@Inject private ClockPane clockPane;
 
+	@Inject private MovesPane movesPane;
+
 	@Override
 	public void open() throws FontFormatException, IOException {
 		setLayout(null);
@@ -37,6 +39,9 @@ public class BoardWindow extends Window {
 		
 		clockPane.setBounds(550, 50, 200, 420);
 		add(clockPane);
+		
+		movesPane.setBounds(550, 100, 200, 420);
+		add(movesPane);
 
 		EnginePane enginePane = new EnginePane();
 		enginePane.setBounds(50, 600, 120, 100);
@@ -63,9 +68,10 @@ public class BoardWindow extends Window {
 //			}
 //		});
 	}
-
+	 
 	@Subscribe
 	public void on(MoveAppliedEvent event) {
+		System.out.println(game.getBoard().toString());
 		repaint();
 	}
 	

@@ -46,9 +46,9 @@ public class Game {
 	private final List<Move> moves = new ArrayList<Move>();
 
 	@Getter
-	private final Clock whiteClock = new Clock(0, 5);
+	private final Clock whiteClock = new Clock(0, 10);
 	@Getter
-	private final Clock blackClock = new Clock(0, 5);
+	private final Clock blackClock = new Clock(0, 10);
 	
 
 	private volatile boolean gameFinished = false;

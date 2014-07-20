@@ -101,17 +101,12 @@ public abstract class Board {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" -------- ");
-		sb.append("\n");
 		for (ImmutableList<Field> row : fields.reverse()) {
-			sb.append('|');
 			for (Field field : row) {
 				sb.append(field.getPiece().map(PIECE_TO_STRING).getOrElse(" "));
 			}
-			sb.append('|');
 			sb.append("\n");
 		}
-		sb.append(" -------- ");
 		return sb.toString();
 	}
 }

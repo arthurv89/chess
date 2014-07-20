@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -14,7 +15,7 @@ import nl.arthurvlug.chess.domain.board.Coordinates;
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.domain.game.Move;
 import nl.arthurvlug.chess.domain.pieces.Piece;
-import nl.arthurvlug.chess.domain.pieces.Pieces;
+import nl.arthurvlug.chess.domain.pieces.PieceType;
 
 import org.apache.commons.io.IOUtils;
 
@@ -34,6 +35,7 @@ public abstract class AbstractEngine implements Engine {
 	private final List<Subscriber<? super Move>> moveSubscribers = new ArrayList<Subscriber<? super Move>>();
 	private final List<Subscriber<? super String>> engineOutputSubscribers = new ArrayList<Subscriber<? super String>>();
 	private boolean started = false;
+	private BufferedReader error;
 	
 	public AbstractEngine(String fileName) {
 		this.fileName = fileName;
@@ -46,6 +48,7 @@ public abstract class AbstractEngine implements Engine {
 				processOutput();
 			} catch (IOException | InterruptedException e) {
 				e.printStackTrace();
+				log.error("Unknown error", e);
 			}
 		}
 		started = true;
@@ -64,11 +67,16 @@ public abstract class AbstractEngine implements Engine {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				sendCommand("position moves " + MoveUtils.toEngineMoves(game.getMoves()));
-				long whiteMillis = game.getWhiteClock().getRemainingTime().getMillis();
-				long blackMillis = game.getBlackClock().getRemainingTime().getMillis();
-				if(whiteMillis > 0 && blackMillis > 0) {
-					sendCommand("go wtime " + whiteMillis + " btime " + blackMillis);
+				try {
+					long whiteMillis = game.getWhiteClock().getRemainingTime().getMillis();
+					long blackMillis = game.getBlackClock().getRemainingTime().getMillis();
+					if(whiteMillis > 0 && blackMillis > 0) {
+						sendCommand(
+								"position moves " + MoveUtils.toEngineMoves(game.getMoves()) + "\n" +
+								"go wtime " + whiteMillis + " btime " + blackMillis);
+					}
+				} catch(Exception e) {
+					log.error("Unknown error", e);
 				}
 			}
 		}).start();
@@ -91,19 +99,21 @@ public abstract class AbstractEngine implements Engine {
 
 	private void processOutput() throws InterruptedException, IOException {
 		output = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 		input = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 
-		runOutputThread();
+		runOutputThread(output, System.out);
+		runOutputThread(error, System.err);
 	}
 
-	private void runOutputThread() {
+	private void runOutputThread(final BufferedReader reader, final PrintStream printStream) {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
 					while (true) {
 						String line;
-						while((line = output.readLine()) != null) {
-							parseLine(line);
+						while((line = reader.readLine()) != null) {
+							parseLine(line, printStream);
 						}
 					}
 				} catch (IOException e) {
@@ -113,7 +123,7 @@ public abstract class AbstractEngine implements Engine {
 		}).start();
 	}
 
-	private void parseLine(String line) {
+	private void parseLine(String line, PrintStream printStream) {
 		if(line.startsWith("bestmove")) {
 			StringTokenizer tokenizer = new StringTokenizer(line);
 			
@@ -125,7 +135,7 @@ public abstract class AbstractEngine implements Engine {
 			Coordinates from = toField(y.substring(0, 2));
 			Coordinates to = toField(y.substring(2, 4));
 			Option<Piece> promotionPiece = y.length() == 5
-					? Option.<Piece> some(Pieces.fromChar(y.charAt(4)))
+					? Option.<Piece> some(PieceType.fromChar(y.charAt(4)).getPiece())
 					: Option.<Piece> none();
 			Move move = new Move(from, to, promotionPiece);
 
@@ -139,6 +149,7 @@ public abstract class AbstractEngine implements Engine {
 			}
 		}
 		log.info(Markers.ENGINE, line);
+		printStream.println(line);
 
 		for(Subscriber<? super String> engineSubscriber : engineOutputSubscribers) {
 			engineSubscriber.onNext(line);
@@ -153,7 +164,7 @@ public abstract class AbstractEngine implements Engine {
 	}
 
 	private void startProcess() throws IOException {
-		String resourcePath = getClass().getResource("/" + fileName).getFile().toString();
+		String resourcePath = getClass().getResource("/engines/" + fileName).getFile().toString();
 		String command = "wine64 " + resourcePath;
 		p = Runtime.getRuntime().exec(command);
 	}
@@ -164,6 +175,7 @@ public abstract class AbstractEngine implements Engine {
 			input.flush();
 			log.info(Markers.ENGINE, getClass().getSimpleName() + " - Sent command: " + command);
 		} catch (IOException e) {
+			log.error("Unknown error", e);
 			e.printStackTrace();
 		}
 	}

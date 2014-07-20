@@ -5,9 +5,7 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.io.IOException;
-import java.net.URL;
 
 import javax.swing.JPanel;
 
@@ -18,16 +16,16 @@ import com.atlassian.fugue.Option;
 
 @SuppressWarnings("serial")
 public class BoardPane extends JPanel {
-	private static final String CHESS_FONT_FILE_NAME = "chess.ttf";
+	private static final String FRITZ_FONT_FILENAME = "DiaTTFri.ttf";
 
 	private static final int BOARD_OFFSET = 80;
 	
-	private final Font chessFont;
+	private final AbstractChessFont chessFont;
 	private final Game game;
-
+	
 	public BoardPane(Game game) throws FontFormatException, IOException {
 		this.game = game;
-		this.chessFont = initializeFont();
+		this.chessFont = new TrueTypeFont(FRITZ_FONT_FILENAME);
 		
 		setLocation(0,  0);
 		setLayout(null);
@@ -56,7 +54,7 @@ public class BoardPane extends JPanel {
 	private void drawPiece(Graphics2D g, int x, int y) {
 		Option<ColoredPiece> coloredPieceOption = game.getBoard().getPiece(x, y);
 		if(coloredPieceOption.isDefined()) {
-			String pieceString = coloredPieceOption.get().getCharacterString();
+			String pieceString = chessFont.pieceString(coloredPieceOption);
 			
 			// Determine font and position of the string
 			Font font = chessFont.deriveFont((float) fontSize());
@@ -82,14 +80,5 @@ public class BoardPane extends JPanel {
 	
 	private int fontSize() {
 		return (int) Math.round(0.8 * fieldSize());
-	}
-
-	
-	private Font initializeFont() throws FontFormatException, IOException {
-		URL fontUrl = getClass().getResource("/" + CHESS_FONT_FILE_NAME);
-		Font chessFont = Font.createFont(Font.TRUETYPE_FONT, fontUrl.openStream());
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		ge.registerFont(chessFont);
-		return chessFont;
 	}
 }
