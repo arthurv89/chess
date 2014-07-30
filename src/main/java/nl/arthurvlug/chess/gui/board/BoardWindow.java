@@ -40,7 +40,7 @@ public class BoardWindow extends Window {
 		clockPane.setBounds(550, 50, 200, 420);
 		add(clockPane);
 		
-		movesPane.setBounds(550, 100, 200, 420);
+		movesPane.setBounds(570, 100, 200, 420);
 		add(movesPane);
 
 		EnginePane enginePane = new EnginePane();
@@ -63,7 +63,7 @@ public class BoardWindow extends Window {
 
 	private void listenToEngine(ComputerPlayer player) {
 //		final Observable<String> engineOutput = player.getEngineOutput();
-//		engineOutput.subscribe(new EmptyObserver<String>() {
+//		engineOutput.subscribe(new MyEmptyObserver<String>() {
 //			public void onNext(final String line) {
 //			}
 //		});
@@ -71,7 +71,7 @@ public class BoardWindow extends Window {
 	 
 	@Subscribe
 	public void on(MoveAppliedEvent event) {
-		System.out.println(game.getBoard().toString());
+		System.out.println(game.getBoard().toString() + "\n");
 		repaint();
 	}
 	

@@ -1,11 +1,13 @@
 package nl.arthurvlug.chess.domain.game;
 
+import com.google.common.collect.ImmutableList;
+
 import rx.Observable;
 
-public abstract class Player {
-	protected abstract Observable<Move> registerMoveSubscriber();
+public interface Player {
+	String getName();
 
-	public abstract void determineNextMove(Game game);
+	Observable<Move> registerMoveSubscriber();
 
-	public abstract String getName();
+	void notifyNewMove(ImmutableList<Move> moves);
 }
