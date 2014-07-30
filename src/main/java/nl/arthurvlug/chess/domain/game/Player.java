@@ -2,10 +2,12 @@ package nl.arthurvlug.chess.domain.game;
 
 import rx.Observable;
 
-public abstract class Player {
-	protected abstract Observable<Move> registerMoveSubscriber();
+import com.google.common.collect.ImmutableList;
 
-	public abstract void determineNextMove(Game game);
+public interface Player {
+	String getName();
 
-	public abstract String getName();
+	Observable<Move> registerMoveSubscriber();
+
+	void notifyNewMove(ImmutableList<Move> moves);
 }

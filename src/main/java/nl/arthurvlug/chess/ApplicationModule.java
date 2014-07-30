@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess;
 
+import nl.arthurvlug.chess.domain.game.Clock;
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.engine.FruitEngine;
 import nl.arthurvlug.chess.engine.RybkaEngine;
@@ -12,11 +13,21 @@ import com.google.inject.AbstractModule;
 public class ApplicationModule extends AbstractModule {
 	@Override
 	protected void configure() {
-		WhitePlayer whitePlayer = new WhitePlayer(new RybkaEngine());
-		BlackPlayer blackPlayer = new BlackPlayer(new FruitEngine());
-		
+		Clock whiteClock = new Clock(0, 20);
+		Clock blackClock = new Clock(0, 20);
+
+		WhitePlayer whitePlayer = new WhitePlayer(new RybkaEngine(whiteClock, blackClock));
+		BlackPlayer blackPlayer = new BlackPlayer(new FruitEngine(whiteClock, blackClock));
+		Game game = new Game.GameBuilder()
+			.whitePlayer(whitePlayer)
+			.blackPlayer(blackPlayer)
+			.whiteClock(whiteClock)
+			.blackClock(blackClock)
+			.toMove(whitePlayer)
+			.build();
+
 		bind(EventBus.class).toInstance(new EventBus("Default eventbus"));
-		bind(Game.class).toInstance(new Game(whitePlayer, blackPlayer));
+		bind(Game.class).toInstance(game);
 		bind(ClockPane.class).toInstance(new ClockPane());
 		bind(MovesPane.class).toInstance(new MovesPane());
 	}

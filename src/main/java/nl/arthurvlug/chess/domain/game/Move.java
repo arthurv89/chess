@@ -19,4 +19,14 @@ public class Move {
 	public String toString() {
 		return MoveUtils.fieldToString(from) + MoveUtils.fieldToString(to) + MoveUtils.promotionToString(promotionPiece);
 	}
+	
+	@Override
+	public int hashCode() {
+		return toString().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return toString().equals(obj.toString());
+	}
 }

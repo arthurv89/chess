@@ -7,8 +7,10 @@ import nl.arthurvlug.chess.domain.game.Player;
 import nl.arthurvlug.chess.engine.AbstractEngine;
 import rx.Observable;
 
+import com.google.common.collect.ImmutableList;
+
 @AllArgsConstructor
-public abstract class ComputerPlayer extends Player {
+public abstract class ComputerPlayer implements Player {
 	protected final AbstractEngine engine;
 	
 	public Observable<String> getEngineOutput(){
@@ -20,12 +22,22 @@ public abstract class ComputerPlayer extends Player {
 		return engine.registerMoveSubscriber();
 	}
 
-	public void startEngine() {
-		engine.startEngine();
+	public Observable<Void> startEngine(Game game) {
+		return engine.startEngine(game);
+	}
+	
+//	@Override
+//	public void think(List<Move> moves) {
+//		engine.think(ImmutableList.<Move> builder().addAll(moves).build());
+//	}
+
+	@Override
+	public String getName() {
+		return engine.getClass().getSimpleName();
 	}
 	
 	@Override
-	public void determineNextMove(Game game) {
-		engine.determineNextMove(game);
+	public void notifyNewMove(ImmutableList<Move> moves) {
+		engine.notifyNewMove(moves);
 	}
 }

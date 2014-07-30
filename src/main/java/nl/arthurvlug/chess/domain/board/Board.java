@@ -48,7 +48,7 @@ public abstract class Board {
 	}
 
 	public void move(Move move) {
-		ColoredPiece coloredPiece = Preconditions.checkNotNull(getPiece(move.getFrom()).getOrNull());
+		ColoredPiece coloredPiece = Preconditions.checkNotNull(getPiece(move.getFrom()).getOrNull(), "The piece that the player wants to move is empty");
 
 		if(containsPiece(move.getFrom(), King.class)) {
 			if(Math.abs(move.getTo().getX() - move.getFrom().getX()) == 2) {

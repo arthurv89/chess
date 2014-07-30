@@ -5,6 +5,7 @@ import java.util.List;
 import nl.arthurvlug.chess.domain.board.Coordinates;
 import nl.arthurvlug.chess.domain.game.Move;
 import nl.arthurvlug.chess.domain.pieces.Piece;
+import nl.arthurvlug.chess.domain.pieces.PieceType;
 
 import com.atlassian.fugue.Option;
 import com.google.common.base.Function;
@@ -27,7 +28,7 @@ public class MoveUtils {
 		return Joiner.on(' ').join(Lists.transform(moves, TO_ENGINE_MOVES));
 	}
 	
-	private static String toEngineMove(Move move) {
+	public static String toEngineMove(Move move) {
 		String from = fieldToString(move.getFrom());
 		String to = fieldToString(move.getTo());
 		String piece = promotionToString(move.getPromotionPiece());
@@ -45,5 +46,20 @@ public class MoveUtils {
 
 	public static String fieldToString(Coordinates coordinates) {
 		return toReadableField(coordinates);
+	}
+
+	public static Move toMove(String sMove) {
+		Coordinates from = toField(sMove.substring(0, 2));
+		Coordinates to = toField(sMove.substring(2, 4));
+		Option<Piece> promotionPiece = sMove.length() == 5
+				? Option.<Piece> some(PieceType.fromChar(sMove.charAt(4)).getPiece())
+				: Option.<Piece> none();
+		return new Move(from, to, promotionPiece);
+	}
+	
+	private static Coordinates toField(String substring) {
+		int x = substring.charAt(0) - 'a';
+		int y = substring.charAt(1) - '1';
+		return new Coordinates(x, y);
 	}
 }

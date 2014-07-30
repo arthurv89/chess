@@ -1,6 +1,5 @@
 package nl.arthurvlug.chess.gui.board;
 
-import java.awt.Color;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
@@ -24,7 +23,6 @@ public class MovesPane extends JPanel {
 	
 	public MovesPane() {
 		textArea.setSize(300, 200);
-		textArea.setBackground(Color.RED);
 		add(textArea);
 	}
 	
