@@ -14,6 +14,6 @@ public class RybkaEngine extends AbstractEngine {
 
 	@Override
 	public String getName() {
-		return "Rybka 2.3.2a, 64 bit";
+		return "Rybka";
 	}
 }

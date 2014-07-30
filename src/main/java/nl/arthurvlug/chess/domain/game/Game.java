@@ -103,9 +103,9 @@ public class Game {
 		player.registerMoveSubscriber().subscribe(new MyEmptyObserver<Move>() {
 			public void onNext(Move move) {
 				getToMoveClock().stopClock();
-				log.debug("Time remaining: " + whiteClock.getRemainingTime().getSecondOfMinute() + " - " + blackClock.getRemainingTime().getSecondOfMinute());
+//				log.debug("Time remaining: " + whiteClock.getRemainingTime().getSecondOfMinute() + " - " + blackClock.getRemainingTime().getSecondOfMinute());
 				
-				log.debug(Markers.ENGINE, player.getName() + " is applying move " + move);
+//				log.debug(Markers.ENGINE, player.getName() + " is applying move " + move);
 				applyMove(move);
 				
 				if(move instanceof GameFinished) {
@@ -138,7 +138,7 @@ public class Game {
 		toMove = other(toMove);
 		eventBus.post(new MoveAppliedEvent());
 		
-		log.debug("Think: " + getToMove().getName());
+//		log.debug("Think: " + getToMove().getName());
 		toMove.notifyNewMove(ImmutableList.<Move> builder().addAll(moves).build());
 
 		getToMoveClock().startClock();

@@ -73,7 +73,7 @@ public abstract class AbstractEngine implements Engine {
 					sendCommand("uci");
 				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
-					log.error(Markers.ENGINE, "Unknown error", e);
+					log.error(Markers.ENGINE, getName() + " - Unknown error", e);
 					throw new RuntimeException(e);
 				}
 			}
@@ -96,13 +96,13 @@ public abstract class AbstractEngine implements Engine {
 		if(tokenizer.hasMoreTokens()) {
 			tokenizer.nextToken(); // Skip "ponder"
 
-		// Think with position after the bestMove and the ponderMove
-//		String ponderMove = tokenizer.nextToken();
-//		ponder(ponderMove, move);
+			// Think with position after the bestMove and the ponderMove
+//			String ponderMove = tokenizer.nextToken();
+//			ponder(ponderMove, move);
 		}
 
 		for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
-			log.info(Markers.ENGINE, getClass().getSimpleName() + " - Notifying listener for move " + move);
+			log.info(Markers.ENGINE, getName() + " - Notifying listener for move " + move);
 			if (move.getFrom().equals(move.getTo())) {
 				moveSubscriber.onNext(new GameFinished());
 			} else {
@@ -117,7 +117,7 @@ public abstract class AbstractEngine implements Engine {
 
 	private void ponder(String ponderMove, Move move) {
 		synchronized (gameMoves) {
-			log.debug(Markers.ENGINE, "Ponder: in synchronized");
+//			log.debug(Markers.ENGINE, getName() + " - Ponder: in synchronized");
 			this.ponderMove = ponderMove;
 			final ImmutableList<Move> ponderMoves = ImmutableList.<Move> builder()
 					.addAll(gameMoves)
@@ -125,15 +125,12 @@ public abstract class AbstractEngine implements Engine {
 					.add(MoveUtils.toMove(ponderMove))
 					.build();
 			
-			Set<Move> ponderMovesSet = new HashSet<Move>(ponderMoves);
 			// Change the position
-			if(ponderMovesSet.size() == ponderMoves.size()) {
-				sendCommand("position moves " + MoveUtils.toEngineMoves(ponderMoves));
-				
-				// Think
-				sendCommand("go ponder");
-			}
-			log.debug(Markers.ENGINE, "Thinkg: Out of synchronized");
+			sendCommand("position moves " + MoveUtils.toEngineMoves(ponderMoves));
+			
+			// Think
+			sendCommand("go ponder");
+//			log.debug(Markers.ENGINE, getName() + " - Ponder: Out of synchronized");
 		}
 	}
 
@@ -152,9 +149,9 @@ public abstract class AbstractEngine implements Engine {
 	}
 	
 	private void think(ImmutableList<Move> moves) {
-		log.debug(Markers.ENGINE, "Thinking after moves " + moves.toString());
+		log.debug(Markers.ENGINE, getName() + " - Thinking after moves " + moves.toString());
 		synchronized (gameMoves) {
-			log.debug(Markers.ENGINE, "Think: In synchronized");
+//			log.debug(Markers.ENGINE, getName() + " - Think: In synchronized");
 			gameMoves = moves;
 			
 			// Change the position
@@ -164,7 +161,7 @@ public abstract class AbstractEngine implements Engine {
 			final long whiteMillis = whiteClock.getRemainingTime().getMillis();
 			final long blackMillis = blackClock.getRemainingTime().getMillis();
 			sendCommand("go wtime " + whiteMillis + " btime " + blackMillis);
-			log.debug(Markers.ENGINE, "Think: out synchronized");
+//			log.debug(Markers.ENGINE, getName() + " - Think: out synchronized");
 		}
 	}
 
@@ -187,15 +184,15 @@ public abstract class AbstractEngine implements Engine {
 //			// MoveUtils.toEngineMove(list.get(list.size()-1)).equals(ponderMove);
 //			boolean doPonderHit = false;
 //			if (doPonderHit) {
-//				log.info(Markers.ENGINE, getClass().getSimpleName() + " - " + ponderMove);
+//				log.info(Markers.ENGINE, getName() + " - " + ponderMove);
 //				ignoreOutput = false;
-//				log.info(Markers.ENGINE, getClass().getSimpleName() + " - Ignore output: " + ignoreOutput);
+//				log.info(Markers.ENGINE, getName() + " - Ignore output: " + ignoreOutput);
 //
 //				sendCommand("ponderhit");
 //			} else {
 //				// TODO: Ignore next bestmove
 ////				ignoreOutput = canPonder;
-//				log.info(Markers.ENGINE, getClass().getSimpleName() + " - Ignore output: " + ignoreOutput);
+//				log.info(Markers.ENGINE, getName() + " - Ignore output: " + ignoreOutput);
 //
 //				sendCommand("stop");
 //
@@ -241,7 +238,7 @@ public abstract class AbstractEngine implements Engine {
 
 	private void parseLine(final String line, final PrintStream printStream) {
 		if (!line.isEmpty() && !line.startsWith("info ")) {
-			log.debug(Markers.ENGINE, getClass().getSimpleName() + " - Parsing line '" + line + "'");
+			log.debug(Markers.ENGINE, getName() + " - Parsing line '" + line + "'");
 			// printStream.println(line);
 		}
 		
@@ -279,11 +276,10 @@ public abstract class AbstractEngine implements Engine {
 						String line;
 						while ((line = reader.readLine()) != null) {
 							parseLine(line, printStream);
-							Thread.sleep(10);
 						}
 					}
-				} catch (IOException | InterruptedException e) {
-					log.error(Markers.ENGINE, e.getMessage());
+				} catch (IOException e) {
+					log.error(Markers.ENGINE, getName() + " - " + e.getMessage());
 				}
 			}
 		}).start();
@@ -293,9 +289,9 @@ public abstract class AbstractEngine implements Engine {
 		try {
 			input.write(command + "\n");
 			input.flush();
-			log.info(Markers.ENGINE, getClass().getSimpleName() + " - Sent command: " + command);
+			log.info(Markers.ENGINE, getName() + " - Sent command: " + command);
 		} catch (IOException e) {
-			log.error(Markers.ENGINE, "Unknown error", e);
+			log.error(Markers.ENGINE, getName() + " - Unknown error", e);
 			e.printStackTrace();
 		}
 	}
@@ -304,7 +300,7 @@ public abstract class AbstractEngine implements Engine {
 		p.destroy();
 		IOUtils.closeQuietly(output);
 		IOUtils.closeQuietly(input);
-		log.info(Markers.ENGINE, "Engine down");
+		log.info(Markers.ENGINE, getName() + " - Engine down");
 	}
 
 	public abstract String getName();
