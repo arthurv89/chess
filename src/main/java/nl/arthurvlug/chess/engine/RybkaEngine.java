@@ -14,6 +14,6 @@ public class RybkaEngine extends AbstractEngine {
 
 	@Override
 	public String getName() {
-		return "Rybka";
+		return "WHITE";
 	}
 }

@@ -15,6 +15,6 @@ public class FruitEngine extends AbstractEngine {
 
 	@Override
 	public String getName() {
-		return "Fruit 2.3.1";
+		return "    BLACK";
 	}
 }

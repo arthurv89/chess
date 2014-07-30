@@ -44,6 +44,21 @@
 		</filter>
 	</appender>
 
+	<appender name="FILE_ENGINE_RAW" class="ch.qos.logback.core.FileAppender">
+		<append>false</append>
+		<file>/home/coding/chess-engine-raw.log</file>
+		<encoder>
+			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+				<marker>ENGINE_RAW</marker>
+			</evaluator>
+			<onMismatch>DENY</onMismatch>
+			<onMatch>NEUTRAL</onMatch>
+		</filter>
+	</appender>
+
 	<appender name="FILE_GAME" class="ch.qos.logback.core.FileAppender">
 		<append>false</append>
 		<file>/home/coding/chess-game.log</file>
@@ -64,5 +79,6 @@
 		<appender-ref ref="FILE_ENGINE" />
 		<appender-ref ref="FILE_MOVE" />
 		<appender-ref ref="FILE_GAME" />
+		<appender-ref ref="FILE_ENGINE_RAW" />
 	</root>
 </configuration>  

@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.domain.game.Clock;
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.domain.game.Move;
+import nl.arthurvlug.chess.domain.game.MyEmptyObserver;
 
 import org.apache.commons.io.IOUtils;
 
@@ -45,6 +46,7 @@ public abstract class AbstractEngine implements Engine {
 	// Current state
 	private boolean started = false;
 	private volatile String ponderMove;
+	private volatile boolean shouldIgnoreNextMove = false;
 	
 	// Game
 	private final Clock whiteClock;
@@ -73,7 +75,7 @@ public abstract class AbstractEngine implements Engine {
 					sendCommand("uci");
 				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
-					log.error(Markers.ENGINE, getName() + " - Unknown error", e);
+					log.error(Markers.ENGINE, getName() + " -    Unknown error", e);
 					throw new RuntimeException(e);
 				}
 			}
@@ -93,20 +95,20 @@ public abstract class AbstractEngine implements Engine {
 		final String sMove = tokenizer.nextToken();
 		final Move move = MoveUtils.toMove(sMove);
 
-		if(tokenizer.hasMoreTokens()) {
+		if(tokenizer.hasMoreTokens() && !shouldIgnoreNextMove) {
 			tokenizer.nextToken(); // Skip "ponder"
 
 			// Think with position after the bestMove and the ponderMove
-//			String ponderMove = tokenizer.nextToken();
-//			ponder(ponderMove, move);
-		}
+			String ponderMove = tokenizer.nextToken();
+			ponder(move, ponderMove);
 
-		for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
-			log.info(Markers.ENGINE, getName() + " - Notifying listener for move " + move);
-			if (move.getFrom().equals(move.getTo())) {
-				moveSubscriber.onNext(new GameFinished());
-			} else {
-				moveSubscriber.onNext(move);
+			for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
+				log.debug(Markers.ENGINE, getName() + " -    Notifying listener for move " + move);
+				if (move.getFrom().equals(move.getTo())) {
+					moveSubscriber.onNext(new GameFinished());
+				} else {
+					moveSubscriber.onNext(move);
+				}
 			}
 		}
 		
@@ -115,43 +117,44 @@ public abstract class AbstractEngine implements Engine {
 		}
 	}
 
-	private void ponder(String ponderMove, Move move) {
+	private void ponder(Move lastMove, String ponderMove) {
 		synchronized (gameMoves) {
-//			log.debug(Markers.ENGINE, getName() + " - Ponder: in synchronized");
 			this.ponderMove = ponderMove;
 			final ImmutableList<Move> ponderMoves = ImmutableList.<Move> builder()
 					.addAll(gameMoves)
-					.add(move)
+					.add(lastMove)
 					.add(MoveUtils.toMove(ponderMove))
 					.build();
+			log.debug(Markers.ENGINE, getName() + " -    Pondering after " + ponderMoves);
 			
 			// Change the position
 			sendCommand("position moves " + MoveUtils.toEngineMoves(ponderMoves));
 			
 			// Think
 			sendCommand("go ponder");
-//			log.debug(Markers.ENGINE, getName() + " - Ponder: Out of synchronized");
+//			log.debug(Markers.ENGINE, getName() + " -    Ponder: Out of synchronized");
 		}
 	}
 
 	public void notifyNewMove(final ImmutableList<Move> moves) {
-//		if(moves.size() <= 2) {
+		if(ponderMove == null) {
 			think(moves);
-//		} else {
-//			stopEngine().subscribe(new MyEmptyObserver<Void>() {
-//				@Override
-//				public void onCompleted() {
-//					engineStopSubscribers.remove(AbstractEngine.this);
-//					think(moves);
-//				}
-//			});
-//		}
+		} else {
+			stopEngine().subscribe(new MyEmptyObserver<Void>() {
+				@Override
+				public void onCompleted() {
+					shouldIgnoreNextMove = false;
+					engineStopSubscribers.remove(AbstractEngine.this);
+					think(moves);
+				}
+			});
+		}
 	}
 	
 	private void think(ImmutableList<Move> moves) {
-		log.debug(Markers.ENGINE, getName() + " - Thinking after moves " + moves.toString());
+		log.debug(Markers.ENGINE, getName() + " -    Thinking after moves " + moves.toString());
 		synchronized (gameMoves) {
-//			log.debug(Markers.ENGINE, getName() + " - Think: In synchronized");
+//			log.debug(Markers.ENGINE, getName() + " -    Think: In synchronized");
 			gameMoves = moves;
 			
 			// Change the position
@@ -161,7 +164,7 @@ public abstract class AbstractEngine implements Engine {
 			final long whiteMillis = whiteClock.getRemainingTime().getMillis();
 			final long blackMillis = blackClock.getRemainingTime().getMillis();
 			sendCommand("go wtime " + whiteMillis + " btime " + blackMillis);
-//			log.debug(Markers.ENGINE, getName() + " - Think: out synchronized");
+//			log.debug(Markers.ENGINE, getName() + " -    Think: out synchronized");
 		}
 	}
 
@@ -169,6 +172,7 @@ public abstract class AbstractEngine implements Engine {
 		return Observable.create(new OnSubscribe<Void>() {
 			@Override
 			public void call(Subscriber<? super Void> engineStopSubscriber) {
+				shouldIgnoreNextMove = true;
 				engineStopSubscribers.add(engineStopSubscriber);
 				sendCommand("stop");
 			}
@@ -184,15 +188,15 @@ public abstract class AbstractEngine implements Engine {
 //			// MoveUtils.toEngineMove(list.get(list.size()-1)).equals(ponderMove);
 //			boolean doPonderHit = false;
 //			if (doPonderHit) {
-//				log.info(Markers.ENGINE, getName() + " - " + ponderMove);
+//				log.info(Markers.ENGINE, getName() + " -    " + ponderMove);
 //				ignoreOutput = false;
-//				log.info(Markers.ENGINE, getName() + " - Ignore output: " + ignoreOutput);
+//				log.info(Markers.ENGINE, getName() + " -    Ignore output: " + ignoreOutput);
 //
 //				sendCommand("ponderhit");
 //			} else {
 //				// TODO: Ignore next bestmove
 ////				ignoreOutput = canPonder;
-//				log.info(Markers.ENGINE, getName() + " - Ignore output: " + ignoreOutput);
+//				log.info(Markers.ENGINE, getName() + " -    Ignore output: " + ignoreOutput);
 //
 //				sendCommand("stop");
 //
@@ -237,10 +241,7 @@ public abstract class AbstractEngine implements Engine {
 	
 
 	private void parseLine(final String line, final PrintStream printStream) {
-		if (!line.isEmpty() && !line.startsWith("info ")) {
-			log.debug(Markers.ENGINE, getName() + " - Parsing line '" + line + "'");
-			// printStream.println(line);
-		}
+		log.debug(Markers.ENGINE_RAW, getName() + " -             " + line);
 		
 		if (line.equals("uciok")) {
 			engineStartedSubscriber.onCompleted();
@@ -279,7 +280,7 @@ public abstract class AbstractEngine implements Engine {
 						}
 					}
 				} catch (IOException e) {
-					log.error(Markers.ENGINE, getName() + " - " + e.getMessage());
+					log.error(Markers.ENGINE, getName() + " -    " + e.getMessage());
 				}
 			}
 		}).start();
@@ -289,9 +290,9 @@ public abstract class AbstractEngine implements Engine {
 		try {
 			input.write(command + "\n");
 			input.flush();
-			log.info(Markers.ENGINE, getName() + " - Sent command: " + command);
+			log.info(Markers.ENGINE, getName() + " -    Sent command: " + command);
 		} catch (IOException e) {
-			log.error(Markers.ENGINE, getName() + " - Unknown error", e);
+			log.error(Markers.ENGINE, getName() + " -    Unknown error", e);
 			e.printStackTrace();
 		}
 	}
@@ -300,7 +301,7 @@ public abstract class AbstractEngine implements Engine {
 		p.destroy();
 		IOUtils.closeQuietly(output);
 		IOUtils.closeQuietly(input);
-		log.info(Markers.ENGINE, getName() + " - Engine down");
+		log.info(Markers.ENGINE, getName() + " -    Engine down");
 	}
 
 	public abstract String getName();
