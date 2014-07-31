@@ -2,7 +2,7 @@
 <configuration debug="true">
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
+			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>
 	</appender>
 
@@ -10,7 +10,7 @@
 		<file>/home/coding/chess.log</file>
 		<append>false</append>
 		<encoder>
-			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
+			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>
 	</appender>
 
@@ -18,7 +18,7 @@
 		<file>/home/coding/chess-engine.log</file>
 		<append>false</append>
 		<encoder>
-			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
+			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
 			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
@@ -33,7 +33,7 @@
 		<append>false</append>
 		<file>/home/coding/chess-move.log</file>
 		<encoder>
-			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
+			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
 			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
@@ -48,7 +48,7 @@
 		<append>false</append>
 		<file>/home/coding/chess-engine-raw.log</file>
 		<encoder>
-			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
+			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
 			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
@@ -63,7 +63,7 @@
 		<append>false</append>
 		<file>/home/coding/chess-game.log</file>
 		<encoder>
-			<pattern>[%d{hh:mm:ss:sss z}] %5p %c{2}: %m%n</pattern>
+			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
 			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">

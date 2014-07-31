@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import lombok.extern.slf4j.Slf4j;
+import nl.arthurvlug.chess.MyThread;
 import nl.arthurvlug.chess.domain.game.Clock;
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.domain.game.Move;
@@ -34,7 +35,7 @@ public abstract class AbstractEngine implements Engine {
 	// Observers
 	private final Set<Subscriber<? super Move>> moveSubscribers = new HashSet<>();
 	private final Set<Subscriber<? super String>> engineOutputSubscribers = new HashSet<>();
-	private Subscriber<? super Void> engineStartedSubscriber;
+	private volatile Subscriber<? super Void> engineStartedSubscriber;
 	private final Set<Subscriber<? super Void>> engineStopSubscribers = new HashSet<>();
 
 	// Process
@@ -51,7 +52,7 @@ public abstract class AbstractEngine implements Engine {
 	// Game
 	private final Clock whiteClock;
 	private final Clock blackClock;
-	private ImmutableList<Move> gameMoves = ImmutableList.<Move> of();
+	private volatile ImmutableList<Move> gameMoves = ImmutableList.<Move> of();
 
 	public AbstractEngine(final String fileName, Clock whiteClock, Clock blackClock) {
 		this.fileName = checkNotNull(fileName);
@@ -131,7 +132,9 @@ public abstract class AbstractEngine implements Engine {
 			sendCommand("position moves " + MoveUtils.toEngineMoves(ponderMoves));
 			
 			// Think
-			sendCommand("go ponder");
+			final long whiteMillis = whiteClock.getRemainingTime().getMillis();
+			final long blackMillis = blackClock.getRemainingTime().getMillis();
+			sendCommand("go ponder wtime " + whiteMillis + " btime " + blackMillis);
 //			log.debug(Markers.ENGINE, getName() + " -    Ponder: Out of synchronized");
 		}
 	}
@@ -140,15 +143,30 @@ public abstract class AbstractEngine implements Engine {
 		if(ponderMove == null) {
 			think(moves);
 		} else {
-			stopEngine().subscribe(new MyEmptyObserver<Void>() {
-				@Override
-				public void onCompleted() {
+			synchronized (gameMoves) {
+				gameMoves = moves;
+				Move lastMove = moves.get(moves.size()-1);
+				if(ponderMove.equals(lastMove.toString())) {
 					shouldIgnoreNextMove = false;
+					ponderMove = null;
 					engineStopSubscribers.remove(AbstractEngine.this);
-					think(moves);
+					sendCommand("ponderhit");
+				} else { 
+					restartEngine(moves);
 				}
-			});
+			}
 		}
+	}
+
+	private void restartEngine(final ImmutableList<Move> moves) {
+		stopEngine().subscribe(new MyEmptyObserver<Void>() {
+			@Override
+			public void onCompleted() {
+				shouldIgnoreNextMove = false;
+				engineStopSubscribers.remove(AbstractEngine.this);
+				think(moves);
+			}
+		});
 	}
 	
 	private void think(ImmutableList<Move> moves) {
@@ -159,13 +177,12 @@ public abstract class AbstractEngine implements Engine {
 			
 			// Change the position
 			sendCommand("position moves " + MoveUtils.toEngineMoves(gameMoves));
-			
-			// Think
-			final long whiteMillis = whiteClock.getRemainingTime().getMillis();
-			final long blackMillis = blackClock.getRemainingTime().getMillis();
-			sendCommand("go wtime " + whiteMillis + " btime " + blackMillis);
-//			log.debug(Markers.ENGINE, getName() + " -    Think: out synchronized");
 		}
+			
+		// Think
+		final long whiteMillis = whiteClock.getRemainingTime().getMillis();
+		final long blackMillis = blackClock.getRemainingTime().getMillis();
+		sendCommand("go wtime " + whiteMillis + " btime " + blackMillis);
 	}
 
 	private Observable<Void> stopEngine() {
@@ -265,12 +282,12 @@ public abstract class AbstractEngine implements Engine {
 		error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 		input = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 
-		runOutputThread(output, System.out);
-		runOutputThread(error, System.err);
+		runOutputThread(output, "output", System.out);
+		runOutputThread(error, "error", System.err);
 	}
 
-	private void runOutputThread(final BufferedReader reader, final PrintStream printStream) {
-		new Thread(new Runnable() {
+	private void runOutputThread(final BufferedReader reader, String streamName, final PrintStream printStream) {
+		new MyThread(new Runnable() {
 			public void run() {
 				try {
 					while (true) {
@@ -283,7 +300,7 @@ public abstract class AbstractEngine implements Engine {
 					log.error(Markers.ENGINE, getName() + " -    " + e.getMessage());
 				}
 			}
-		}).start();
+		}, "Engine " + getName() + " - " + streamName).start();
 	}
 
 	public void sendCommand(String command) {

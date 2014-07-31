@@ -8,6 +8,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.BlackPlayer;
+import nl.arthurvlug.chess.MyThread;
 import nl.arthurvlug.chess.WhitePlayer;
 import nl.arthurvlug.chess.domain.board.Board;
 import nl.arthurvlug.chess.domain.pieces.Color;
@@ -54,7 +55,7 @@ public class Game {
 		this.board = checkNotNull(gameBuilder.initialBoard);
 	}
 
-	public List<Move> getMoves() {
+	public ImmutableList<Move> immutableMoveList() {
 		return ImmutableList.copyOf(moves);
 	}
 
@@ -88,7 +89,7 @@ public class Game {
 	}
 
 	private void startClockMonitor() {
-		new Thread(new Runnable() {
+		new MyThread(new Runnable() {
 			public void run() {
 				while(!gameFinished) {
 					if(whiteClock.isTimeUp() || blackClock.isTimeUp()) {
@@ -96,7 +97,7 @@ public class Game {
 					}
 				}
 			}
-		}).start();
+		}, "Chess clock monitor").start();
 	}
 
 	private void subscribeToMove(final Player player) {
@@ -110,10 +111,10 @@ public class Game {
 				
 				if(move instanceof GameFinished) {
 					finishGame();
+				} else {
+					getToMoveClock().startClock();
+					toMove.notifyNewMove(immutableMoveList());
 				}
-				
-//				if(!gameFinished) {
-//				}
 			}
 
 			@Override
@@ -137,11 +138,6 @@ public class Game {
 		moves.add(move);
 		toMove = other(toMove);
 		eventBus.post(new MoveAppliedEvent());
-		
-//		log.debug("Think: " + getToMove().getName());
-		toMove.notifyNewMove(ImmutableList.<Move> builder().addAll(moves).build());
-
-		getToMoveClock().startClock();
 	}
 
 	private Color color(Player player) {

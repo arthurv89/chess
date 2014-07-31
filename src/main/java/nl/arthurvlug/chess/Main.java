@@ -30,12 +30,15 @@ public class Main {
 	}
 
 	private void addShutdownHook() {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			public void run() {
-				log.info("Shutting down...");
-				eventBus.post(new ShutdownEvent());
-			}
-		});
+		Runtime.getRuntime().addShutdownHook(
+			new MyThread(new Runnable() {
+				@Override
+				public void run() {
+					log.info("Shutting down...");
+					eventBus.post(new ShutdownEvent());
+				}
+			}, "Shutdown hook")
+		);
 	}
 
 	private void bindEventHandlers() {

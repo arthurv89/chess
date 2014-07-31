@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
+import nl.arthurvlug.chess.MyThread;
 import nl.arthurvlug.chess.domain.game.Clock;
 import nl.arthurvlug.chess.events.EventHandler;
 import nl.arthurvlug.chess.events.GameFinishedEvent;
@@ -49,14 +50,14 @@ public class ClockPane extends JPanel {
 	}
 
 	private void startClockThread() {
-		new Thread(new Runnable() {
+		new MyThread(new Runnable() {
 
 			public void run() {
 				while(runThread) {
 					repaint();
 				}
 			}
-		}).start();
+		}, "Clock GUI repainter").start();
 	}
 
 	private String clockString(Clock clock) {

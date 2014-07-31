@@ -31,7 +31,7 @@ public class MovesPane extends JPanel {
 		if(game != null) {
 			textArea.setText("");
 			textArea.setLineWrap(true);
-			for(Move move : game.getMoves()) {
+			for(Move move : game.immutableMoveList()) {
 				textArea.append(move.toString() + " ");
 			}
 		}
