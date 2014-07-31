@@ -83,12 +83,6 @@ public abstract class AbstractEngine implements Engine {
 		});
 	}
 
-//	public void startThinking() {
-//		sendCommand("go"
-//				+ " wtime " + whiteClock.getRemainingTime().getMillis()
-//				+ " btime " + blackClock.getRemainingTime().getMillis());
-//	}
-
 	private void handleBestMove(String line) {
 		final StringTokenizer tokenizer = new StringTokenizer(line);
 
@@ -96,20 +90,23 @@ public abstract class AbstractEngine implements Engine {
 		final String sMove = tokenizer.nextToken();
 		final Move move = MoveUtils.toMove(sMove);
 
-		if(tokenizer.hasMoreTokens() && !shouldIgnoreNextMove) {
-			tokenizer.nextToken(); // Skip "ponder"
-
-			// Think with position after the bestMove and the ponderMove
-			String ponderMove = tokenizer.nextToken();
-			ponder(move, ponderMove);
-
-			for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
-				log.debug(Markers.ENGINE, getName() + " -    Notifying listener for move " + move);
-				if (move.getFrom().equals(move.getTo())) {
-					moveSubscriber.onNext(new GameFinished());
-				} else {
+		if(tokenizer.hasMoreTokens()) {
+			if(!shouldIgnoreNextMove) {
+				tokenizer.nextToken(); // Skip "ponder"
+	
+				// Think with position after the bestMove and the ponderMove
+				String ponderMove = tokenizer.nextToken();
+				ponder(move, ponderMove);
+	
+				for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
+					log.debug(Markers.ENGINE, getName() + " -    Notifying listener for move " + move);
 					moveSubscriber.onNext(move);
 				}
+			}
+		} else {
+			for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
+				log.debug(Markers.ENGINE, getName() + " -    Game finished!");
+				moveSubscriber.onNext(new GameFinished(move));
 			}
 		}
 		
@@ -119,6 +116,7 @@ public abstract class AbstractEngine implements Engine {
 	}
 
 	private void ponder(Move lastMove, String ponderMove) {
+		log.debug(Markers.ENGINE, getName() + " -    Ponder: wait");
 		synchronized (gameMoves) {
 			this.ponderMove = ponderMove;
 			final ImmutableList<Move> ponderMoves = ImmutableList.<Move> builder()
@@ -135,7 +133,7 @@ public abstract class AbstractEngine implements Engine {
 			final long whiteMillis = whiteClock.getRemainingTime().getMillis();
 			final long blackMillis = blackClock.getRemainingTime().getMillis();
 			sendCommand("go ponder wtime " + whiteMillis + " btime " + blackMillis);
-//			log.debug(Markers.ENGINE, getName() + " -    Ponder: Out of synchronized");
+			log.debug(Markers.ENGINE, getName() + " -    Ponder: Out of synchronized");
 		}
 	}
 
@@ -196,38 +194,6 @@ public abstract class AbstractEngine implements Engine {
 		});
 	}
 
-//	private void think(final ImmutableList<Move> moves) {
-//		final long whiteMillis = whiteClock.getRemainingTime().getMillis();
-//		final long blackMillis = blackClock.getRemainingTime().getMillis();
-//		if (whiteMillis > 0 && blackMillis > 0) {
-//			// boolean doPonderhit = canPonder && !list.isEmpty()
-//			// &&
-//			// MoveUtils.toEngineMove(list.get(list.size()-1)).equals(ponderMove);
-//			boolean doPonderHit = false;
-//			if (doPonderHit) {
-//				log.info(Markers.ENGINE, getName() + " -    " + ponderMove);
-//				ignoreOutput = false;
-//				log.info(Markers.ENGINE, getName() + " -    Ignore output: " + ignoreOutput);
-//
-//				sendCommand("ponderhit");
-//			} else {
-//				// TODO: Ignore next bestmove
-////				ignoreOutput = canPonder;
-//				log.info(Markers.ENGINE, getName() + " -    Ignore output: " + ignoreOutput);
-//
-//				sendCommand("stop");
-//
-//				sendCommand("position moves " + MoveUtils.toEngineMoves(moves));
-//			}
-//
-//			if (moves.size() < 2) {
-//				sendCommand("go wtime " + whiteMillis + " btime " + blackMillis);
-//			} else {
-//				sendCommand("go ponder wtime " + whiteMillis + " btime " + blackMillis);
-//			}
-//		}
-//	}
-	
 	
 	
 

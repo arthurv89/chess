@@ -73,7 +73,6 @@ public class Game {
 		subscribeToMove(blackPlayer);
 		
 		Observable.merge(whitePlayingEngineObservable, blackPlayingEngineObservable).subscribe(new MyEmptyObserver<Void>() {
-//		whitePlayingEngineObservable.subscribe(new MyEmptyObserver<Void>() {
 			@Override
 			public void onCompleted() {
 				startClockMonitor();
@@ -81,9 +80,6 @@ public class Game {
 				whitePlayer.notifyNewMove(ImmutableList.<Move> of());
 				
 				whiteClock.startClock();
-
-//				log.debug("Think: " + color(toMove));
-//				toMove.think(ImmutableList.<Move> of());
 			}
 		});
 	}
@@ -104,14 +100,14 @@ public class Game {
 		player.registerMoveSubscriber().subscribe(new MyEmptyObserver<Move>() {
 			public void onNext(Move move) {
 				getToMoveClock().stopClock();
-//				log.debug("Time remaining: " + whiteClock.getRemainingTime().getSecondOfMinute() + " - " + blackClock.getRemainingTime().getSecondOfMinute());
 				
-//				log.debug(Markers.ENGINE, player.getName() + " is applying move " + move);
-				applyMove(move);
 				
 				if(move instanceof GameFinished) {
+					GameFinished gameFinishedMove = (GameFinished) move;
+					applyMove(gameFinishedMove.getMove());
 					finishGame();
 				} else {
+					applyMove(move);
 					getToMoveClock().startClock();
 					toMove.notifyNewMove(immutableMoveList());
 				}
