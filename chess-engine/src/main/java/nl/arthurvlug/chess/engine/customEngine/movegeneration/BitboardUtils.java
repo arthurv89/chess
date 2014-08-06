@@ -1,8 +1,8 @@
 package nl.arthurvlug.chess.engine.customEngine.movegeneration;
 
-import nl.arthurvlug.chess.domain.board.Coordinates;
-import nl.arthurvlug.chess.domain.board.pieces.PieceType;
-import nl.arthurvlug.chess.domain.game.Move;
+import nl.arthurvlug.chess.utils.domain.board.Coordinates;
+import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.domain.game.Move;
 
 import com.atlassian.fugue.Option;
 

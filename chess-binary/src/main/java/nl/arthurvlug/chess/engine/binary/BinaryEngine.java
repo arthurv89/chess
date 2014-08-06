@@ -6,7 +6,7 @@ import java.io.OutputStream;
 
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.UCIEngine;
-import nl.arthurvlug.chess.util.Markers;
+import nl.arthurvlug.chess.utils.Markers;
 
 import com.google.common.base.Preconditions;
 

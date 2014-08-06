@@ -2,8 +2,8 @@ package nl.arthurvlug.chess.engine.ace.movegeneration;
 
 import java.util.function.Function;
 
-import nl.arthurvlug.chess.domain.board.Coordinates;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
+import nl.arthurvlug.chess.utils.domain.board.Coordinates;
 
 import com.atlassian.fugue.Option;
 

@@ -3,7 +3,7 @@ package nl.arthurvlug.chess.engine.ace.evaluation;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.arthurvlug.chess.domain.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
 
 public class ACEConstants {
 

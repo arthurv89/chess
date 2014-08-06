@@ -2,12 +2,12 @@ package nl.arthurvlug.chess.engine.ace.evaluation;
 
 import java.util.Map;
 
-import nl.arthurvlug.chess.domain.board.pieces.PieceType;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.Evaluation;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
+import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
 
 import com.google.common.base.Function;
 
