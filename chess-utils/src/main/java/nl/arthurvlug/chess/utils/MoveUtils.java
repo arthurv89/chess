@@ -2,11 +2,11 @@ package nl.arthurvlug.chess.utils;
 
 import java.util.List;
 
-import nl.arthurvlug.chess.utils.domain.board.Coordinates;
-import nl.arthurvlug.chess.utils.domain.board.pieces.Color;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceUtils;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.board.Coordinates;
+import nl.arthurvlug.chess.utils.board.pieces.Color;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.board.pieces.PieceUtils;
+import nl.arthurvlug.chess.utils.game.Move;
 
 import com.atlassian.fugue.Option;
 import com.google.common.base.Function;

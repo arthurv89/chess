@@ -1,8 +1,8 @@
-package nl.arthurvlug.chess.utils.domain.board;
+package nl.arthurvlug.chess.utils.board;
 
-import nl.arthurvlug.chess.utils.domain.board.pieces.Color;
-import nl.arthurvlug.chess.utils.domain.board.pieces.ColoredPiece;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.board.pieces.Color;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import com.atlassian.fugue.Option;
 import com.google.common.collect.ImmutableList;

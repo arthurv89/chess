@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.gui.domain.game;
+package nl.arthurvlug.chess.gui.game;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -7,23 +7,24 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import nl.arthurvlug.chess.gui.domain.board.InitialBoard;
-import nl.arthurvlug.chess.gui.domain.game.player.BlackPlayer;
-import nl.arthurvlug.chess.gui.domain.game.player.Player;
-import nl.arthurvlug.chess.gui.domain.game.player.WhitePlayer;
+import nl.arthurvlug.chess.engine.game.Clock;
+import nl.arthurvlug.chess.gui.board.InitialBoard;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.gui.events.EventHandler;
 import nl.arthurvlug.chess.gui.events.GameFinishedEvent;
 import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.events.StartupEvent;
+import nl.arthurvlug.chess.gui.game.player.BlackPlayer;
+import nl.arthurvlug.chess.gui.game.player.Player;
+import nl.arthurvlug.chess.gui.game.player.WhitePlayer;
 import nl.arthurvlug.chess.utils.Markers;
 import nl.arthurvlug.chess.utils.MyEmptyObserver;
 import nl.arthurvlug.chess.utils.NamedThread;
-import nl.arthurvlug.chess.utils.domain.board.Board;
-import nl.arthurvlug.chess.utils.domain.board.pieces.Color;
-import nl.arthurvlug.chess.utils.domain.game.GameFinished;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.board.Board;
+import nl.arthurvlug.chess.utils.board.pieces.Color;
+import nl.arthurvlug.chess.utils.game.GameFinished;
+import nl.arthurvlug.chess.utils.game.Move;
 import rx.Observable;
 
 import com.google.common.collect.ImmutableList;

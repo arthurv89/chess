@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.utils.domain.game;
+package nl.arthurvlug.chess.engine.game;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;

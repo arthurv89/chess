@@ -8,8 +8,8 @@ import java.util.List;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.game.Move;
 
 import org.junit.Test;
 

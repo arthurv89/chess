@@ -4,8 +4,8 @@ import java.awt.FontFormatException;
 import java.io.IOException;
 
 import nl.arthurvlug.chess.gui.board.AbstractChessFont;
-import nl.arthurvlug.chess.utils.domain.board.pieces.ColoredPiece;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceUtils;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.board.pieces.PieceUtils;
 
 import com.atlassian.fugue.Option;
 

@@ -1,10 +1,10 @@
-package nl.arthurvlug.chess.utils.domain.game;
+package nl.arthurvlug.chess.utils.game;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import nl.arthurvlug.chess.utils.MoveUtils;
-import nl.arthurvlug.chess.utils.domain.board.Coordinates;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.board.Coordinates;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import com.atlassian.fugue.Option;
 

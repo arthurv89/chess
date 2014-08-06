@@ -1,6 +1,6 @@
 package nl.arthurvlug.chess.engine;
 
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.game.Move;
 import rx.Observable;
 
 public interface Engine {

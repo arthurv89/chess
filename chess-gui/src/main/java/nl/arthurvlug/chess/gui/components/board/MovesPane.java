@@ -5,11 +5,11 @@ import java.awt.Graphics;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-import nl.arthurvlug.chess.gui.domain.game.Game;
 import nl.arthurvlug.chess.gui.events.EventHandler;
 import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.gui.game.Game;
+import nl.arthurvlug.chess.utils.game.Move;
 
 import com.google.common.eventbus.Subscribe;
 

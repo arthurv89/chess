@@ -2,9 +2,9 @@ package nl.arthurvlug.chess.gui.components.board;
 
 import lombok.AllArgsConstructor;
 import nl.arthurvlug.chess.engine.UCIEngine;
-import nl.arthurvlug.chess.gui.domain.game.Clock;
-import nl.arthurvlug.chess.gui.domain.game.player.Player;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.engine.game.Clock;
+import nl.arthurvlug.chess.gui.game.player.Player;
+import nl.arthurvlug.chess.utils.game.Move;
 import rx.Observable;
 
 import com.google.common.collect.ImmutableList;

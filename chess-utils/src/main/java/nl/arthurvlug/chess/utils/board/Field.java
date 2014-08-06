@@ -1,9 +1,9 @@
-package nl.arthurvlug.chess.utils.domain.board;
+package nl.arthurvlug.chess.utils.board;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Value;
-import nl.arthurvlug.chess.utils.domain.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
 import com.atlassian.fugue.Option;
 

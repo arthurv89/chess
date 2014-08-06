@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.utils.domain.board.pieces;
+package nl.arthurvlug.chess.utils.board.pieces;
 
 import java.util.Map;
 import java.util.Map.Entry;

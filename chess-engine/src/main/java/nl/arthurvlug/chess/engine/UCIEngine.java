@@ -11,13 +11,13 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import lombok.extern.slf4j.Slf4j;
-import nl.arthurvlug.chess.gui.domain.game.Clock;
+import nl.arthurvlug.chess.engine.game.Clock;
+import nl.arthurvlug.chess.engine.game.GameFinished;
 import nl.arthurvlug.chess.utils.Markers;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.MyEmptyObserver;
 import nl.arthurvlug.chess.utils.NamedThread;
-import nl.arthurvlug.chess.utils.domain.game.GameFinished;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.game.Move;
 
 import org.apache.commons.io.IOUtils;
 

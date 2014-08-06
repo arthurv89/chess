@@ -4,8 +4,8 @@ import java.util.List;
 
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.game.Move;
 
 public class ACEBoard extends AbstractEngineBoard {
 	public int toMove;

@@ -10,8 +10,8 @@ import java.io.IOException;
 import javax.swing.JPanel;
 
 import nl.arthurvlug.chess.gui.board.AbstractChessFont;
-import nl.arthurvlug.chess.gui.domain.game.Game;
-import nl.arthurvlug.chess.utils.domain.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.gui.game.Game;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
 import com.atlassian.fugue.Option;
 

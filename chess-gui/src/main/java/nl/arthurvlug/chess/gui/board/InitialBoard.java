@@ -1,16 +1,16 @@
-package nl.arthurvlug.chess.gui.domain.board;
+package nl.arthurvlug.chess.gui.board;
 
-import static nl.arthurvlug.chess.utils.domain.board.pieces.Color.BLACK;
-import static nl.arthurvlug.chess.utils.domain.board.pieces.Color.WHITE;
-import static nl.arthurvlug.chess.utils.domain.board.pieces.PieceType.BISHOP;
-import static nl.arthurvlug.chess.utils.domain.board.pieces.PieceType.KING;
-import static nl.arthurvlug.chess.utils.domain.board.pieces.PieceType.KNIGHT;
-import static nl.arthurvlug.chess.utils.domain.board.pieces.PieceType.PAWN;
-import static nl.arthurvlug.chess.utils.domain.board.pieces.PieceType.QUEEN;
-import static nl.arthurvlug.chess.utils.domain.board.pieces.PieceType.ROOK;
-import nl.arthurvlug.chess.utils.domain.board.Coordinates;
-import nl.arthurvlug.chess.utils.domain.board.InitializedBoard;
-import nl.arthurvlug.chess.utils.domain.board.pieces.ColoredPiece;
+import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
+import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.BISHOP;
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KING;
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KNIGHT;
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.PAWN;
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.QUEEN;
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.ROOK;
+import nl.arthurvlug.chess.utils.board.Coordinates;
+import nl.arthurvlug.chess.utils.board.InitializedBoard;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
 import com.google.common.collect.ImmutableMap;
 

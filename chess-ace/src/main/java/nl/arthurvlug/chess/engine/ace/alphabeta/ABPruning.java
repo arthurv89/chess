@@ -7,7 +7,7 @@ import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.EvaluatedMove;
 import nl.arthurvlug.chess.engine.customEngine.Evaluation;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.game.Move;
 
 public class ABPruning {
 	public Move think(final ACEBoard board, final int toMove, final int depth, final BoardEvaluator evaluator, final int alpha, final int beta) {

@@ -3,7 +3,7 @@ package nl.arthurvlug.chess.gui.events;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Value;
-import nl.arthurvlug.chess.gui.domain.game.player.Player;
+import nl.arthurvlug.chess.gui.game.player.Player;
 
 @AllArgsConstructor
 @Value

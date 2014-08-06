@@ -1,11 +1,11 @@
-package nl.arthurvlug.chess.utils.domain.board;
+package nl.arthurvlug.chess.utils.board;
 
 import java.util.ArrayList;
 
 import lombok.Getter;
-import nl.arthurvlug.chess.utils.domain.board.pieces.ColoredPiece;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.game.Move;
 
 import com.atlassian.fugue.Option;
 import com.google.common.base.Function;

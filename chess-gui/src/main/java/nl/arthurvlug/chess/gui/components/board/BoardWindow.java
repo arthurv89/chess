@@ -7,12 +7,12 @@ import java.io.IOException;
 import javax.swing.JOptionPane;
 
 import nl.arthurvlug.chess.gui.components.Window;
-import nl.arthurvlug.chess.gui.domain.game.Game;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.gui.events.EventHandler;
 import nl.arthurvlug.chess.gui.events.GameFinishedEvent;
 import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
+import nl.arthurvlug.chess.gui.game.Game;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;

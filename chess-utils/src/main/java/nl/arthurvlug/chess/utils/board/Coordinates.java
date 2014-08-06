@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.utils.domain.board;
+package nl.arthurvlug.chess.utils.board;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;

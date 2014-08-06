@@ -5,7 +5,7 @@ import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import org.junit.Before;
 import org.junit.Test;

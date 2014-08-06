@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import lombok.AllArgsConstructor;
-import nl.arthurvlug.chess.utils.domain.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
 import com.atlassian.fugue.Option;
 

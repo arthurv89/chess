@@ -2,12 +2,12 @@ package nl.arthurvlug.chess.gui;
 
 import nl.arthurvlug.chess.engine.ace.ACE;
 import nl.arthurvlug.chess.engine.binary.FruitEngine;
+import nl.arthurvlug.chess.engine.game.Clock;
 import nl.arthurvlug.chess.gui.components.board.ClockPane;
 import nl.arthurvlug.chess.gui.components.board.MovesPane;
-import nl.arthurvlug.chess.gui.domain.game.Clock;
-import nl.arthurvlug.chess.gui.domain.game.Game;
-import nl.arthurvlug.chess.gui.domain.game.player.BlackPlayer;
-import nl.arthurvlug.chess.gui.domain.game.player.WhitePlayer;
+import nl.arthurvlug.chess.gui.game.Game;
+import nl.arthurvlug.chess.gui.game.player.BlackPlayer;
+import nl.arthurvlug.chess.gui.game.player.WhitePlayer;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;

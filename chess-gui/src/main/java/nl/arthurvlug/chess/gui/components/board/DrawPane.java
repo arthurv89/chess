@@ -7,8 +7,8 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
-import nl.arthurvlug.chess.gui.domain.game.Game;
-import nl.arthurvlug.chess.utils.domain.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.gui.game.Game;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
 import com.atlassian.fugue.Option;
 import com.google.inject.Inject;

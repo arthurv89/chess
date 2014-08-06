@@ -2,7 +2,7 @@ package nl.arthurvlug.chess.engine.ace.board;
 
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
-import nl.arthurvlug.chess.utils.domain.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 public class InitialEngineBoard extends ACEBoard {
 	public InitialEngineBoard() {

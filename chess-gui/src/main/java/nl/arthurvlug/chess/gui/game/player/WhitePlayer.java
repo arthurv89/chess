@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.gui.domain.game.player;
+package nl.arthurvlug.chess.gui.game.player;
 
 import nl.arthurvlug.chess.engine.UCIEngine;
 import nl.arthurvlug.chess.gui.components.board.ComputerPlayer;

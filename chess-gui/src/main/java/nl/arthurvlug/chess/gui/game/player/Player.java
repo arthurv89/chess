@@ -1,6 +1,6 @@
-package nl.arthurvlug.chess.gui.domain.game.player;
+package nl.arthurvlug.chess.gui.game.player;
 
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.game.Move;
 import rx.Observable;
 
 import com.google.common.collect.ImmutableList;

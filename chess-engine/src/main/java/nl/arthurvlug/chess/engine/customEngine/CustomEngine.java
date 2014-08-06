@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.UCIEngine;
 import nl.arthurvlug.chess.utils.NamedThread;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.game.Move;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;

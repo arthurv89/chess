@@ -8,7 +8,7 @@ import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.CustomEngine;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.game.Move;
 
 public class ACE extends CustomEngine {
 

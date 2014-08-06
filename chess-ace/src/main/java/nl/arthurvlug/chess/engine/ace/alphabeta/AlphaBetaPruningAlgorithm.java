@@ -11,8 +11,8 @@ import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.CheckmateScore;
 import nl.arthurvlug.chess.engine.customEngine.Evaluation;
-import nl.arthurvlug.chess.utils.domain.board.pieces.ColoredPiece;
-import nl.arthurvlug.chess.utils.domain.game.Move;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.game.Move;
 
 public class AlphaBetaPruningAlgorithm {
 	private static final int WHITE_WINS = Integer.MAX_VALUE;
