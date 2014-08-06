@@ -1,12 +1,11 @@
-package nl.arthurvlug.chess.engine.customEngine.ace;
+package nl.arthurvlug.chess.engine.ace;
 
 import java.util.List;
 
 import nl.arthurvlug.chess.domain.game.Move;
+import nl.arthurvlug.chess.engine.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.customEngine.CustomEngine;
-import nl.arthurvlug.chess.engine.customEngine.EngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
-import nl.arthurvlug.chess.engine.customEngine.alphabeta.AlphaBetaPruningAlgorithm;
 
 public class ACE extends CustomEngine {
 
@@ -17,7 +16,7 @@ public class ACE extends CustomEngine {
 
 	@Override
 	protected Move think(List<String> moveList, ThinkingParams thinkingParams) {
-		EngineBoard engineBoard = new InitialEngineBoard();
+		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.apply(moveList);
 		return new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator()).think(engineBoard);
 	}

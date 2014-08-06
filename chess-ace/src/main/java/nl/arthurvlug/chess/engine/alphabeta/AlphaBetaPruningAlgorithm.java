@@ -1,19 +1,18 @@
-package nl.arthurvlug.chess.engine.customEngine.alphabeta;
+package nl.arthurvlug.chess.engine.alphabeta;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.text.Position;
 
-import nl.arthurvlug.chess.domain.board.Field;
 import nl.arthurvlug.chess.domain.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.domain.game.Move;
+import nl.arthurvlug.chess.engine.EngineUtils;
+import nl.arthurvlug.chess.engine.ace.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.CheckmateScore;
-import nl.arthurvlug.chess.engine.customEngine.EngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.Evaluation;
-import nl.arthurvlug.chess.engine.customEngine.movegeneration.MoveGenerator;
+import nl.arthurvlug.chess.engine.movegeneration.MoveGenerator;
 
 public class AlphaBetaPruningAlgorithm {
 	private static final int WHITE_WINS = Integer.MAX_VALUE;
@@ -26,7 +25,7 @@ public class AlphaBetaPruningAlgorithm {
 		this.evaluator = evaluator;
 	}
 
-	public Move think(EngineBoard engineBoard) {
+	public Move think(ACEBoard engineBoard) {
 		nodesSearched = 0;
 		
 		int depth = 1;
@@ -34,34 +33,26 @@ public class AlphaBetaPruningAlgorithm {
 		return move;
 	}
 	
-	private Move alphaBetaRoot(final EngineBoard board, final int depth) {
+	private Move alphaBetaRoot(final ACEBoard board, final int depth) {
 		int alpha = BLACK_WINS;
 		final int beta = WHITE_WINS;
 		
-		EngineBoard bestEngineBoard = new EngineBoard(Integer.MIN_VALUE);
-		List<EngineBoard> succ = new ArrayList<>();
+		ACEBoard bestEngineBoard = new ACEBoard(Integer.MIN_VALUE);
+		List<ACEBoard> succ = new ArrayList<>();
 		
-		Color succColor = board.toMove.other();
-		
-		for(int fieldNo=0; fieldNo<64; fieldNo++) {
-			Field field = board.getField(fieldNo);
-			if(field.getPiece().isEmpty()) {
-				continue;
-			}
+		int succColor = EngineUtils.otherToMove(board.toMove);
+
+		List<Move> copyEngineBoardMoves = MoveGenerator.generateMoves(board);
+		for(Move move : copyEngineBoardMoves) {
+			ColoredPiece piece = move.get();
 			
-			ColoredPiece piece = field.getPiece().get();
-			if(piece.getColor() != board.toMove) {
-				continue;
-			}
-			
-			for(Move moves : pieceMoves(field, piece)) {
-				EngineBoard copyEngineBoard = new EngineBoard(board).move(move);
-				List<Move> copyEngineBoardMoves = MoveGenerator.generateMoves(copyEngineBoard);
+			for(Move move : copyEngineBoardMoves) {
+				ACEBoard copyEngineBoard = new ACEBoard(board).move(move);
 				
-				if(succColor.isWhite() && whiteCheck(board, copyEngineBoardMoves)) {
+				if(EngineUtils.isWhite(succColor) && whiteCheck(board, copyEngineBoardMoves)) {
 					continue;
 				}
-				if(succColor.isBlack() && blackCheck(board, copyEngineBoardMoves)) {
+				if(EngineUtils.isBlack(succColor) && blackCheck(board, copyEngineBoardMoves)) {
 					continue;
 				}
 				
@@ -74,8 +65,8 @@ public class AlphaBetaPruningAlgorithm {
 		
 		succ.sort(scoreComparator);
 		
-		for(EngineBoard engineBoard : succ) {
-			Score value = -alphaBeta(engineBoard, 1, -beta, -alpha);
+		for(ACEBoard engineBoard : succ) {
+			Score value = -alphaBeta(engineBoard, succColor, 1, -beta, -alpha);
 			
 			if(value instanceof CheckmateScore) {
 				return engineBoard.lastMove();
@@ -88,19 +79,19 @@ public class AlphaBetaPruningAlgorithm {
 		alpha = BLACK_WINS;
 		succ.positions.sort();
 		
-		for(EngineBoard engineBoard : succ) {
+		for(ACEBoard engineBoard : succ) {
 			currentEngineBoard++;
 			int value = alphaBetaRoot(pos, plyDepthReached, -beta, -alpha);
 			pos.score = value;
 			if(value > alpha) {
 				alpha = value;
-				bestEngineBoard = new EngineBoard(engineBoard);
+				bestEngineBoard = new ACEBoard(engineBoard);
 			}
 		}
 		return bestEngineBoard.lastMove();
 	}
 
-	private int alphaBeta(EngineBoard engineBoard, Color toMove, int depth, int alpha, int beta) {
+	private int alphaBeta(ACEBoard engineBoard, int succColor, int depth, int alpha, int beta) {
 		nodesSearched++;
 		
 		if(engineBoard.fiftyMove >= 50 || engineBoard.repeatedMove >= 3) {
@@ -109,14 +100,14 @@ public class AlphaBetaPruningAlgorithm {
 		
 		if(depth == 0) {
 			Evaluation score = evaluator.evaluate(engineBoard);
-			return sideToMoveScore(score, toMove);
+			return sideToMoveScore(score, succColor);
 		}
 		
 		List<Position> positions = evaluateMoves(engineBoard);
 		if(engineBoard.whiteCheck() || engineBoard.blackCheck() || positions.size > 0) {
-			if(isMate(toMove, engineBoard, engineBoard.whiteCheck() || engineBoard.blackCheck(), engineBoard.stalemate())) {
+			if(isMate(succColor, engineBoard, engineBoard.whiteCheck() || engineBoard.blackCheck(), engineBoard.stalemate())) {
 				if(engineBoard.blackMate()) {
-					if(toMove.isBlack()) {
+					if(succColor.isBlack()) {
 						return BLACK_WINS - depth;
 					} else {
 						return WHITE_WINS + depth;
@@ -124,7 +115,7 @@ public class AlphaBetaPruningAlgorithm {
 				}
 				
 				if(engineBoard.whiteMate()) {
-					if(toMove.isBlack()) {
+					if(succColor.isBlack()) {
 						return WHITE_WINS + depth;
 					} else {
 						return BLACK_WINS - depth;
@@ -137,18 +128,18 @@ public class AlphaBetaPruningAlgorithm {
 		
 		sort(positions);
 		for(Position move : positions) {
-			EngineBoard copyEngineBoard = engineBoard.copy(move);
+			ACEBoard copyEngineBoard = engineBoard.copy(move);
 			generateMoves(engineBoard);
 			
-			if(engineBoard.blackCheck() && toMove.isBlack()) {
+			if(engineBoard.blackCheck() && succColor.isBlack()) {
 				continue; // Invalid move
 			}
 			
-			if(engineBoard.whiteCheck() && toMove.isWhite()) {
+			if(engineBoard.whiteCheck() && succColor.isWhite()) {
 				continue; // Invalid move
 			}
 			
-			int value = -alphaBeta(copyEngineBoard, toMove.other(), depth-1, -beta, -alpha);
+			int value = -alphaBeta(copyEngineBoard, succColor.other(), depth-1, -beta, -alpha);
 			
 			if(value >= beta) {
 				// Beta cut-off
@@ -159,5 +150,4 @@ public class AlphaBetaPruningAlgorithm {
 		}
 		return alpha;		
 	}
-//
 }

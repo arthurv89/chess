@@ -1,12 +1,13 @@
-package nl.arthurvlug.chess.engine.customEngine;
+package nl.arthurvlug.chess.engine.ace;
 
 import java.util.List;
 
 import nl.arthurvlug.chess.domain.board.pieces.PieceType;
 import nl.arthurvlug.chess.domain.game.Move;
 import nl.arthurvlug.chess.engine.EngineConstants;
+import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 
-public class EngineBoard {
+public class ACEBoard extends AbstractEngineBoard {
 	public int toMove;
 	
 	public long black_kings;
@@ -21,11 +22,6 @@ public class EngineBoard {
 	public long black_knights;
 	public long white_pawns;
 	public long black_pawns;
-
-	
-	// TODO: Fix for other pieces
-//	long whiteOccupiedSquares = white_pawns | white_knights | white_bishops | white_queens | white_kings;
-//	long blackOccupiedSquares = black_pawns | black_knights | black_bishops | black_queens | black_kings;
 	
 	public int minValue;
 
@@ -40,28 +36,20 @@ public class EngineBoard {
 
 
 
-	public EngineBoard(int toMove) {
+	public ACEBoard(int toMove) {
 		this();
 		this.toMove = toMove;
-		finished();
+		finalizeBitboards();
 	}
 
-	public EngineBoard(EngineBoard board, int toMove) {
+	public ACEBoard(ACEBoard board, int toMove) {
 		this(board);
 		this.toMove = toMove;
-		finished();
+		finalizeBitboards();
 	}
 	
-	public EngineBoard(EngineBoard board) {
+	public ACEBoard(ACEBoard board) {
 		this();
-		whiteOccupiedSquares = board.whiteOccupiedSquares;
-		blackOccupiedSquares = board.blackOccupiedSquares;
-		enemy_board = board.enemy_board;
-		occupied_board = board.occupied_board;
-		fullBoard = board.fullBoard;
-		enemy_and_empty_board = board.enemy_and_empty_board;
-		empty_board = board.empty_board;
-
 		toMove = board.toMove;
 		
 		black_kings = board.black_kings;
@@ -78,7 +66,7 @@ public class EngineBoard {
 		black_pawns = board.black_pawns;
 	}
 
-	private EngineBoard() {
+	private ACEBoard() {
 	}
 
 	public void apply(List<String> moveList) {
@@ -86,7 +74,7 @@ public class EngineBoard {
 		
 	}
 
-	public EngineBoard move(Move move) {
+	public ACEBoard move(Move move) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -141,7 +129,7 @@ public class EngineBoard {
 		}
 	}
 	
-	public void finished() {
+	public void finalizeBitboards() {
 		whiteOccupiedSquares = white_pawns | white_knights | white_bishops | white_rooks | white_queens | white_kings;
 		blackOccupiedSquares = black_pawns | black_knights | black_bishops | black_rooks | black_queens | black_kings;
 		

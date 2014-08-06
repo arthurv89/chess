@@ -1,17 +1,16 @@
-package nl.arthurvlug.chess.engine.customEngine.ace;
+package nl.arthurvlug.chess.engine.ace;
 
 import nl.arthurvlug.chess.domain.board.pieces.PieceType;
 import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.customEngine.EngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 
-public class InitialEngineBoard extends EngineBoard {
+public class InitialEngineBoard extends ACEBoard {
 	public InitialEngineBoard() {
 		super(initialEngineBoard());
 	}
 
-	private static EngineBoard initialEngineBoard() {
-		EngineBoard engineBoard = new EngineBoard(EngineConstants.WHITE);
+	private static ACEBoard initialEngineBoard() {
+		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
 		
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, BitboardUtils.toIndex("a1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, BitboardUtils.toIndex("b1"));

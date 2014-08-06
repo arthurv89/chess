@@ -1,10 +1,10 @@
-package nl.arthurvlug.chess.engine.customEngine.ace;
+package nl.arthurvlug.chess.engine.ace;
 
 import java.util.Map;
 
 import nl.arthurvlug.chess.domain.board.pieces.PieceType;
+import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
-import nl.arthurvlug.chess.engine.customEngine.EngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.Evaluation;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 
@@ -13,8 +13,8 @@ import com.google.common.base.Function;
 public class SimplePieceEvaluator implements BoardEvaluator {
 	private final static Map<PieceType, Integer> pieceValues = ACEConstants.pieceValues();
 	
-	private Function<EngineBoard, Evaluation> scoreFunction = new Function<EngineBoard, Evaluation>() {
-		public Evaluation apply(EngineBoard engineBoard) {
+	private Function<ACEBoard, Evaluation> scoreFunction = new Function<ACEBoard, Evaluation>() {
+		public Evaluation apply(ACEBoard engineBoard) {
 			int score = 0;
 			score += ACEConstants.pieceValue(PieceType.QUEEN) * Long.bitCount(engineBoard.white_queens);
 			score += ACEConstants.pieceValue(PieceType.ROOK) * Long.bitCount(engineBoard.white_rooks);
@@ -33,8 +33,8 @@ public class SimplePieceEvaluator implements BoardEvaluator {
 	};
 
 	@Override
-	public Evaluation evaluate(EngineBoard board) {
-		return scoreFunction.apply(board);
+	public Evaluation evaluate(AbstractEngineBoard board) {
+		return scoreFunction.apply((ACEBoard) board);
 	}
 
 	private int pieceValue(PieceType pieceType) {

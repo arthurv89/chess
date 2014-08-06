@@ -1,7 +1,8 @@
-package nl.arthurvlug.chess.engine.customEngine.movegeneration;
+package nl.arthurvlug.chess.engine.movegeneration;
 
 import static org.junit.Assert.assertEquals;
 import nl.arthurvlug.chess.domain.board.Coordinates;
+import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 
 import org.junit.Test;
 

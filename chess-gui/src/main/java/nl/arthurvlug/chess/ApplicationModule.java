@@ -4,8 +4,8 @@ import nl.arthurvlug.chess.domain.game.Clock;
 import nl.arthurvlug.chess.domain.game.Game;
 import nl.arthurvlug.chess.domain.game.player.BlackPlayer;
 import nl.arthurvlug.chess.domain.game.player.WhitePlayer;
+import nl.arthurvlug.chess.engine.ace.ACE;
 import nl.arthurvlug.chess.engine.binary.FruitEngine;
-import nl.arthurvlug.chess.engine.customEngine.ace.ACE;
 import nl.arthurvlug.chess.gui.board.ClockPane;
 import nl.arthurvlug.chess.gui.board.MovesPane;
 

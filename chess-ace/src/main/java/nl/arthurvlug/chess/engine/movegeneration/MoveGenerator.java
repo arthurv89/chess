@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.engine.customEngine.movegeneration;
+package nl.arthurvlug.chess.engine.movegeneration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,8 @@ import nl.arthurvlug.chess.domain.board.Coordinates;
 import nl.arthurvlug.chess.domain.board.pieces.PieceType;
 import nl.arthurvlug.chess.domain.game.Move;
 import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.customEngine.EngineBoard;
+import nl.arthurvlug.chess.engine.ace.ACEBoard;
+import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 
 import com.atlassian.fugue.Option;
 import com.google.common.collect.ImmutableList;
@@ -17,7 +18,7 @@ public class MoveGenerator {
 	private final static long empty_board = 0L;
 
 	
-	public static List<Move> generateMoves(EngineBoard engineBoard) {
+	public static List<Move> generateMoves(ACEBoard engineBoard) {
 		return ImmutableList.<Move> builder()
 			.addAll(kingMoves(engineBoard))
 			.addAll(knightMoves(engineBoard))
@@ -25,7 +26,7 @@ public class MoveGenerator {
 			.build();
 	}
 
-	private static List<Move> rookMoves(EngineBoard engineBoard) {
+	private static List<Move> rookMoves(ACEBoard engineBoard) {
 		List<Move> moves = new ArrayList<>();
 		long rooks = rooks(engineBoard);
 		while(rooks != 0L) {
@@ -59,7 +60,7 @@ public class MoveGenerator {
 		return moves;
 	}
 
-	private static List<Move> knightMoves(EngineBoard engineBoard) {
+	private static List<Move> knightMoves(ACEBoard engineBoard) {
 		List<Move> moves = new ArrayList<>();
 		long knights = knights(engineBoard);
 		while(knights != 0L) {
@@ -71,7 +72,7 @@ public class MoveGenerator {
 		return moves;
 	}
 
-	private static List<Move> kingMoves(EngineBoard engineBoard) {
+	private static List<Move> kingMoves(ACEBoard engineBoard) {
 		int sq = Long.numberOfTrailingZeros(kings(engineBoard));
 		if(sq == 64) {
 			return Collections.emptyList();
@@ -94,19 +95,19 @@ public class MoveGenerator {
 		return moves;
 	}
 
-	private static long rooks(EngineBoard engineBoard) {
+	private static long rooks(ACEBoard engineBoard) {
 		return engineBoard.toMove == EngineConstants.WHITE
 				? engineBoard.white_rooks
 				: engineBoard.black_rooks;
 	}
 
-	private static long kings(EngineBoard engineBoard) {
+	private static long kings(ACEBoard engineBoard) {
 		return engineBoard.toMove == EngineConstants.WHITE
 				? engineBoard.white_kings
 				: engineBoard.black_kings;
 	}
 
-	private static long knights(EngineBoard engineBoard) {
+	private static long knights(ACEBoard engineBoard) {
 		return engineBoard.toMove == EngineConstants.WHITE
 				? engineBoard.white_knights
 				: engineBoard.black_knights;

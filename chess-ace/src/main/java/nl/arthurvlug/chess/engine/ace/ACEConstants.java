@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.engine.customEngine.ace;
+package nl.arthurvlug.chess.engine.ace;
 
 import java.util.HashMap;
 import java.util.Map;

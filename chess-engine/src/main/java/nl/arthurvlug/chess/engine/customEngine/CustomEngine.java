@@ -15,7 +15,6 @@ import java.util.StringTokenizer;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.domain.game.Move;
 import nl.arthurvlug.chess.engine.UCIEngine;
-import nl.arthurvlug.chess.engine.customEngine.alphabeta.ABPruning;
 import nl.arthurvlug.chess.util.NamedThread;
 
 import com.google.common.base.Splitter;
@@ -23,8 +22,6 @@ import com.google.common.collect.ImmutableList;
 
 @Slf4j
 public abstract class CustomEngine extends UCIEngine {
-	protected static ABPruning searchAlgorithm = new ABPruning();
-	
 	private PipedOutputStream commandStream;
 	private BufferedReader commandReader;
 	
