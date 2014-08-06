@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.engine.movegeneration;
+package nl.arthurvlug.chess.engine.ace.movegeneration;
 
 import static org.junit.Assert.assertEquals;
 import nl.arthurvlug.chess.domain.board.Coordinates;

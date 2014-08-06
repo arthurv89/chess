@@ -1,8 +1,9 @@
-package nl.arthurvlug.chess.engine.ace;
+package nl.arthurvlug.chess.engine.ace.evaluation;
 
 import java.util.Map;
 
 import nl.arthurvlug.chess.domain.board.pieces.PieceType;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.Evaluation;

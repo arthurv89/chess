@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.engine.movegeneration;
+package nl.arthurvlug.chess.engine.ace.movegeneration;
 
 import java.util.function.Function;
 

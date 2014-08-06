@@ -3,7 +3,10 @@ package nl.arthurvlug.chess.engine.ace;
 import java.util.List;
 
 import nl.arthurvlug.chess.domain.game.Move;
-import nl.arthurvlug.chess.engine.alphabeta.AlphaBetaPruningAlgorithm;
+import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
+import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.CustomEngine;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 

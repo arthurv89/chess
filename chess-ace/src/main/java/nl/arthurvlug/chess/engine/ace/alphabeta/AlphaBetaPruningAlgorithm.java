@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.engine.alphabeta;
+package nl.arthurvlug.chess.engine.ace.alphabeta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,11 +8,11 @@ import javax.swing.text.Position;
 import nl.arthurvlug.chess.domain.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.domain.game.Move;
 import nl.arthurvlug.chess.engine.EngineUtils;
-import nl.arthurvlug.chess.engine.ace.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.CheckmateScore;
 import nl.arthurvlug.chess.engine.customEngine.Evaluation;
-import nl.arthurvlug.chess.engine.movegeneration.MoveGenerator;
 
 public class AlphaBetaPruningAlgorithm {
 	private static final int WHITE_WINS = Integer.MAX_VALUE;

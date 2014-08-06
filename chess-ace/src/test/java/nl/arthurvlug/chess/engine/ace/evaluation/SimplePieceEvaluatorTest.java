@@ -1,9 +1,9 @@
-package nl.arthurvlug.chess.engine;
+package nl.arthurvlug.chess.engine.ace.evaluation;
 
 import static org.junit.Assert.assertEquals;
 import nl.arthurvlug.chess.domain.board.pieces.PieceType;
-import nl.arthurvlug.chess.engine.ace.ACEBoard;
-import nl.arthurvlug.chess.engine.ace.SimplePieceEvaluator;
+import nl.arthurvlug.chess.engine.EngineConstants;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 

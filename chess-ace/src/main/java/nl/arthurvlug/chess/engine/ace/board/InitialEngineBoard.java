@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.engine.ace;
+package nl.arthurvlug.chess.engine.ace.board;
 
 import nl.arthurvlug.chess.domain.board.pieces.PieceType;
 import nl.arthurvlug.chess.engine.EngineConstants;
