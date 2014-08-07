@@ -50,4 +50,8 @@ public class BitboardUtils {
 	public static int toIndex(String fieldName) {
 		return toIndex(coordinates(fieldName));
 	}
+
+	public static long bitboardFromString(String move) {
+		return 1L << toIndex(move);
+	}
 }

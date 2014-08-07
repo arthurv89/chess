@@ -284,9 +284,4 @@ public class XRayTest {
 		}
 		return bitboard;
 	}
-	
-	private void compare(long board1, long board2) {
-		System.out.println(BitboardUtils.toBitboardString(board1));
-		System.out.println(BitboardUtils.toBitboardString(board2));
-	}
 }

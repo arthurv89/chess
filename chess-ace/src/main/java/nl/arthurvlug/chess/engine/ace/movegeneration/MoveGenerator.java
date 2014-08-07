@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.List;
 
 import nl.arthurvlug.chess.engine.EngineConstants;
+import nl.arthurvlug.chess.engine.ace.alphabeta.AceMove;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
-import nl.arthurvlug.chess.utils.game.Move;
 
 import com.atlassian.fugue.Option;
 import com.google.common.collect.ImmutableList;
@@ -18,16 +18,17 @@ public class MoveGenerator {
 	private final static long empty_board = 0L;
 
 	
-	public static List<Move> generateMoves(ACEBoard engineBoard) {
-		return ImmutableList.<Move> builder()
+	public static List<AceMove> generateMoves(ACEBoard engineBoard) {
+		ImmutableList<AceMove> moves = ImmutableList.<AceMove> builder()
 			.addAll(kingMoves(engineBoard))
 			.addAll(knightMoves(engineBoard))
 			.addAll(rookMoves(engineBoard))
 			.build();
+		return moves;
 	}
 
-	private static List<Move> rookMoves(ACEBoard engineBoard) {
-		List<Move> moves = new ArrayList<>();
+	private static List<AceMove> rookMoves(ACEBoard engineBoard) {
+		List<AceMove> moves = new ArrayList<>();
 		long rooks = rooks(engineBoard);
 		while(rooks != 0L) {
 			int sq = Long.numberOfTrailingZeros(rooks);
@@ -55,41 +56,41 @@ public class MoveGenerator {
 			long destinationBitboard = rook_moves | rook_captures | rook_non_captures;
 
 			rooks -= 1L << sq;
-			moves.addAll(moves(sq, destinationBitboard));
+			moves.addAll(moves(sq, destinationBitboard, PieceType.ROOK, engineBoard.toMove));
 		}
 		return moves;
 	}
 
-	private static List<Move> knightMoves(ACEBoard engineBoard) {
-		List<Move> moves = new ArrayList<>();
+	private static List<AceMove> knightMoves(ACEBoard engineBoard) {
+		List<AceMove> moves = new ArrayList<>();
 		long knights = knights(engineBoard);
 		while(knights != 0L) {
 			int sq = Long.numberOfTrailingZeros(knights);
 			long destinationBitboard = Xray.knight_xray[sq] & engineBoard.enemy_and_empty_board;
 			knights -= 1L << sq;
-			moves.addAll(moves(sq, destinationBitboard));
+			moves.addAll(moves(sq, destinationBitboard, PieceType.KNIGHT, engineBoard.toMove));
 		}
 		return moves;
 	}
 
-	private static List<Move> kingMoves(ACEBoard engineBoard) {
+	private static List<AceMove> kingMoves(ACEBoard engineBoard) {
 		int sq = Long.numberOfTrailingZeros(kings(engineBoard));
 		if(sq == 64) {
 			return Collections.emptyList();
 		}
 		
 		long destinationBitboard = Xray.king_xray[sq] & engineBoard.enemy_and_empty_board;
-		return moves(sq, destinationBitboard);
+		return moves(sq, destinationBitboard, PieceType.KING, engineBoard.toMove);
 	}
 
-	private static List<Move> moves(int index, long bitboard) {
+	private static List<AceMove> moves(int index, long bitboard, PieceType pieceType, int toMove) {
 		List<Integer> ones = findOnes(bitboard);
 		
-		List<Move> moves = new ArrayList<>();
+		List<AceMove> moves = new ArrayList<>();
 		Coordinates fromCoordinate = BitboardUtils.coordinates(index);
 		for(Integer onePos : ones) {
 			Coordinates toCoordinate = BitboardUtils.coordinates(onePos);
-			Move move = new Move(fromCoordinate, toCoordinate, Option.<PieceType> none());
+			AceMove move = new AceMove(pieceType, toMove, fromCoordinate, toCoordinate, Option.<PieceType> none());
 			moves.add(move);
 		}
 		return moves;

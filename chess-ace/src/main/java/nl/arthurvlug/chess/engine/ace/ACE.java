@@ -21,6 +21,6 @@ public class ACE extends CustomEngine {
 	protected Move think(List<String> moveList, ThinkingParams thinkingParams) {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.apply(moveList);
-		return new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator()).think(engineBoard);
+		return new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator()).think(engineBoard).toMove();
 	}
 }

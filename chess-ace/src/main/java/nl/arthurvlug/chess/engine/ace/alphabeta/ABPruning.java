@@ -6,23 +6,27 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.EvaluatedMove;
-import nl.arthurvlug.chess.engine.customEngine.Evaluation;
+import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 import nl.arthurvlug.chess.utils.game.Move;
 
 public class ABPruning {
 	public Move think(final ACEBoard board, final int toMove, final int depth, final BoardEvaluator evaluator, final int alpha, final int beta) {
 		PriorityQueue<EvaluatedMove> sortedMoves = new PriorityQueue<>();
-		ACEBoard engineBoard = new ACEBoard(board);
-		for(Move move : MoveGenerator.generateMoves(engineBoard)) {
-			ACEBoard movedBoard = engineBoard.move(move);
+		for(AceMove move : MoveGenerator.generateMoves(board)) {
+			ACEBoard movedBoard = new ACEBoard(board);
+			movedBoard.apply(move);
 			if(movedBoard.inCheck(toMove)) {
 				continue;
 			}
-			Evaluation evaluation = evaluator.evaluate(movedBoard);
+			
+			// TODO: CheckmateScore?
+			NormalScore evaluation = (NormalScore) evaluator.evaluate(movedBoard);
 			sortedMoves.add(new EvaluatedMove(move, evaluation));
 		}
 		EvaluatedMove bestMove = sortedMoves.peek();
-		ACEBoard bestMoveBoard = board.move(bestMove.getMove());
-		return think(bestMoveBoard, toMove, depth-1, evaluator, -beta, -alpha);
+		
+		ACEBoard bestBoard = new ACEBoard(board);
+		bestBoard.apply(bestMove.getMove());
+		return think(bestBoard, toMove, depth-1, evaluator, -beta, -alpha);
 	}
 }
