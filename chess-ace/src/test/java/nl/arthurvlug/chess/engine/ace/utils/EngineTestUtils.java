@@ -1,7 +1,7 @@
 package nl.arthurvlug.chess.engine.ace.utils;
 import java.util.List;
 
-import nl.arthurvlug.chess.engine.ace.alphabeta.AceMove;
+import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 

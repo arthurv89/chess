@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.ace.alphabeta.AceMove;
+import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
@@ -84,14 +84,16 @@ public class MoveGenerator {
 	}
 
 	private static List<AceMove> moves(int index, long bitboard, PieceType pieceType, int toMove) {
-		List<Integer> ones = findOnes(bitboard);
-		
 		List<AceMove> moves = new ArrayList<>();
 		Coordinates fromCoordinate = BitboardUtils.coordinates(index);
-		for(Integer onePos : ones) {
+		
+		while(bitboard != 0) {
+			int onePos = Long.numberOfTrailingZeros(bitboard);
 			Coordinates toCoordinate = BitboardUtils.coordinates(onePos);
 			AceMove move = new AceMove(pieceType, toMove, fromCoordinate, toCoordinate, Option.<PieceType> none());
 			moves.add(move);
+			
+			bitboard -= 1L << onePos;
 		}
 		return moves;
 	}
@@ -112,18 +114,5 @@ public class MoveGenerator {
 		return engineBoard.toMove == EngineConstants.WHITE
 				? engineBoard.white_knights
 				: engineBoard.black_knights;
-	}
-
-	private static List<Integer> findOnes(long bitboard) {
-		int sq=0;
-		List<Integer> ones = new ArrayList<>();
-		while(bitboard != 0) {
-			if(bitboard % 2 == 1) {
-				ones.add(sq);
-			}
-			bitboard = bitboard >> 1;
-			sq++;
-		}
-		return ones;
 	}
 }

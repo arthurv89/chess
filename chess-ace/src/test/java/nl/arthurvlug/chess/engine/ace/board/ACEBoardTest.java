@@ -1,9 +1,9 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.EngineUtils;
-import nl.arthurvlug.chess.engine.ace.alphabeta.AceMove;
+import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.utils.EngineTestUtils;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
@@ -28,6 +28,7 @@ public class ACEBoardTest {
 		startPositionBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, BitboardUtils.toIndex("d8"));
 		startPositionBoard.addPiece(EngineConstants.BLACK, PieceType.QUEEN, BitboardUtils.toIndex("e8"));
 		startPositionBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("f8"));
+		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, BitboardUtils.toIndex("f7")); // Black king takes this pawn
 		startPositionBoard.finalizeBitboards();
 		
 		long expectedWhiteEnemyAndEmptyBoard = ~(
@@ -36,7 +37,8 @@ public class ACEBoardTest {
 				BitboardUtils.bitboardFromString("c1") |
 				BitboardUtils.bitboardFromString("d1") |
 				BitboardUtils.bitboardFromString("e1") |
-				BitboardUtils.bitboardFromString("f1")
+				BitboardUtils.bitboardFromString("f1") |
+				BitboardUtils.bitboardFromString("f7")
 		);
 		assertEquals(expectedWhiteEnemyAndEmptyBoard, startPositionBoard.enemy_and_empty_board);
 		
@@ -45,17 +47,24 @@ public class ACEBoardTest {
 		
 		ACEBoard copyBoard = startPositionBoard;
 		copyBoard = apply(PieceType.PAWN, "a1", "a2", copyBoard, EngineConstants.WHITE);
+		
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+		
 		copyBoard = apply(PieceType.PAWN, "a8", "a7", copyBoard, EngineConstants.BLACK);
 		copyBoard = apply(PieceType.KNIGHT, "b1", "b2", copyBoard, EngineConstants.WHITE);
 		copyBoard = apply(PieceType.KNIGHT, "b8", "b7", copyBoard, EngineConstants.BLACK);
 		copyBoard = apply(PieceType.BISHOP, "c1", "c2", copyBoard, EngineConstants.WHITE);
 		copyBoard = apply(PieceType.BISHOP, "c8", "c7", copyBoard, EngineConstants.BLACK);
+
+		
 		copyBoard = apply(PieceType.ROOK, "d1", "d2", copyBoard, EngineConstants.WHITE);
 		copyBoard = apply(PieceType.ROOK, "d8", "d7", copyBoard, EngineConstants.BLACK);
 		copyBoard = apply(PieceType.QUEEN, "e1", "e2", copyBoard, EngineConstants.WHITE);
 		copyBoard = apply(PieceType.QUEEN, "e8", "e7", copyBoard, EngineConstants.BLACK);
 		copyBoard = apply(PieceType.KING, "f1", "f2", copyBoard, EngineConstants.WHITE);
 		copyBoard = apply(PieceType.KING, "f8", "f7", copyBoard, EngineConstants.BLACK);
+		
+		assertTrue(copyBoard.lastMoveWasTakeMove);
 
 		copyBoard = new ACEBoard(copyBoard, EngineConstants.BLACK);
 		long expectedBlackEnemyAndEmptyBoard = ~(
@@ -71,7 +80,7 @@ public class ACEBoardTest {
 		
 		
 		
-		assertEquals(startPositionBoard.white_pawns, BitboardUtils.bitboardFromString("a1"));
+		assertEquals(startPositionBoard.white_pawns, BitboardUtils.bitboardFromString("a1") | BitboardUtils.bitboardFromString("f7"));
 		assertEquals(startPositionBoard.white_knights, BitboardUtils.bitboardFromString("b1"));
 		assertEquals(startPositionBoard.white_bishops, BitboardUtils.bitboardFromString("c1"));
 		assertEquals(startPositionBoard.white_rooks, BitboardUtils.bitboardFromString("d1"));
@@ -105,7 +114,8 @@ public class ACEBoardTest {
 				BitboardUtils.bitboardFromString("c1") |
 				BitboardUtils.bitboardFromString("d1") |
 				BitboardUtils.bitboardFromString("e1") |
-				BitboardUtils.bitboardFromString("f1"));
+				BitboardUtils.bitboardFromString("f1") |
+				BitboardUtils.bitboardFromString("f7"));
 		assertEquals(startPositionBoard.blackOccupiedSquares,
 				BitboardUtils.bitboardFromString("a8") |
 				BitboardUtils.bitboardFromString("b8") |
@@ -128,6 +138,8 @@ public class ACEBoardTest {
 				BitboardUtils.bitboardFromString("d7") |
 				BitboardUtils.bitboardFromString("e7") |
 				BitboardUtils.bitboardFromString("f7"));
+		
+		assertTrue(copyBoard.lastMoveWasTakeMove);
 	}
 
 	private ACEBoard apply(PieceType pieceType, String from, String to, ACEBoard board, int color) {

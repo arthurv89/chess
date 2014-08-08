@@ -1,7 +1,7 @@
 package nl.arthurvlug.chess.engine.customEngine;
 
 import lombok.Value;
-import nl.arthurvlug.chess.engine.ace.alphabeta.AceMove;
+import nl.arthurvlug.chess.engine.ace.AceMove;
 
 @Value
 public class EvaluatedMove {

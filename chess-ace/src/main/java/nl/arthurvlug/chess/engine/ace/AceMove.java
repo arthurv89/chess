@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.engine.ace.alphabeta;
+package nl.arthurvlug.chess.engine.ace;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

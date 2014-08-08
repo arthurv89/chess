@@ -84,7 +84,11 @@ public abstract class CustomEngine extends UCIEngine {
 								@Override
 								public void run() {
 									Move move = think(moveList, thinkingParams);
-									System.err.println("WE HAVE A MOVE: " + move);
+									try {
+										write("bestmove " + move + " ponder e1e2");
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
 								}
 							}).start();;
 						}
@@ -107,6 +111,9 @@ public abstract class CustomEngine extends UCIEngine {
 						thinkingParams.setWhiteTime(Integer.parseInt(tokenizer.nextToken()));
 					} else if("btime".equals(token)) {
 						thinkingParams.setBlackTime(Integer.parseInt(tokenizer.nextToken()));
+					} else if("ponder".equals(token)) {
+						// TODO: Implement pondering
+						
 					} else {
 						throw new RuntimeException("Could not parse token " + token);
 					}

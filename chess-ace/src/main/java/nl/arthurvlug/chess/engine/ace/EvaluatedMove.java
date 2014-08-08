@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.engine.ace.alphabeta;
+package nl.arthurvlug.chess.engine.ace;
 
 public class EvaluatedMove {
 

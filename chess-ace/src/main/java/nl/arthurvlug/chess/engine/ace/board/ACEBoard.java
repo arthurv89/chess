@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.EngineUtils;
-import nl.arthurvlug.chess.engine.ace.alphabeta.AceMove;
+import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
@@ -38,6 +38,7 @@ public class ACEBoard extends AbstractEngineBoard {
 	public long enemy_and_empty_board;
 
 	public AceMove lastMove;
+	public boolean lastMoveWasTakeMove;
 
 	// TODO: Implement
 	public int fiftyMove = 0;
@@ -68,6 +69,7 @@ public class ACEBoard extends AbstractEngineBoard {
 		this();
 		toMove = board.toMove;
 		lastMove = board.lastMove;
+		lastMoveWasTakeMove = board.lastMoveWasTakeMove;
 		
 		black_kings = board.black_kings;
 		white_kings = board.white_kings;
@@ -88,7 +90,7 @@ public class ACEBoard extends AbstractEngineBoard {
 	}
 
 	public void apply(List<String> moveList) {
-		throw new UnsupportedOperationException();
+//		throw new UnsupportedOperationException();
 		
 	}
 
@@ -97,6 +99,8 @@ public class ACEBoard extends AbstractEngineBoard {
 		
 		int toIdx = BitboardUtils.toIndex(move.getToCoordinate());
 		long toBitboard = 1L << toIdx;
+		
+		lastMoveWasTakeMove = (toBitboard & occupied_board) != 0;
 		
 		// Remove pieces from destination field
 		long removeToBoard = ~toBitboard;

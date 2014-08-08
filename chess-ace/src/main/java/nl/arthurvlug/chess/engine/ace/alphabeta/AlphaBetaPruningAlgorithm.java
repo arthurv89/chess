@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.arthurvlug.chess.engine.EngineConstants;
+import nl.arthurvlug.chess.engine.ace.AceMove;
+import nl.arthurvlug.chess.engine.ace.ScoreComparator;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 
 public class AlphaBetaPruningAlgorithm {
-	ScoreComparator scoreComparator = new ScoreComparator();
+	private static final ScoreComparator scoreComparator = new ScoreComparator();
 
 	private static final int WHITE_WINS = Integer.MAX_VALUE;
 	private static final int BLACK_WINS = -Integer.MAX_VALUE;
@@ -35,34 +37,27 @@ public class AlphaBetaPruningAlgorithm {
 		final int beta = WHITE_WINS;
 
 		
-//		int otherColor = EngineUtils.otherToMove(engineBoard.toMove);
-
 		List<ACEBoard> successorBoards = generateSuccessorBoards(engineBoard);
 
-		// TODO: Sort
-		successorBoards.sort(scoreComparator);
+//		successorBoards.sort(scoreComparator);
+//
+//		for (ACEBoard successorBoard : successorBoards) {
+//			int evaluationScore = -alphaBeta(successorBoard, 1, -beta, -alpha);
+//			if(evaluationScore >= 2000) {
+//				return successorBoard.lastMove;
+//			}
+//		}
 
-		// TODO: Search further than 1 move
-		for (ACEBoard successorBoard : successorBoards) {
-			int value = -alphaBeta(successorBoard, 1, -beta, -alpha);
-			successorBoard.setEvaluation(value);
-			if(value >= 2000) {
-				return successorBoard.lastMove;
-			}
-		}
-
-		// TODO: Sort
+		// TODO: Remove Sort?
 		successorBoards.sort(scoreComparator);
 
 		ACEBoard bestEngineBoard = new ACEBoard(Integer.MIN_VALUE);
-		bestEngineBoard.finalizeBitboards();
 		for (ACEBoard successorBoard : successorBoards) {
-			int value = -alphaBeta(successorBoard, depth-1, -beta, -alpha);
-			successorBoard.setEvaluation(value);
-			if (value > alpha) {
-				alpha = value;
+			int score = -alphaBeta(successorBoard, depth-1, -beta, -alpha);
+			successorBoard.setEvaluation(score);
+			if (score > alpha) {
+				alpha = score;
 				bestEngineBoard = new ACEBoard(successorBoard);
-				bestEngineBoard.finalizeBitboards();
 			}
 		}
 		return bestEngineBoard.lastMove;
@@ -71,12 +66,10 @@ public class AlphaBetaPruningAlgorithm {
 	private List<ACEBoard> generateSuccessorBoards(final ACEBoard board) {
 		List<ACEBoard> successorBoards = new ArrayList<>();
 
-		List<AceMove> copyEngineBoardMoves = MoveGenerator.generateMoves(board);
-		for (AceMove move : copyEngineBoardMoves) {
-//			PieceType piece = move.getMovingPiece();
-
-			ACEBoard copyEngineBoard = new ACEBoard(board);
-			copyEngineBoard.apply(move);
+		List<AceMove> moves = MoveGenerator.generateMoves(board);
+		for (AceMove move : moves) {
+			ACEBoard successorBoard = new ACEBoard(board);
+			successorBoard.apply(move);
 
 			// TODO: Decide on isCheck method. We could also remove it.
 			// if(EngineUtils.isWhite(succColor) && whiteCheck(board,
@@ -88,25 +81,28 @@ public class AlphaBetaPruningAlgorithm {
 			// continue;
 			// }
 
-			NormalScore evaluation = (NormalScore) evaluator.evaluate(copyEngineBoard);
-			int sideScore = sideToMoveScore(evaluation.getValue(), copyEngineBoard.toMove);
-			copyEngineBoard.setEvaluation(sideScore);
+			Integer score = sideDependentScore(successorBoard);
+			successorBoard.setEvaluation(score);
 
-			successorBoards.add(copyEngineBoard);
+			successorBoards.add(successorBoard);
 		}
 		return successorBoards;
 	}
 
 	private int alphaBeta(ACEBoard engineBoard, int depth, int alpha, int beta) {
 		nodesSearched++;
-		System.out.println(nodesSearched + " nodes searched");
+//		log.debug(nodesSearched + " nodes searched");
 
 		if (engineBoard.fiftyMove >= 50 || engineBoard.repeatedMove >= 3) {
 			return 0;
 		}
 
 		if (depth == 0) {
-			return sideToMoveScore(engineBoard.getEvaluation(), engineBoard.toMove);
+			return sideDependentScore(engineBoard);
+		}
+		
+		if(engineBoard.white_kings == 0 || engineBoard.black_kings == 0) {
+			return sideDependentScore(engineBoard);
 		}
 
 		List<ACEBoard> succBoards = evaluateMoves(engineBoard);
@@ -138,13 +134,8 @@ public class AlphaBetaPruningAlgorithm {
 		succBoards.sort(scoreComparator);
 		for (ACEBoard succBoard : succBoards) {
 			ACEBoard copyEngineBoard = new ACEBoard(succBoard);
-
-			NormalScore evaluation = (NormalScore) evaluator.evaluate(copyEngineBoard);
-			copyEngineBoard.setEvaluation(evaluation.getValue());
-
 			copyEngineBoard.finalizeBitboards();
-			MoveGenerator.generateMoves(copyEngineBoard);
-
+			
 			// TODO: Implement this?
 			// if (engineBoard.blackCheck() && succColor.isBlack()) {
 			// continue; // Invalid move
@@ -154,7 +145,10 @@ public class AlphaBetaPruningAlgorithm {
 			// continue; // Invalid move
 			// }
 
-			int value = -alphaBeta(copyEngineBoard, depth - 1, -beta, -alpha);
+			int newDepth = depth == 1 && copyEngineBoard.lastMoveWasTakeMove
+					? depth
+					: depth-1;
+			int value = -alphaBeta(copyEngineBoard, newDepth, -beta, -alpha);
 
 			if (value >= beta) {
 				// Beta cut-off
@@ -173,12 +167,11 @@ public class AlphaBetaPruningAlgorithm {
 		List<AceMove> moves = MoveGenerator.generateMoves(engineBoard);
 		for(AceMove move : moves) {
 			ACEBoard copyEngineBoard = new ACEBoard(engineBoard);
-			copyEngineBoard.finalizeBitboards();
 			copyEngineBoard.apply(move);
 			
 			// TODO: Implement Checkmate
-			NormalScore evaluation = (NormalScore) evaluator.evaluate(copyEngineBoard);
-			copyEngineBoard.setEvaluation(evaluation.getValue());
+			Integer score = sideDependentScore(copyEngineBoard);
+			copyEngineBoard.setEvaluation(score);
 			
 			scoredMoves.add(copyEngineBoard);
 		}
@@ -252,12 +245,14 @@ public class AlphaBetaPruningAlgorithm {
 //		}
 	}
 
-	private int sideToMoveScore(int score, int succColor) {
+	private Integer sideDependentScore(ACEBoard engineBoard) {
 		// TODO: Implement checkmate
-		if (succColor == EngineConstants.BLACK) {
-			return -score;
+		NormalScore score = (NormalScore) evaluator.evaluate(engineBoard);
+		
+		if (engineBoard.toMove == EngineConstants.BLACK) {
+			return -score.getValue();
 		} else {
-			return score;
+			return score.getValue();
 		}
 	}
 }

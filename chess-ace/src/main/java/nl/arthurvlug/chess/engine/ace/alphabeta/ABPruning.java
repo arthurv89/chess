@@ -2,6 +2,7 @@ package nl.arthurvlug.chess.engine.ace.alphabeta;
 
 import java.util.PriorityQueue;
 
+import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
