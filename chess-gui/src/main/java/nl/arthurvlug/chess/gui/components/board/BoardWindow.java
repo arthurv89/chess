@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 public class BoardWindow extends Window {
 	static Font DEFAULT_FONT = new Font("Arial", Font.PLAIN, 11);
 	
-	@Inject private Game game;
+	private Game game;
 	@Inject private EventBus eventBus;
 	@Inject private ClockPane clockPane;
 
@@ -54,6 +54,8 @@ public class BoardWindow extends Window {
 
 	@Subscribe
 	public void on(GameStartedEvent event) throws InterruptedException, FontFormatException, IOException {
+		this.game = event.getGame();
+		
 		open();
 
 		listenToEngine(game.getWhitePlayer());

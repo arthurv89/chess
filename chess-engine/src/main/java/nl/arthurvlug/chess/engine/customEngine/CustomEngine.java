@@ -31,7 +31,6 @@ public abstract class CustomEngine extends UCIEngine {
 	private PipedInputStream errorStream;
 	private BufferedWriter errorWriter;
 	
-	
 
 
 
@@ -59,11 +58,30 @@ public abstract class CustomEngine extends UCIEngine {
 
 	private void startEngineInputParseThread() throws IOException {
 		new NamedThread(new Runnable() {
+			private Object newMoveWaitObject = new Object();
+			
 			private ThinkingParams thinkingParams;
 			private List<String> moveList;
 
 			@Override
 			public void run() {
+				new NamedThread(new Runnable() {
+					@Override
+					public void run() {
+						while(true) {
+							try {
+								synchronized (newMoveWaitObject) {
+									newMoveWaitObject.wait();
+								}
+								Move move = think(moveList, thinkingParams);
+								write("bestmove " + move + " ponder e1e2");
+							} catch (InterruptedException | IOException e1) {
+								e1.printStackTrace();
+							}
+						}
+					}
+				}, "CustomEngine").start();
+				
 				while(true) {
 					try {
 						String s = commandReader.readLine();
@@ -80,17 +98,9 @@ public abstract class CustomEngine extends UCIEngine {
 							moveList = parsePosition(s);
 						} else if(s.startsWith("go")) {
 							thinkingParams = parseParams(s);
-							new Thread(new Runnable() {
-								@Override
-								public void run() {
-									Move move = think(moveList, thinkingParams);
-									try {
-										write("bestmove " + move + " ponder e1e2");
-									} catch (IOException e) {
-										e.printStackTrace();
-									}
-								}
-							}).start();;
+							synchronized (newMoveWaitObject) {
+								newMoveWaitObject.notify();
+							}
 						}
 
 					} catch (IOException e) {
@@ -123,10 +133,12 @@ public abstract class CustomEngine extends UCIEngine {
 			}
 
 			private List<String> parsePosition(String line) {
+				String moves = line.substring("position moves".length()).trim();
+				if(moves.isEmpty()) {
+					return ImmutableList.<String> of();
+				}
 				return ImmutableList.<String> copyOf(
-					Splitter.on(' ').splitToList(
-							line.substring("position moves".length()).trim()
-					)
+					Splitter.on(' ').splitToList(moves)
 				);
 			}
 		}, "Custom Engine input parser").start();

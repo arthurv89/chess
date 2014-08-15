@@ -15,14 +15,12 @@ import com.atlassian.fugue.Option;
 import com.google.common.collect.ImmutableList;
 
 public class MoveGenerator {
-	private final static long empty_board = 0L;
-
-	
 	public static List<AceMove> generateMoves(ACEBoard engineBoard) {
 		ImmutableList<AceMove> moves = ImmutableList.<AceMove> builder()
 			.addAll(kingMoves(engineBoard))
 			.addAll(knightMoves(engineBoard))
 			.addAll(rookMoves(engineBoard))
+			// TODO: Implement pawn, queen, bishop, castling, en passent
 			.build();
 		return moves;
 	}
@@ -50,13 +48,9 @@ public class MoveGenerator {
 			down_moves = down_moves & Xray.down_board[sq];
 			down_moves = (down_moves ^ Xray.down_board[sq]) & engineBoard.enemy_and_empty_board;
 			long rook_moves = right_moves | left_moves | up_moves | down_moves;
-			long rook_captures = rook_moves & engineBoard.enemy_board;
-			long rook_non_captures = rook_moves & empty_board;
 			
-			long destinationBitboard = rook_moves | rook_captures | rook_non_captures;
-
 			rooks -= 1L << sq;
-			moves.addAll(moves(sq, destinationBitboard, PieceType.ROOK, engineBoard.toMove));
+			moves.addAll(moves(sq, rook_moves, PieceType.ROOK, engineBoard.toMove));
 		}
 		return moves;
 	}

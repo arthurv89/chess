@@ -8,7 +8,7 @@ import com.atlassian.fugue.Option;
 
 
 public class BitboardUtils {
-	public static int toIndex(final Coordinates coordinates) {
+	public static int fieldIdx(final Coordinates coordinates) {
 		return coordinates.getX() + coordinates.getY()*8;
 	}
 
@@ -38,17 +38,21 @@ public class BitboardUtils {
 		paddedBinaryString += binaryString;
 		
 		StringBuilder resultingString = new StringBuilder();
-		for (int j = 0; j < 64; j++) {
-			resultingString.append(paddedBinaryString.charAt(j));
-			if((j+1) % 8 == 0) {
-				resultingString.append('\n');
+		for (int i = 0; i < 8; i++) {
+			StringBuilder rowBuilder = new StringBuilder();
+			for (int j = 0; j < 8; j++) {
+				int idx = 8*i + j;
+				rowBuilder.append(paddedBinaryString.charAt(idx));
 			}
+			rowBuilder = rowBuilder.reverse();
+			rowBuilder.append('\n');
+			resultingString.append(rowBuilder);
 		}
 		return resultingString.toString();
 	}
 
 	public static int toIndex(String fieldName) {
-		return toIndex(coordinates(fieldName));
+		return fieldIdx(coordinates(fieldName));
 	}
 
 	public static long bitboardFromString(String move) {

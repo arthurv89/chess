@@ -9,7 +9,12 @@ import nl.arthurvlug.chess.engine.EngineUtils;
 import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
+import nl.arthurvlug.chess.utils.MoveUtils;
+import nl.arthurvlug.chess.utils.board.Coordinates;
+import nl.arthurvlug.chess.utils.board.pieces.Color;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.game.Move;
 
 import com.google.common.base.Preconditions;
 
@@ -90,14 +95,42 @@ public class ACEBoard extends AbstractEngineBoard {
 	}
 
 	public void apply(List<String> moveList) {
+		if(moveList.isEmpty()) {
+			return;
+		}
+		for(String sMove : moveList) {
+			Move move = MoveUtils.toMove(sMove);
+			ColoredPiece movingPiece = pieceAt(move.getFrom());;
+			int toMove = EngineConstants.fromColor(movingPiece.getColor());
+			apply(new AceMove(movingPiece.getPieceType(), toMove, move.getFrom(), move.getTo(), move.getPromotionPiece()));
+		}
 //		throw new UnsupportedOperationException();
 		
+	}
+
+	private ColoredPiece pieceAt(Coordinates from) {
+		long bitboard = 1L << BitboardUtils.fieldIdx(from);
+		if((white_bishops & bitboard)  != 0) return new ColoredPiece(PieceType.BISHOP, Color.WHITE);
+		if((white_kings & bitboard)  != 0) return new ColoredPiece(PieceType.KING, Color.WHITE);
+		if((white_knights & bitboard)  != 0) return new ColoredPiece(PieceType.KNIGHT, Color.WHITE);
+		if((white_pawns & bitboard)  != 0) return new ColoredPiece(PieceType.PAWN, Color.WHITE);
+		if((white_queens & bitboard)  != 0) return new ColoredPiece(PieceType.QUEEN, Color.WHITE);
+		if((white_rooks & bitboard)  != 0) return new ColoredPiece(PieceType.ROOK, Color.WHITE);
+		
+		if((black_bishops & bitboard)  != 0) return new ColoredPiece(PieceType.BISHOP, Color.BLACK);
+		if((black_kings & bitboard)  != 0) return new ColoredPiece(PieceType.KING, Color.BLACK);
+		if((black_knights & bitboard)  != 0) return new ColoredPiece(PieceType.KNIGHT, Color.BLACK);
+		if((black_pawns & bitboard)  != 0) return new ColoredPiece(PieceType.PAWN, Color.BLACK);
+		if((black_queens & bitboard)  != 0) return new ColoredPiece(PieceType.QUEEN, Color.BLACK);
+		if((black_rooks & bitboard)  != 0) return new ColoredPiece(PieceType.ROOK, Color.BLACK);
+		
+		throw new RuntimeException("Could not determine moving piece");
 	}
 
 	public void apply(AceMove move) {
 		lastMove = move;
 		
-		int toIdx = BitboardUtils.toIndex(move.getToCoordinate());
+		int toIdx = BitboardUtils.fieldIdx(move.getToCoordinate());
 		long toBitboard = 1L << toIdx;
 		
 		lastMoveWasTakeMove = (toBitboard & occupied_board) != 0;
@@ -118,7 +151,7 @@ public class ACEBoard extends AbstractEngineBoard {
 		black_pawns &= removeToBoard;
 		
 		// toBitboard
-		int fromIdx = BitboardUtils.toIndex(move.getFromCoordinate());
+		int fromIdx = BitboardUtils.fieldIdx(move.getFromCoordinate());
 		long fromBitboard = 1L << fromIdx;
 		long removeFromBoard = ~fromBitboard;
 		

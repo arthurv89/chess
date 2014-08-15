@@ -26,7 +26,7 @@ public class Xray {
 	private static Function<Coordinates, Long> queenXRayFunc = new Function<Coordinates, Long>() {
 		@Override
 		public Long apply(Coordinates coordinates) {
-			int i = BitboardUtils.toIndex(coordinates);
+			int i = BitboardUtils.fieldIdx(coordinates);
 			return 0L
 				| rook_xray[i]
 				| bishop_xray[i];
@@ -210,7 +210,7 @@ public class Xray {
 		if(coordinate.isEmpty()) {
 			return 0;
 		} else {
-			return 1L << BitboardUtils.toIndex(coordinate.get());
+			return 1L << BitboardUtils.fieldIdx(coordinate.get());
 		}
 	}
 

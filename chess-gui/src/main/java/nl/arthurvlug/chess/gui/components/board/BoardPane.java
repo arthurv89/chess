@@ -41,6 +41,8 @@ public class BoardPane extends JPanel {
 	}
 
 	private void drawBoard(Graphics2D g) {
+		if(game == null) return;
+		
 		g.drawString(game.getBlackPlayer().getName(), 0, 20);
 		g.drawString(game.getWhitePlayer().getName(), 0, 520);
 		

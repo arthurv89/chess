@@ -22,14 +22,14 @@ public class Board {
 	};
 	
 	@Getter
-	private final ImmutableList<Field> fields;
+	private ImmutableList<Field> fields;
 
 	protected Board(ImmutableList<Field> fields) {
 		this.fields = fields;
 	}
 
-	public Board move(Move move) {
-		return new Board(newFieldsAfterMove(move));
+	public void move(Move move) {
+		this.fields = newFieldsAfterMove(move);
 	}
 
 	private ImmutableList<Field> newFieldsAfterMove(Move move) {
@@ -58,7 +58,8 @@ public class Board {
 			PieceType promotionPieceType = move.getPromotionPiece().get();
 			fields.set(fieldIndex(move.getTo()), new Field(Option.some(new ColoredPiece(promotionPieceType, coloredPiece.getColor()))));
 		} else {
-			fields.set(fieldIndex(move.getTo()), new Field(Option.<ColoredPiece> none()));
+			Option<ColoredPiece> piece = fields.get(fieldIndex(move.getFrom())).getPiece();
+			fields.set(fieldIndex(move.getTo()), new Field(piece));
 		}
 
 		fields.set(fieldIndex(move.getFrom()), new Field(Option.<ColoredPiece> none()));

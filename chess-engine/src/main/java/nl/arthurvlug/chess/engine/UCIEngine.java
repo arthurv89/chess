@@ -234,8 +234,8 @@ public abstract class UCIEngine implements Engine {
 	}
 
 	private void parseEngineOutputLine(final String line, final PrintStream printStream) {
-		log.debug(Markers.ENGINE_RAW, getName() + " -             " + line);
-		System.out.println(getName() + " -             " + line);
+//		log.debug(Markers.ENGINE_RAW, getName() + " -             " + line);
+//		System.out.println(getName() + " -             " + line);
 		
 		if (line.equals("uciok")) {
 			engineStartedSubscriber.onCompleted();

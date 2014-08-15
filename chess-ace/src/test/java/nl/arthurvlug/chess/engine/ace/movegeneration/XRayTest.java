@@ -267,7 +267,7 @@ public class XRayTest {
 	
 
 	private long xRayBitboard(long[] xray, String fieldName) {
-		int sq = BitboardUtils.toIndex(BitboardUtils.coordinates(fieldName));
+		int sq = BitboardUtils.fieldIdx(BitboardUtils.coordinates(fieldName));
 		return xray[sq];
 	}
 
@@ -279,7 +279,7 @@ public class XRayTest {
 		long bitboard = 0L;
 		for(String splittedField : splittedFields) {
 			Coordinates coordinates = BitboardUtils.coordinates(splittedField);
-			int fieldIndex = BitboardUtils.toIndex(coordinates);
+			int fieldIndex = BitboardUtils.fieldIdx(coordinates);
 			bitboard |= 1L << fieldIndex;
 		}
 		return bitboard;
