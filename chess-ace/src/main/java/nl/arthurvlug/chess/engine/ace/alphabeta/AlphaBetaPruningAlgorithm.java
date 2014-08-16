@@ -32,7 +32,7 @@ public class AlphaBetaPruningAlgorithm {
 	public AceMove think(ACEBoard engineBoard) {
 		nodesSearched = 0;
 
-		int depth = 6;
+		int depth = 2;
 		AceMove move = alphaBetaRoot(engineBoard, depth);
 		return move;
 	}
@@ -108,7 +108,7 @@ public class AlphaBetaPruningAlgorithm {
 
 	private int alphaBeta(ACEBoard engineBoard, List<AceMove> depthMoves, int depth, int alpha, int beta) {
 		nodesSearched++;
-		log.debug(nodesSearched + " nodes searched");
+		log.debug(nodesSearched + " nodes searched (depth=" + depth + ")");
 
 		if (engineBoard.fiftyMove >= 50 || engineBoard.repeatedMove >= 3) {
 			return 0;

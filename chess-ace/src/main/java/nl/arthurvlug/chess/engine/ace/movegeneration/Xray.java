@@ -174,11 +174,59 @@ public class Xray {
 		}
 	};
 
+	private static Function<Coordinates, Long> deg45BoardFunction = new Function<Coordinates, Long>() {
+		@Override
+		public Long apply(Coordinates coordinates) {
+			long deg45Positions = 0L;
+			for (int i = 1; i <= 7; i++) {
+				deg45Positions |= board(locate(coordinates, i, i));
+			}
+			return deg45Positions;
+		}
+	};
+
+	private static Function<Coordinates, Long> deg135BoardFunction = new Function<Coordinates, Long>() {
+		@Override
+		public Long apply(Coordinates coordinates) {
+			long deg135Positions = 0L;
+			for (int i = 1; i <= 7; i++) {
+				deg135Positions |= board(locate(coordinates, -i, i));
+			}
+			return deg135Positions;
+		}
+	};
+
+	private static Function<Coordinates, Long> deg225BoardFunction = new Function<Coordinates, Long>() {
+		@Override
+		public Long apply(Coordinates coordinates) {
+			long deg225Positions = 0L;
+			for (int i = 1; i <= 7; i++) {
+				deg225Positions |= board(locate(coordinates, i, -i));
+			}
+			return deg225Positions;
+		}
+	};
+
+	private static Function<Coordinates, Long> deg315BoardFunction = new Function<Coordinates, Long>() {
+		@Override
+		public Long apply(Coordinates coordinates) {
+			long deg3155Positions = 0L;
+			for (int i = 1; i <= 7; i++) {
+				deg3155Positions |= board(locate(coordinates, -i, -i));
+			}
+			return deg3155Positions;
+		}
+	};
+
 	final static long[] left_board = xRay(leftBoardFunction);
 	final static long[] right_board = xRay(rightBoardFunction);
 	final static long[] up_board = xRay(upBoardFunction);
 	final static long[] down_board = xRay(downBoardFunction);
 
+	final static long[] deg45_board = xRay(deg45BoardFunction);
+	final static long[] deg135_board = xRay(deg135BoardFunction);
+	final static long[] deg225_board = xRay(deg225BoardFunction);
+	final static long[] deg315_board = xRay(deg315BoardFunction);
 	
 	
 
