@@ -9,7 +9,7 @@ public class ACEConstants {
 
 	public static Map<PieceType, Integer> pieceValues() {
 		Map<PieceType, Integer> map = new HashMap<>();
-		map.put(PieceType.KING, Integer.MAX_VALUE / 2);
+		map.put(PieceType.KING, 10000000);
 		map.put(PieceType.QUEEN, 975);
 		map.put(PieceType.ROOK, 500);
 		map.put(PieceType.BISHOP, 290);

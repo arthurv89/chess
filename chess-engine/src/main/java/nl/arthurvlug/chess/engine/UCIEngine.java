@@ -12,11 +12,11 @@ import java.util.StringTokenizer;
 
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.game.Clock;
-import nl.arthurvlug.chess.engine.game.GameFinished;
 import nl.arthurvlug.chess.utils.Markers;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.MyEmptyObserver;
 import nl.arthurvlug.chess.utils.NamedThread;
+import nl.arthurvlug.chess.utils.game.GameFinished;
 import nl.arthurvlug.chess.utils.game.Move;
 
 import org.apache.commons.io.IOUtils;
@@ -87,25 +87,26 @@ public abstract class UCIEngine implements Engine {
 		final String sMove = tokenizer.nextToken();
 		final Move move = MoveUtils.toMove(sMove);
 
-		if(tokenizer.hasMoreTokens()) {
+//		if(tokenizer.hasMoreTokens()) {
 			if(!shouldIgnoreNextMove) {
-				tokenizer.nextToken(); // Skip "ponder"
+//				tokenizer.nextToken(); // Skip "ponder"
 	
 				// Think with position after the bestMove and the ponderMove
-				String ponderMove = tokenizer.nextToken();
-				ponder(move, ponderMove);
+//				String ponderMove = tokenizer.nextToken();
+//				ponder(move, ponderMove);
 	
 				for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
 					log.debug(Markers.ENGINE, getName() + " -    Notifying listener for move " + move);
 					moveSubscriber.onNext(move);
 				}
 			}
-		} else {
-			for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
-				log.debug(Markers.ENGINE, getName() + " -    Game finished!");
-				moveSubscriber.onNext(new GameFinished(move));
-			}
-		}
+//		} else {
+			// How handle GameFinished?
+//			for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
+//				log.debug(Markers.ENGINE, getName() + " -    Game finished!");
+//				moveSubscriber.onNext(new GameFinished(move));
+//			}
+//		}
 		
 		for (Subscriber<? super Void> engineStopSubscriber : engineStopSubscribers) {
 			engineStopSubscriber.onCompleted();
@@ -234,7 +235,7 @@ public abstract class UCIEngine implements Engine {
 	}
 
 	private void parseEngineOutputLine(final String line, final PrintStream printStream) {
-//		log.debug(Markers.ENGINE_RAW, getName() + " -             " + line);
+		log.debug(Markers.ENGINE_RAW, getName() + " -             " + line);
 //		System.out.println(getName() + " -             " + line);
 		
 		if (line.equals("uciok")) {

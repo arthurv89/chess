@@ -23,11 +23,12 @@ public class ACE extends CustomEngine {
 	protected Move think(List<String> moveList, ThinkingParams thinkingParams) {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.apply(moveList);
-		return new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator()).think(engineBoard).toMove();
+		AceMove aceMove = new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator()).think(engineBoard);
+		return aceMove.toMove();
 	}
 	
 	public static void main(String[] args) {
-		ImmutableList<String> moves = ImmutableList.<String> of("e2e4", "f7f5");
+		ImmutableList<String> moves = ImmutableList.<String> of("g1h3", "a7a6");
 		
 		ACE ace = new ACE();
 		Move move = ace.think(moves, new ThinkingParams());

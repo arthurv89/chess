@@ -1,7 +1,11 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.logging.LogManager;
 
+import jdk.internal.org.objectweb.asm.tree.MethodInsnNode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.arthurvlug.chess.engine.EngineConstants;
@@ -15,6 +19,8 @@ import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.game.Move;
+
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -61,6 +67,7 @@ public class ACEBoard extends AbstractEngineBoard {
 	public ACEBoard(int toMove) {
 		this();
 		this.toMove = toMove;
+		this.evaluation = Integer.MIN_VALUE;
 		finalizeBitboards();
 	}
 
@@ -98,9 +105,18 @@ public class ACEBoard extends AbstractEngineBoard {
 		if(moveList.isEmpty()) {
 			return;
 		}
+		
+		Color currentToMove = Color.WHITE;
 		for(String sMove : moveList) {
 			Move move = MoveUtils.toMove(sMove);
-			ColoredPiece movingPiece = pieceAt(move.getFrom());;
+			ColoredPiece movingPiece = pieceAt(move.getFrom());
+			
+			if(LoggerFactory.getLogger(getClass()).isDebugEnabled()) {
+				if(currentToMove != movingPiece.getColor()) {
+					System.out.println("Not correct?");
+				}
+				currentToMove = currentToMove.other();
+			}
 			int toMove = EngineConstants.fromColor(movingPiece.getColor());
 			apply(new AceMove(movingPiece.getPieceType(), toMove, move.getFrom(), move.getTo(), move.getPromotionPiece()));
 		}

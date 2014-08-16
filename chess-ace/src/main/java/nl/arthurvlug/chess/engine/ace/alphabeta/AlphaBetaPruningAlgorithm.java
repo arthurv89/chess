@@ -12,12 +12,15 @@ import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+
 @Slf4j
 public class AlphaBetaPruningAlgorithm {
 	private static final ScoreComparator scoreComparator = new ScoreComparator();
 
-	private static final int WHITE_WINS = Integer.MAX_VALUE;
-	private static final int BLACK_WINS = -Integer.MAX_VALUE;
+	private static final int WHITE_WINS = Integer.MAX_VALUE-10;
+	private static final int BLACK_WINS = -WHITE_WINS;
 	private int nodesSearched = 0;
 
 	private BoardEvaluator evaluator;
@@ -52,15 +55,27 @@ public class AlphaBetaPruningAlgorithm {
 
 		// TODO: Remove Sort?
 		successorBoards.sort(scoreComparator);
+		// TODO: Remove
+		Preconditions.checkState(successorBoards.size() > 0);
 
-		ACEBoard bestEngineBoard = new ACEBoard(Integer.MIN_VALUE);
+		ACEBoard bestEngineBoard = new ACEBoard(EngineConstants.WHITE);
+		ImmutableList<AceMove> newBestDepthMoves = null;
 		for (ACEBoard successorBoard : successorBoards) {
-			int score = -alphaBeta(successorBoard, depth-1, -beta, -alpha);
+			ImmutableList<AceMove> depthMoves = ImmutableList.<AceMove> of(successorBoard.lastMove);
+			int score = -alphaBeta(successorBoard, depthMoves, depth-1, -beta, -alpha);
 			successorBoard.setEvaluation(score);
 			if (score > alpha) {
 				alpha = score;
+				newBestDepthMoves = depthMoves;
 				bestEngineBoard = new ACEBoard(successorBoard);
 			}
+		}
+		Preconditions.checkState(bestEngineBoard.getEvaluation() > Integer.MIN_VALUE);
+		// TODO: Remove
+		if(bestEngineBoard.lastMove == null) {
+			System.out.println(newBestDepthMoves);
+			System.out.println(bestEngineBoard);
+			System.out.println();
 		}
 		return bestEngineBoard.lastMove;
 	}
@@ -91,7 +106,7 @@ public class AlphaBetaPruningAlgorithm {
 		return successorBoards;
 	}
 
-	private int alphaBeta(ACEBoard engineBoard, int depth, int alpha, int beta) {
+	private int alphaBeta(ACEBoard engineBoard, List<AceMove> depthMoves, int depth, int alpha, int beta) {
 		nodesSearched++;
 		log.debug(nodesSearched + " nodes searched");
 
@@ -135,6 +150,7 @@ public class AlphaBetaPruningAlgorithm {
 
 		// TODO: Sort
 		succBoards.sort(scoreComparator);
+		ImmutableList<AceMove> bestDepthMoves = null;
 		for (ACEBoard succBoard : succBoards) {
 			// TODO: Implement this?
 			// if (engineBoard.blackCheck() && succColor.isBlack()) {
@@ -148,13 +164,18 @@ public class AlphaBetaPruningAlgorithm {
 			int newDepth = depth == 1 && succBoard.lastMoveWasTakeMove
 					? depth
 					: depth-1;
-			int value = -alphaBeta(succBoard, newDepth, -beta, -alpha);
+			ImmutableList<AceMove> newDepthMoves = ImmutableList.<AceMove> builder()
+					.addAll(depthMoves)
+					.add(succBoard.lastMove)
+					.build();
+			int value = -alphaBeta(succBoard, newDepthMoves, newDepth, -beta, -alpha);
 
 			if (value >= beta) {
 				// Beta cut-off
 				return beta;
 			} else if (value > alpha) {
 				alpha = value;
+				bestDepthMoves = newDepthMoves;
 			}
 		}
 		return alpha;

@@ -106,7 +106,6 @@ public class Game {
 			public void onNext(Move move) {
 				getToMoveClock().stopClock();
 				
-				
 				if(move instanceof GameFinished) {
 					GameFinished gameFinishedMove = (GameFinished) move;
 					applyMove(gameFinishedMove.getMove());

@@ -61,7 +61,9 @@ public abstract class CustomEngine extends UCIEngine {
 			private Object newMoveWaitObject = new Object();
 			
 			private ThinkingParams thinkingParams;
-			private List<String> moveList;
+			private ImmutableList<String> moveList;
+
+			private boolean isPonder;
 
 			@Override
 			public void run() {
@@ -72,9 +74,12 @@ public abstract class CustomEngine extends UCIEngine {
 							try {
 								synchronized (newMoveWaitObject) {
 									newMoveWaitObject.wait();
+									log.info(moveList.toString());
+									Move move = think(moveList, thinkingParams);
+									
+									// TODO: Add ponder
+									write("bestmove " + move);
 								}
-								Move move = think(moveList, thinkingParams);
-								write("bestmove " + move + " ponder e1e2");
 							} catch (InterruptedException | IOException e1) {
 								e1.printStackTrace();
 							}
@@ -95,10 +100,13 @@ public abstract class CustomEngine extends UCIEngine {
 						if("uci".equals(s)) {
 							write("uciok");
 						} else if(s.startsWith("position moves")) {
-							moveList = parsePosition(s);
+							synchronized (newMoveWaitObject) {
+								moveList = parsePosition(s);
+							}
 						} else if(s.startsWith("go")) {
 							thinkingParams = parseParams(s);
 							synchronized (newMoveWaitObject) {
+								isPonder = false;
 								newMoveWaitObject.notify();
 							}
 						}
@@ -123,7 +131,7 @@ public abstract class CustomEngine extends UCIEngine {
 						thinkingParams.setBlackTime(Integer.parseInt(tokenizer.nextToken()));
 					} else if("ponder".equals(token)) {
 						// TODO: Implement pondering
-						
+						isPonder = true;
 					} else {
 						throw new RuntimeException("Could not parse token " + token);
 					}
@@ -132,20 +140,22 @@ public abstract class CustomEngine extends UCIEngine {
 				return thinkingParams;
 			}
 
-			private List<String> parsePosition(String line) {
-				String moves = line.substring("position moves".length()).trim();
-				if(moves.isEmpty()) {
+			private ImmutableList<String> parsePosition(String line) {
+				String sMoves = line.substring("position moves".length()).trim();
+				if(sMoves.isEmpty()) {
 					return ImmutableList.<String> of();
 				}
-				return ImmutableList.<String> copyOf(
-					Splitter.on(' ').splitToList(moves)
+				ImmutableList<String> moves = ImmutableList.<String> copyOf(
+					Splitter.on(' ').splitToList(sMoves)
 				);
+				return moves;
 			}
 		}, "Custom Engine input parser").start();
 	}
 	
 	
 	private void write(String line) throws IOException {
+		log.debug("Wrote {} as output", line);
 		outputWriter.write(line + "\n");
 		outputWriter.flush();
 	}
