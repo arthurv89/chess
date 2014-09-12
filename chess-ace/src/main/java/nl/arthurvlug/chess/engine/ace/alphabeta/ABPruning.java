@@ -16,7 +16,7 @@ public class ABPruning {
 		for(AceMove move : MoveGenerator.generateMoves(board)) {
 			ACEBoard movedBoard = new ACEBoard(board);
 			movedBoard.apply(move);
-			if(movedBoard.inCheck(toMove)) {
+			if(movedBoard.currentPlayerInCheck) {
 				continue;
 			}
 			

@@ -20,11 +20,15 @@ public class PieceUtils {
 	}
 
 	public static String toCharacterString(PieceType pieceType, Color color) {
-		String characterString = Character.toString(pieceCharacterMap.get(pieceType));
+		return Character.toString(toCharacter(pieceType, color));
+	}
+
+	private static Character toCharacter(PieceType pieceType, Color color) {
+		Character pieceChar = pieceCharacterMap.get(pieceType);
 		if(color.isWhite()) {
-			return characterString.toUpperCase();
+			return Character.toUpperCase(pieceChar);
 		} else {
-			return characterString.toLowerCase();
+			return Character.toLowerCase(pieceChar);
 		}
 	}
 

@@ -1,6 +1,8 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.EngineUtils;
 import nl.arthurvlug.chess.engine.ace.AceMove;
@@ -140,6 +142,39 @@ public class ACEBoardTest {
 				BitboardUtils.bitboardFromString("f7"));
 		
 		assertTrue(copyBoard.lastMoveWasTakeMove);
+	}
+
+	@Test
+	public void testBitboardNotCheck() throws Exception {
+		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a3"));
+		engineBoard.finalizeBitboards();
+		engineBoard.generateSuccessorBoards();
+
+		assertFalse(engineBoard.currentPlayerInCheck);
+	}
+
+	@Test
+	public void testBitboardWhiteCheck() throws Exception {
+		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a2"));
+		engineBoard.finalizeBitboards();
+		engineBoard.generateSuccessorBoards();
+
+		assertTrue(engineBoard.currentPlayerInCheck);
+	}
+
+	@Test
+	public void testBitboardBlackCheck() throws Exception {
+		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK);
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a2"));
+		engineBoard.finalizeBitboards();
+		engineBoard.generateSuccessorBoards();
+
+		assertTrue(engineBoard.currentPlayerInCheck);
 	}
 
 	private ACEBoard apply(PieceType pieceType, String from, String to, ACEBoard board, int color) {

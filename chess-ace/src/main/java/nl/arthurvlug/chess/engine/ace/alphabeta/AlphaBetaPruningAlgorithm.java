@@ -10,7 +10,6 @@ import nl.arthurvlug.chess.engine.ace.ScoreComparator;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
-import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -32,7 +31,7 @@ public class AlphaBetaPruningAlgorithm {
 	public AceMove think(ACEBoard engineBoard) {
 		nodesSearched = 0;
 
-		int depth = 2;
+		int depth = 3;
 		AceMove move = alphaBetaRoot(engineBoard, depth);
 		return move;
 	}
@@ -42,7 +41,8 @@ public class AlphaBetaPruningAlgorithm {
 		final int beta = WHITE_WINS;
 
 		
-		List<ACEBoard> successorBoards = generateSuccessorBoards(engineBoard);
+		engineBoard.generateSuccessorBoards();
+		evaluateBoards(engineBoard.getSuccessorBoards());
 
 //		successorBoards.sort(scoreComparator);
 //
@@ -53,6 +53,7 @@ public class AlphaBetaPruningAlgorithm {
 //			}
 //		}
 
+		List<ACEBoard> successorBoards = engineBoard.getSuccessorBoards();
 		// TODO: Remove Sort?
 		successorBoards.sort(scoreComparator);
 		// TODO: Remove
@@ -80,30 +81,11 @@ public class AlphaBetaPruningAlgorithm {
 		return bestEngineBoard.lastMove;
 	}
 
-	private List<ACEBoard> generateSuccessorBoards(final ACEBoard board) {
-		List<ACEBoard> successorBoards = new ArrayList<>();
-
-		List<AceMove> moves = MoveGenerator.generateMoves(board);
-		for (AceMove move : moves) {
-			ACEBoard successorBoard = new ACEBoard(board);
-			successorBoard.apply(move);
-
-			// TODO: Decide on isCheck method. We could also remove it.
-			// if(EngineUtils.isWhite(succColor) && whiteCheck(board,
-			// copyEngineBoardMoves)) {
-			// continue;
-			// }
-			// if(EngineUtils.isBlack(succColor) && blackCheck(board,
-			// copyEngineBoardMoves)) {
-			// continue;
-			// }
-
-			Integer score = sideDependentScore(successorBoard);
+	private void evaluateBoards(List<ACEBoard> successorBoards) {
+		for(ACEBoard successorBoard : successorBoards) {
+			Integer score = successorBoard.sideDependentScore(evaluator);
 			successorBoard.setEvaluation(score);
-
-			successorBoards.add(successorBoard);
 		}
-		return successorBoards;
 	}
 
 	private int alphaBeta(ACEBoard engineBoard, List<AceMove> depthMoves, int depth, int alpha, int beta) {
@@ -115,43 +97,41 @@ public class AlphaBetaPruningAlgorithm {
 		}
 
 		if (depth == 0) {
-			return sideDependentScore(engineBoard);
+			return engineBoard.sideDependentScore(evaluator);
 		}
 		
 		// TODO: Remove this
 		if(engineBoard.white_kings == 0 || engineBoard.black_kings == 0) {
-			return sideDependentScore(engineBoard);
+			return engineBoard.sideDependentScore(evaluator);
 		}
 
-		List<ACEBoard> succBoards = evaluateMoves(engineBoard);
-		// if (engineBoard.whiteCheck() || engineBoard.blackCheck() ||
-		// successorBoards.size > 0) {
-		// if (isMate(succColor, engineBoard, engineBoard.whiteCheck() ||
-		// engineBoard.blackCheck(), engineBoard.stalemate())) {
-		// if (engineBoard.blackMate()) {
-		// if (succColor == EngineConstants.BLACK) {
-		// return BLACK_WINS - depth;
-		// } else {
-		// return WHITE_WINS + depth;
-		// }
-		// }
-		//
-		// if (engineBoard.whiteMate()) {
-		// if (succColor == EngineConstants.BLACK) {
-		// return WHITE_WINS + depth;
-		// } else {
-		// return BLACK_WINS - depth;
-		// }
-		// }
-		//
-		// return 0;
-		// }
-		// }
+		List<ACEBoard> successorBoards = evaluateMoves(engineBoard);
+//		if (engineBoard.whiteCheck() || engineBoard.blackCheck() || successorBoards.size > 0) {
+//			if (isMate(succColor, engineBoard, engineBoard.whiteCheck() || engineBoard.blackCheck(), engineBoard.stalemate())) {
+//				if (engineBoard.blackMate()) {
+//					if (succColor == EngineConstants.BLACK) {
+//						return BLACK_WINS - depth;
+//					} else {
+//						return WHITE_WINS + depth;
+//					}
+//				}
+//
+//				if (engineBoard.whiteMate()) {
+//					if (succColor == EngineConstants.BLACK) {
+//						return WHITE_WINS + depth;
+//					} else {
+//						return BLACK_WINS - depth;
+//					}
+//				}
+//
+//				return 0;
+//			}
+//		}
 
 		// TODO: Sort
-		succBoards.sort(scoreComparator);
+		successorBoards.sort(scoreComparator);
 		ImmutableList<AceMove> bestDepthMoves = null;
-		for (ACEBoard succBoard : succBoards) {
+		for (ACEBoard successorBoard : successorBoards) {
 			// TODO: Implement this?
 			// if (engineBoard.blackCheck() && succColor.isBlack()) {
 			// continue; // Invalid move
@@ -161,14 +141,17 @@ public class AlphaBetaPruningAlgorithm {
 			// continue; // Invalid move
 			// }
 
-			int newDepth = depth == 1 && succBoard.lastMoveWasTakeMove
+			int newDepth = depth == 1 && successorBoard.lastMoveWasTakeMove
 					? depth
 					: depth-1;
+			if(newDepth == depth) {
+				log.info("Depth++ " + depthMoves.toString() + successorBoard.lastMove + "\n" + engineBoard.toString());
+			}
 			ImmutableList<AceMove> newDepthMoves = ImmutableList.<AceMove> builder()
 					.addAll(depthMoves)
-					.add(succBoard.lastMove)
+					.add(successorBoard.lastMove)
 					.build();
-			int value = -alphaBeta(succBoard, newDepthMoves, newDepth, -beta, -alpha);
+			int value = -alphaBeta(successorBoard, newDepthMoves, newDepth, -beta, -alpha);
 
 			if (value >= beta) {
 				// Beta cut-off
@@ -191,22 +174,11 @@ public class AlphaBetaPruningAlgorithm {
 			copyEngineBoard.apply(move);
 			
 			// TODO: Implement Checkmate
-			Integer score = sideDependentScore(copyEngineBoard);
+			Integer score = engineBoard.sideDependentScore(evaluator);
 			copyEngineBoard.setEvaluation(score);
 			
 			scoredMoves.add(copyEngineBoard);
 		}
 		return scoredMoves;
-	}
-
-	private Integer sideDependentScore(ACEBoard engineBoard) {
-		// TODO: Implement checkmate
-		NormalScore score = (NormalScore) evaluator.evaluate(engineBoard);
-		
-		if (engineBoard.toMove == EngineConstants.BLACK) {
-			return -score.getValue();
-		} else {
-			return score.getValue();
-		}
 	}
 }

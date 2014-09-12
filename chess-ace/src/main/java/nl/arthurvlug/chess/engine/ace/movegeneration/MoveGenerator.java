@@ -21,7 +21,11 @@ import com.google.common.collect.ImmutableList;
 
 public class MoveGenerator {
 	public static List<AceMove> generateMoves(ACEBoard engineBoard) {
-		ImmutableList<AceMove> moves = ImmutableList.<AceMove> builder()
+		return generateMoves(engineBoard, true);
+	}
+	
+	public static List<AceMove> generateMoves(ACEBoard engineBoard, boolean validateMoves) {
+		ImmutableList<AceMove> validAndInvalidMoves = ImmutableList.<AceMove> builder()
 			.addAll(kingMoves(engineBoard))
 			.addAll(knightMoves(engineBoard))
 			.addAll(rookMoves(engineBoard))
@@ -29,7 +33,31 @@ public class MoveGenerator {
 			.addAll(queenMoves(engineBoard))
 			// TODO: Implement pawn, queen, bishop, castling, en passent
 			.build();
-		return moves;
+		
+		List<AceMove> validMoves = new ArrayList<>();
+		engineBoard.successorBoards = new ArrayList<>();
+		for (AceMove validOrInvalidMove : validAndInvalidMoves) {
+			ACEBoard successorBoard = new ACEBoard(engineBoard);
+			successorBoard.apply(validOrInvalidMove);
+			
+			boolean isValid = true;
+			if(validateMoves) {
+				generateMoves(successorBoard, false);
+				for(ACEBoard successorSuccessorBoard : successorBoard.successorBoards) {
+					successorSuccessorBoard.finalizeBitboards();
+					if(successorSuccessorBoard.white_kings == 0L && engineBoard.toMove == EngineConstants.WHITE
+							|| successorSuccessorBoard.black_kings == 0L && engineBoard.toMove == EngineConstants.BLACK) {
+						isValid = false;
+					}
+				}
+			}
+
+			if(isValid) {
+				validMoves.add(validOrInvalidMove);
+				engineBoard.successorBoards.add(successorBoard);
+			}
+		}
+		return validMoves;
 	}
 
 	private static List<AceMove> queenMoves(ACEBoard engineBoard) {
