@@ -201,7 +201,7 @@ public class Xray {
 		public Long apply(Coordinates coordinates) {
 			long deg225Positions = 0L;
 			for (int i = 1; i <= 7; i++) {
-				deg225Positions |= board(locate(coordinates, i, -i));
+				deg225Positions |= board(locate(coordinates, -i, -i));
 			}
 			return deg225Positions;
 		}
@@ -212,7 +212,7 @@ public class Xray {
 		public Long apply(Coordinates coordinates) {
 			long deg3155Positions = 0L;
 			for (int i = 1; i <= 7; i++) {
-				deg3155Positions |= board(locate(coordinates, -i, -i));
+				deg3155Positions |= board(locate(coordinates, i, -i));
 			}
 			return deg3155Positions;
 		}

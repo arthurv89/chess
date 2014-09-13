@@ -77,7 +77,6 @@ public class ACEBoardTest {
 				BitboardUtils.bitboardFromString("e7") |
 				BitboardUtils.bitboardFromString("f7")
 		);
-		EngineTestUtils.compare(expectedBlackEnemyAndEmptyBoard, copyBoard.enemy_and_empty_board);
 		assertEquals(expectedBlackEnemyAndEmptyBoard, copyBoard.enemy_and_empty_board);
 		
 		

@@ -32,6 +32,6 @@ public class ACE extends CustomEngine {
 		
 		ACE ace = new ACE();
 		Move move = ace.think(moves, new ThinkingParams());
-		System.out.println(move);
+//		System.out.println(move);
 	}
 }

@@ -31,7 +31,7 @@ public class MoveGenerator {
 			.addAll(rookMoves(engineBoard))
 			.addAll(bishopMoves(engineBoard))
 			.addAll(queenMoves(engineBoard))
-			// TODO: Implement pawn, queen, bishop, castling, en passent
+			// TODO: Implement pawn, castling, en passent
 			.build();
 		
 		List<AceMove> validMoves = new ArrayList<>();

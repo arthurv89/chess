@@ -73,7 +73,7 @@ public class BoardWindow extends Window {
 	 
 	@Subscribe
 	public void on(MoveAppliedEvent event) {
-		System.out.println(game.getBoard().toString() + "\n");
+//		System.out.println(game.getBoard().toString() + "\n");
 		repaint();
 	}
 	

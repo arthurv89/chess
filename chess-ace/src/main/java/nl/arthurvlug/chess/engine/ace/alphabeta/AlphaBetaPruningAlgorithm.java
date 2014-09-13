@@ -17,8 +17,8 @@ import com.google.common.collect.ImmutableList;
 @Slf4j
 public class AlphaBetaPruningAlgorithm {
 	private static final ScoreComparator scoreComparator = new ScoreComparator();
-
-	private static final int WHITE_WINS = Integer.MAX_VALUE-10;
+	
+	private static final int WHITE_WINS = 1000000000;
 	private static final int BLACK_WINS = -WHITE_WINS;
 	private int nodesSearched = 0;
 
@@ -71,12 +71,16 @@ public class AlphaBetaPruningAlgorithm {
 				bestEngineBoard = new ACEBoard(successorBoard);
 			}
 		}
+		
+		// TODO: Remove
+		bestEngineBoard.finalizeBitboards();
 		Preconditions.checkState(bestEngineBoard.getEvaluation() > Integer.MIN_VALUE);
+		
 		// TODO: Remove
 		if(bestEngineBoard.lastMove == null) {
-			System.out.println(newBestDepthMoves);
-			System.out.println(bestEngineBoard);
-			System.out.println();
+//			System.out.println(newBestDepthMoves);
+//			System.out.println(bestEngineBoard);
+//			System.out.println();
 		}
 		return bestEngineBoard.lastMove;
 	}
@@ -90,7 +94,7 @@ public class AlphaBetaPruningAlgorithm {
 
 	private int alphaBeta(ACEBoard engineBoard, List<AceMove> depthMoves, int depth, int alpha, int beta) {
 		nodesSearched++;
-		log.debug(nodesSearched + " nodes searched (depth=" + depth + ")");
+//		log.debug(nodesSearched + " nodes searched (depth=" + depth + ")");
 
 		if (engineBoard.fiftyMove >= 50 || engineBoard.repeatedMove >= 3) {
 			return 0;
@@ -145,7 +149,7 @@ public class AlphaBetaPruningAlgorithm {
 					? depth
 					: depth-1;
 			if(newDepth == depth) {
-				log.info("Depth++ " + depthMoves.toString() + successorBoard.lastMove + "\n" + engineBoard.toString());
+//				log.info("Depth++ " + depthMoves.toString() + successorBoard.lastMove + "\n" + engineBoard.toString());
 			}
 			ImmutableList<AceMove> newDepthMoves = ImmutableList.<AceMove> builder()
 					.addAll(depthMoves)
