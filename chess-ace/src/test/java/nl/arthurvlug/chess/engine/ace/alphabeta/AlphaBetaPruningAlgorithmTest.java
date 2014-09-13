@@ -24,7 +24,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("h8"));
 		engineBoard.finalizeBitboards();
 		
-		AceMove bestMove = algorithm.think(engineBoard);
+		AceMove bestMove = algorithm.think(engineBoard, 2);
 		assertEquals(MoveUtils.toMove("a1b2"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 
@@ -36,7 +36,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("h8"));
 		engineBoard.finalizeBitboards();
 		
-		AceMove bestMove = algorithm.think(engineBoard);
+		AceMove bestMove = algorithm.think(engineBoard, 2);
 		assertEquals(MoveUtils.toMove("a1b2"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 
@@ -48,7 +48,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("d4"));
 		engineBoard.finalizeBitboards();
 		
-		AceMove bestMove = algorithm.think(engineBoard);
+		AceMove bestMove = algorithm.think(engineBoard, 2);
 		assertEquals(MoveUtils.toMove("b2a1"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 
@@ -63,7 +63,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("h8"));
 		engineBoard.finalizeBitboards();
 		
-		AceMove bestMove = algorithm.think(engineBoard);
+		AceMove bestMove = algorithm.think(engineBoard, 2);
 		assertEquals(MoveUtils.toMove("a2b3"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 
@@ -71,7 +71,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void testStartPosition() {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		
-		AceMove bestMove = algorithm.think(engineBoard);
+		AceMove bestMove = algorithm.think(engineBoard, 2);
 		assertEquals(MoveUtils.toMove("b1a3"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 }

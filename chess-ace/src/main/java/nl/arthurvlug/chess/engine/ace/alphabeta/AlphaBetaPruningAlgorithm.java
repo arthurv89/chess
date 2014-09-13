@@ -28,10 +28,9 @@ public class AlphaBetaPruningAlgorithm {
 		this.evaluator = evaluator;
 	}
 
-	public AceMove think(ACEBoard engineBoard) {
+	public AceMove think(ACEBoard engineBoard, int depth) {
 		nodesSearched = 0;
 
-		int depth = 3;
 		AceMove move = alphaBetaRoot(engineBoard, depth);
 		return move;
 	}
@@ -63,7 +62,12 @@ public class AlphaBetaPruningAlgorithm {
 		ImmutableList<AceMove> newBestDepthMoves = null;
 		for (ACEBoard successorBoard : successorBoards) {
 			ImmutableList<AceMove> depthMoves = ImmutableList.<AceMove> of(successorBoard.lastMove);
-			int score = -alphaBeta(successorBoard, depthMoves, depth-1, -beta, -alpha);
+
+			int newDepth = depth == 1 && successorBoard.lastMoveWasTakeMove
+					? depth
+					: depth-1;
+			
+			int score = -alphaBeta(successorBoard, depthMoves, newDepth, -beta, -alpha);
 			successorBoard.setEvaluation(score);
 			if (score > alpha) {
 				alpha = score;
