@@ -16,7 +16,6 @@ import nl.arthurvlug.chess.utils.Markers;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.MyEmptyObserver;
 import nl.arthurvlug.chess.utils.NamedThread;
-import nl.arthurvlug.chess.utils.game.GameFinished;
 import nl.arthurvlug.chess.utils.game.Move;
 
 import org.apache.commons.io.IOUtils;

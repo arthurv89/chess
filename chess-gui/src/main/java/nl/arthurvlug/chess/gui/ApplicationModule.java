@@ -2,7 +2,6 @@ package nl.arthurvlug.chess.gui;
 
 import nl.arthurvlug.chess.engine.ace.ACE;
 import nl.arthurvlug.chess.engine.binary.FruitEngine;
-import nl.arthurvlug.chess.engine.binary.RybkaEngine;
 import nl.arthurvlug.chess.engine.game.Clock;
 import nl.arthurvlug.chess.gui.components.board.ClockPane;
 import nl.arthurvlug.chess.gui.components.board.MovesPane;

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.EngineUtils;
 import nl.arthurvlug.chess.engine.ace.AceMove;
-import nl.arthurvlug.chess.engine.ace.utils.EngineTestUtils;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 

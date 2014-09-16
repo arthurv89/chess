@@ -1,8 +1,8 @@
 package nl.arthurvlug.chess.utils.board;
 
-import nl.arthurvlug.chess.utils.MoveUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import nl.arthurvlug.chess.utils.MoveUtils;
 
 @Value
 @EqualsAndHashCode

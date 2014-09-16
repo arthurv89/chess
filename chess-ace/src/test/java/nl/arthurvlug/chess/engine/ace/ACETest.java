@@ -8,27 +8,27 @@ import org.junit.Test;
 public class ACETest {
 	@Test
 	public void testTrap_Depth2() {
-		checkAceMove("b1c3 b8c6 g1f3 e7e5", not("f3e5"), 1);
+		checkAceMove("b1c3 b8c6 g1f3 e7e5", not(is("f3e5")), 1);
 	}
 	
 	@Test
 	public void testTrap_Depth1() {
-		checkAceMove("b1c3 b8c6 g1f3 e7e5", not("f3e5"), 1);
+		checkAceMove("b1c3 b8c6 g1f3 e7e5", not(is("f3e5")), 1);
 	}
 	
 	@Test
 	public void testTrap_Depth1_black() {
-		checkAceMove("e2e4 g8f6 b1c3", not("f6e4"), 1);
+		checkAceMove("e2e4 g8f6 b1c3", not(is("f6e4")), 1);
 	}
 
 	@Test
 	public void testTrap_Depth2_black() {
-		checkAceMove("e2e4 g8f6 b1c3", not("f6e4"), 2);
+		checkAceMove("e2e4 g8f6 b1c3", not(is("f6e4")), 2);
 	}
 
 	@Test
 	public void testDontLetOpponentTakeKnight() {
-		checkAceMove("b1a3 b8c6 g1f3 g8f6 a3b1 e7e5 b1a3 e5e4", is("f3g1"), 2);
+		checkAceMove("g1f3 b8c6 f3e5", string -> string.toString().startsWith("f3"), 2);
 	}
 
 	
@@ -44,11 +44,11 @@ public class ACETest {
 	
 	
 	private Function<Move, Boolean> is(String string) {
-		return move -> move.equals(string);
+		return move -> move.toString().equals(string);
 	}
 
-	private Function<Move, Boolean> not(final String string) {
-		return move -> !move.equals(string);
+	private Function<Move, Boolean> not(Function<Move, Boolean> function) {
+		return move -> !function.apply(move);
 	}
 
 	private void checkAceMove(String sMoves, Function<Move, Boolean> expect, int depth) {
