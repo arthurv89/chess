@@ -27,6 +27,13 @@
 		<module>chess-utils</module>
 	</modules>
 
+	<repositories>
+		<repository>
+			<id>atlassian-public</id>
+			<url>https://maven.atlassian.com/content/groups/public/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -50,11 +57,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.8.1</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.atlassian.fugue</groupId>
-			<artifactId>fugue</artifactId>
-			<version>2.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -82,6 +84,11 @@
 			<artifactId>lombok</artifactId>
 			<version>1.14.4</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.atlassian.fugue</groupId>
+			<artifactId>fugue</artifactId>
+			<version>2.1.0</version>
 		</dependency>
 	</dependencies>
 </project>

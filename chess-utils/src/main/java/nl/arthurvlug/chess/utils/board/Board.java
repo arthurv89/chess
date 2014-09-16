@@ -14,12 +14,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 public class Board {
-	private static final Function<ColoredPiece, String> PIECE_TO_STRING = new Function<ColoredPiece, String>() {
-		@Override
-		public String apply(ColoredPiece input) {
-			return input.getCharacterString();
-		}
-	};
+	private static final Function<ColoredPiece, String> PIECE_TO_STRING = input -> input.getCharacterString();
 	
 	@Getter
 	private ImmutableList<Field> fields;

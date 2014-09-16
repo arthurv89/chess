@@ -26,11 +26,11 @@ public class MoveGenerator {
 	
 	public static List<AceMove> generateMoves(ACEBoard engineBoard, boolean validateMoves) {
 		ImmutableList<AceMove> validAndInvalidMoves = ImmutableList.<AceMove> builder()
-			.addAll(kingMoves(engineBoard))
+//			.addAll(kingMoves(engineBoard))
 			.addAll(knightMoves(engineBoard))
-			.addAll(rookMoves(engineBoard))
-			.addAll(bishopMoves(engineBoard))
-			.addAll(queenMoves(engineBoard))
+//			.addAll(rookMoves(engineBoard))
+//			.addAll(bishopMoves(engineBoard))
+//			.addAll(queenMoves(engineBoard))
 			// TODO: Implement pawn, castling, en passent
 			.build();
 		

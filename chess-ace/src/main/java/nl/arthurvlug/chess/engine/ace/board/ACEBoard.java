@@ -66,7 +66,7 @@ public class ACEBoard extends AbstractEngineBoard {
 
 	@Getter
 	@Setter
-	private int evaluation;
+	private int sideBasedEvaluation;
 
 	public List<ACEBoard> successorBoards;
 
@@ -78,7 +78,7 @@ public class ACEBoard extends AbstractEngineBoard {
 	public ACEBoard(int toMove) {
 		this();
 		this.toMove = toMove;
-		this.evaluation = Integer.MIN_VALUE;
+		this.sideBasedEvaluation = Integer.MIN_VALUE;
 		finalizeBitboards();
 	}
 
@@ -347,11 +347,14 @@ public class ACEBoard extends AbstractEngineBoard {
 		// TODO: Implement checkmate
 		NormalScore score = (NormalScore) evaluator.evaluate(this);
 		
+		int sideDependentScore;
 		if (toMove == EngineConstants.BLACK) {
-			return -score.getValue();
+			sideDependentScore = -score.getValue();
 		} else {
-			return score.getValue();
+			sideDependentScore = score.getValue();
 		}
+		this.setSideBasedEvaluation(sideDependentScore);
+		return sideDependentScore;
 	}
 	
 	@Override

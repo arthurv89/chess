@@ -71,7 +71,7 @@ public class AlphaBetaPruningAlgorithm {
 					: depth-1;
 			
 			int score = -alphaBeta(successorBoard, depthMoves, newDepth, -beta, -alpha, 1-(depth - newDepth));
-			successorBoard.setEvaluation(score);
+			successorBoard.setSideBasedEvaluation(score);
 			if (score > alpha) {
 				alpha = score;
 				newBestDepthMoves = depthMoves;
@@ -81,7 +81,7 @@ public class AlphaBetaPruningAlgorithm {
 		
 		// TODO: Remove
 		bestEngineBoard.finalizeBitboards();
-		if(bestEngineBoard.getEvaluation() == Integer.MIN_VALUE) {
+		if(bestEngineBoard.getSideBasedEvaluation() == Integer.MIN_VALUE) {
 			return successorBoards.get(0).lastMove;
 		}
 //		Preconditions.checkState(bestEngineBoard.getEvaluation() > Integer.MIN_VALUE);
@@ -98,7 +98,7 @@ public class AlphaBetaPruningAlgorithm {
 	private void evaluateBoards(List<ACEBoard> successorBoards) {
 		for(ACEBoard successorBoard : successorBoards) {
 			Integer score = successorBoard.sideDependentScore(evaluator);
-			successorBoard.setEvaluation(score);
+			successorBoard.setSideBasedEvaluation(score);
 		}
 	}
 
@@ -198,7 +198,7 @@ public class AlphaBetaPruningAlgorithm {
 			
 			// TODO: Implement Checkmate
 			Integer score = engineBoard.sideDependentScore(evaluator);
-			copyEngineBoard.setEvaluation(score);
+			copyEngineBoard.setSideBasedEvaluation(score);
 			
 			scoredMoves.add(copyEngineBoard);
 		}
