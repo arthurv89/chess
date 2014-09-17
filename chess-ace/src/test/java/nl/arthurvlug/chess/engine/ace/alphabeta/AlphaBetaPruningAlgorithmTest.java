@@ -100,4 +100,19 @@ public class AlphaBetaPruningAlgorithmTest {
 		AceMove bestMove = algorithm.think(engineBoard, 3);
 		assertEquals(MoveUtils.toMove("d8d2"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
+	
+	@Test
+	public void testCantTakePieceBecauseOfPenning() {
+		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a2"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, BitboardUtils.toIndex("b2"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, BitboardUtils.toIndex("c1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KNIGHT, BitboardUtils.toIndex("c4"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, BitboardUtils.toIndex("c2"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("h8"));
+		engineBoard.finalizeBitboards();
+		
+		AceMove bestMove = algorithm.think(engineBoard, 3);
+		assertEquals(MoveUtils.toMove("d8d2"), EngineTestUtils.engineMoveToMove(bestMove));
+	}
 }

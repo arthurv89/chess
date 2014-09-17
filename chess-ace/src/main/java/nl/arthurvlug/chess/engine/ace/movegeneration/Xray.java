@@ -210,13 +210,23 @@ public class Xray {
 	private static Function<Coordinates, Long> deg315BoardFunction = new Function<Coordinates, Long>() {
 		@Override
 		public Long apply(Coordinates coordinates) {
-			long deg3155Positions = 0L;
+			long deg315Positions = 0L;
 			for (int i = 1; i <= 7; i++) {
-				deg3155Positions |= board(locate(coordinates, i, -i));
+				deg315Positions |= board(locate(coordinates, i, -i));
 			}
-			return deg3155Positions;
+			return deg315Positions;
 		}
 	};
+
+	private static Function<Coordinates, Long> pawnXRayWhiteOneFieldMove = coordinates -> coordinates.getY()%7 == 0 ? 0 : board(locate(coordinates, 0, 1));
+	private static Function<Coordinates, Long> pawnXRayWhiteTwoFieldsMove = coordinates -> coordinates.getY() == 1 ? board(locate(coordinates, 0, 2)) : 0;
+	private static Function<Coordinates, Long> pawnXRayWhiteTakeMove = coordinates -> board(locate(coordinates, 1, 1)) | board(locate(coordinates, -1, 1));
+	
+
+	private static Function<Coordinates, Long> pawnXRayBlackOneFieldMove = coordinates -> coordinates.getY()%7 == 0 ? 0 : board(locate(coordinates, 0, -1));
+	private static Function<Coordinates, Long> pawnXRayBlackTwoFieldsMove = coordinates -> coordinates.getY() == 6 ? board(locate(coordinates, 0, -2)) : 0;
+	private static Function<Coordinates, Long> pawnXRayBlackTakeMove = coordinates -> board(locate(coordinates, 1, -1)) | board(locate(coordinates, -1, -1));
+	
 
 	final static long[] left_board = xRay(leftBoardFunction);
 	final static long[] right_board = xRay(rightBoardFunction);
@@ -240,8 +250,14 @@ public class Xray {
 	final static long[] pawn_xray_white_capture = xRay(pawnXRayWhiteCaptureFunction);
 	final static long[] pawn_xray_black = xRay(pawnXRayBlackFunction);
 	final static long[] pawn_xray_black_capture = xRay(pawnXRayBlackCaptureFunction);
-	
-	
+
+	final static long[] pawn_xray_white_one_field_move = xRay(pawnXRayWhiteOneFieldMove);
+	final static long[] pawn_xray_white_two_field_move = xRay(pawnXRayWhiteTwoFieldsMove);
+	final static long[] pawn_xray_white_take_field_move = xRay(pawnXRayWhiteTakeMove);
+
+	final static long[] pawn_xray_black_one_field_move = xRay(pawnXRayBlackOneFieldMove);
+	final static long[] pawn_xray_black_two_field_move = xRay(pawnXRayBlackTwoFieldsMove);
+	final static long[] pawn_xray_black_take_field_move = xRay(pawnXRayBlackTakeMove);
 	
 	
 

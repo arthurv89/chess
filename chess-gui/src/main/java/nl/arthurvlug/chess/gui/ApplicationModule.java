@@ -15,7 +15,7 @@ import com.google.inject.AbstractModule;
 public class ApplicationModule extends AbstractModule {
 	@Override
 	protected void configure() {
-		Clock whiteClock = new Clock(10, 0);
+		Clock whiteClock = new Clock(1, 0);
 		Clock blackClock = new Clock(1, 0);
 
 //		WhitePlayer whitePlayer = new WhitePlayer(new RybkaEngine());

@@ -264,6 +264,83 @@ public class XRayTest {
 		assertEquals(h1, xRayBitboard(xray, "h1"));
 	}
 	
+	// TODO: Write for pawn moves
+	@Test
+	public void testWhiteOneFieldMove() {
+		long[] xray = Xray.pawn_xray_white_one_field_move;
+		assertEquals(64, xray.length);
+
+		long c6 = bitboard("c7");
+		assertEquals(c6, xRayBitboard(xray, "c6"));
+	}
+
+	@Test
+	public void testBlackOneFieldMove() {
+		long[] xray = Xray.pawn_xray_black_one_field_move;
+		assertEquals(64, xray.length);
+
+		long a7 = bitboard("a6");
+		assertEquals(a7, xRayBitboard(xray, "a7"));
+	}
+
+	@Test
+	public void testWhiteTwoFieldMove() {
+		long[] xray = Xray.pawn_xray_black_two_field_move;
+		assertEquals(64, xray.length);
+
+		long a7 = bitboard("a5");
+		assertEquals(a7, xRayBitboard(xray, "a7"));
+		
+		long a6 = bitboard("");
+		assertEquals(a6, xRayBitboard(xray, "a6"));
+	}
+	
+	@Test
+	public void testBlackTwoFieldMove() {
+		long[] xray = Xray.pawn_xray_white_two_field_move;
+		assertEquals(64, xray.length);
+
+		long a2 = bitboard("a4");
+		assertEquals(a2, xRayBitboard(xray, "a2"));
+		
+		long a3 = bitboard("");
+		assertEquals(a3, xRayBitboard(xray, "a3"));
+	}
+	
+	@Test
+	public void testWhiteTakeMove() {
+		long[] xray = Xray.pawn_xray_white_take_field_move;
+		assertEquals(64, xray.length);
+
+		long a3 = bitboard("b4");
+		assertEquals(a3, xRayBitboard(xray, "a3"));
+		
+		long e3 = bitboard("d4 f4");
+		assertEquals(e3, xRayBitboard(xray, "e3"));
+	}
+	
+	@Test
+	public void testBlackTakeMove() {
+		long[] xray = Xray.pawn_xray_black_take_field_move;
+		assertEquals(64, xray.length);
+
+		long b4 = bitboard("a3 c3");
+		assertEquals(b4, xRayBitboard(xray, "b4"));
+		
+		long a3 = bitboard("b2");
+		assertEquals(a3, xRayBitboard(xray, "a3"));
+		
+		long h3 = bitboard("g2");
+		assertEquals(h3, xRayBitboard(xray, "h3"));
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	
 
 	private long xRayBitboard(long[] xray, String fieldName) {

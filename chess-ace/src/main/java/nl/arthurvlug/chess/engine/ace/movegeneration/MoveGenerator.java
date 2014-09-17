@@ -1,14 +1,12 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
-import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.deg135_board;
-import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.deg225_board;
-import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.deg315_board;
-import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.deg45_board;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
@@ -19,6 +17,7 @@ import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import com.atlassian.fugue.Option;
 import com.google.common.collect.ImmutableList;
 
+@Slf4j
 public class MoveGenerator {
 	public static List<AceMove> generateMoves(ACEBoard engineBoard) {
 		return generateMoves(engineBoard, true);
@@ -26,12 +25,12 @@ public class MoveGenerator {
 	
 	public static List<AceMove> generateMoves(ACEBoard engineBoard, boolean validateMoves) {
 		ImmutableList<AceMove> validAndInvalidMoves = ImmutableList.<AceMove> builder()
-//			.addAll(pawnMoves(engineBoard))
-//			.addAll(kingMoves(engineBoard))
 			.addAll(knightMoves(engineBoard))
-//			.addAll(rookMoves(engineBoard))
-//			.addAll(bishopMoves(engineBoard))
+			.addAll(pawnMoves(engineBoard))
+			.addAll(rookMoves(engineBoard))
+			.addAll(bishopMoves(engineBoard))
 			.addAll(queenMoves(engineBoard))
+			.addAll(kingMoves(engineBoard))
 			// TODO: Implement pawn, castling, en passent
 			.build();
 		
@@ -56,9 +55,35 @@ public class MoveGenerator {
 			if(isValid) {
 				validMoves.add(validOrInvalidMove);
 				engineBoard.successorBoards.add(successorBoard);
+			} else {
+				log.debug("Not valid position: " + validOrInvalidMove);
 			}
 		}
 		return validMoves;
+	}
+
+	private static List<AceMove> pawnMoves(ACEBoard engineBoard) {
+		long[] pawnXrayOneFieldMove = engineBoard.toMove == EngineConstants.WHITE ? pawn_xray_white_one_field_move : pawn_xray_black_one_field_move;
+		long[] pawnXrayTwoFieldMove = engineBoard.toMove == EngineConstants.WHITE ? pawn_xray_white_two_field_move : pawn_xray_black_two_field_move;;
+		long[] pawnXrayTakeFieldMove = engineBoard.toMove == EngineConstants.WHITE ? pawn_xray_white_take_field_move : pawn_xray_black_take_field_move;;
+		
+		List<AceMove> moves = new ArrayList<>();
+		long pawns = pawns(engineBoard);
+		while(pawns != 0L) {
+			int sq = Long.numberOfTrailingZeros(pawns);
+			pawns -= 1L << sq;
+			
+			long oneFieldMove = pawnXrayOneFieldMove[sq] & engineBoard.empty_board;
+			moves.addAll(moves(sq, oneFieldMove, PieceType.PAWN, engineBoard.toMove));
+			
+			if(oneFieldMove != 0) {
+				long twoFieldMove = pawnXrayTwoFieldMove[sq] & engineBoard.empty_board;
+				moves.addAll(moves(sq, twoFieldMove, PieceType.PAWN, engineBoard.toMove));
+			}
+			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.enemy_board;
+			moves.addAll(moves(sq, twoFieldsMove, PieceType.PAWN, engineBoard.toMove));
+		}
+		return moves;
 	}
 
 	private static List<AceMove> queenMoves(ACEBoard engineBoard) {
@@ -127,13 +152,13 @@ public class MoveGenerator {
 	}
 
 	private static long rookMoves(ACEBoard engineBoard, int sq) {
-		long right_moves = Xray.right_board[sq] & engineBoard.occupied_board;
+		long right_moves = right_board[sq] & engineBoard.occupied_board;
 		right_moves = (right_moves<<1) | (right_moves<<2) | (right_moves<<3) | (right_moves<<4) | (right_moves<<5) | (right_moves<<6); 
-		right_moves = right_moves & Xray.right_board[sq];
-		right_moves = (right_moves ^ Xray.right_board[sq]) & engineBoard.enemy_and_empty_board;
-		long left_moves = Xray.left_board[sq] & engineBoard.occupied_board;
+		right_moves = right_moves & right_board[sq];
+		right_moves = (right_moves ^ right_board[sq]) & engineBoard.enemy_and_empty_board;
+		long left_moves = left_board[sq] & engineBoard.occupied_board;
 		left_moves = (left_moves>>1) | (left_moves>>2) | (left_moves>>3) | (left_moves>>4) | (left_moves>>5) | (left_moves>>6); 
-		left_moves = left_moves & Xray.left_board[sq];
+		left_moves = left_moves & left_board[sq];
 		left_moves = (left_moves ^ Xray.left_board[sq]) & engineBoard.enemy_and_empty_board;
 		long up_moves = Xray.up_board[sq] & engineBoard.occupied_board;
 		up_moves = (up_moves<<8) | (up_moves<<16) | (up_moves<<24) | (up_moves<<32) | (up_moves<<40) | (up_moves<<48); 
@@ -182,6 +207,12 @@ public class MoveGenerator {
 			bitboard -= 1L << onePos;
 		}
 		return moves;
+	}
+	
+	private static long pawns(ACEBoard engineBoard) {
+		return engineBoard.toMove == EngineConstants.WHITE
+				? engineBoard.white_pawns
+				: engineBoard.black_pawns;
 	}
 
 	private static long queens(ACEBoard engineBoard) {
