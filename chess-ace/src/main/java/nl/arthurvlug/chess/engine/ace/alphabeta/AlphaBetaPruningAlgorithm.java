@@ -3,6 +3,7 @@ package nl.arthurvlug.chess.engine.ace.alphabeta;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.AceMove;
@@ -20,6 +21,11 @@ public class AlphaBetaPruningAlgorithm {
 	
 	private static final int WHITE_WINS = 1000000000;
 	private static final int BLACK_WINS = -WHITE_WINS;
+	
+	// TODO: Remove?
+	private static final int maxExtraMoves = 100;
+	
+	@Getter
 	private int nodesSearched = 0;
 
 	private BoardEvaluator evaluator;
@@ -67,7 +73,7 @@ public class AlphaBetaPruningAlgorithm {
 					? depth
 					: depth-1;
 			
-			int score = -alphaBeta(successorBoard, depthMoves, newDepth, -beta, -alpha);
+			int score = -alphaBeta(successorBoard, depthMoves, newDepth, -beta, -alpha, 0);
 			successorBoard.setEvaluation(score);
 			if (score > alpha) {
 				alpha = score;
@@ -96,7 +102,7 @@ public class AlphaBetaPruningAlgorithm {
 		}
 	}
 
-	private int alphaBeta(ACEBoard engineBoard, List<AceMove> depthMoves, int depth, int alpha, int beta) {
+	private int alphaBeta(ACEBoard engineBoard, List<AceMove> depthMoves, int depth, int alpha, int beta, int extraMoves) {
 		nodesSearched++;
 //		log.debug(nodesSearched + " nodes searched (depth=" + depth + ")");
 
@@ -149,17 +155,17 @@ public class AlphaBetaPruningAlgorithm {
 			// continue; // Invalid move
 			// }
 
-			int newDepth = depth == 1 && successorBoard.lastMoveWasTakeMove
+			int newDepth = depth == 1 && successorBoard.lastMoveWasTakeMove && extraMoves <= maxExtraMoves
 					? depth
 					: depth-1;
 			if(newDepth == depth) {
-//				log.info("Depth++ " + depthMoves.toString() + successorBoard.lastMove + "\n" + engineBoard.toString());
+//				log.info("Depth++ {} {}\n{}", depthMoves.toString(), successorBoard.lastMove, engineBoard.toString());
 			}
 			ImmutableList<AceMove> newDepthMoves = ImmutableList.<AceMove> builder()
-					.addAll(depthMoves)
-					.add(successorBoard.lastMove)
+//					.addAll(depthMoves)
+//					.add(successorBoard.lastMove)
 					.build();
-			int value = -alphaBeta(successorBoard, newDepthMoves, newDepth, -beta, -alpha);
+			int value = -alphaBeta(successorBoard, newDepthMoves, newDepth, -beta, -alpha, extraMoves+1);
 
 			if (value >= beta) {
 				// Beta cut-off

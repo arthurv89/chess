@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <configuration debug="true">
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
@@ -7,7 +7,7 @@
 	</appender>
 
 	<appender name="FILE_ALL" class="ch.qos.logback.core.FileAppender">
-		<file>/home/coding/chess.log</file>
+		<file>/home/arthur/workspace/logs/chess.log</file>
 		<append>false</append>
 		<encoder>
 			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
@@ -15,7 +15,7 @@
 	</appender>
 
 	<appender name="FILE_ENGINE" class="ch.qos.logback.core.FileAppender">
-		<file>/home/coding/chess-engine.log</file>
+		<file>/home/arthur/workspace/logs/chess-engine.log</file>
 		<append>false</append>
 		<encoder>
 			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
@@ -31,7 +31,7 @@
 
 	<appender name="FILE_MOVE" class="ch.qos.logback.core.FileAppender">
 		<append>false</append>
-		<file>/home/coding/chess-move.log</file>
+		<file>llchess-move.log</file>
 		<encoder>
 			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>
@@ -46,7 +46,7 @@
 
 	<appender name="FILE_ENGINE_RAW" class="ch.qos.logback.core.FileAppender">
 		<append>false</append>
-		<file>/home/coding/chess-engine-raw.log</file>
+		<file>/home/arthur/workspace/logs/chess-engine-raw.log</file>
 		<encoder>
 			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>
@@ -61,7 +61,7 @@
 
 	<appender name="FILE_GAME" class="ch.qos.logback.core.FileAppender">
 		<append>false</append>
-		<file>/home/coding/chess-game.log</file>
+		<file>/home/arthur/workspace/logs/chess-game.log</file>
 		<encoder>
 			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>
@@ -80,5 +80,6 @@
 		<appender-ref ref="FILE_MOVE" />
 		<appender-ref ref="FILE_GAME" />
 		<appender-ref ref="FILE_ENGINE_RAW" />
+		<appender-ref ref="CONSOLE" />
 	</root>
 </configuration>  
