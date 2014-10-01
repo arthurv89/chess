@@ -1,9 +1,17 @@
 package nl.arthurvlug.chess.engine.ace;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 import java.util.function.Function;
 
+import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
+import nl.arthurvlug.chess.utils.game.Move;
+
 import org.junit.Test;
+
+import com.google.common.base.Splitter;
 
 public class ACETest {
 	
@@ -32,18 +40,6 @@ public class ACETest {
 		checkAceMove("e2e4 g8f6 e4e5", string -> string.toString().startsWith("f6"), 2);
 	}
 
-	
-	@Test
-	public void testTrap_Depth1_black() {
-		List<String> moves = Splitter.on(' ').splitToList("e2e4 g8f6 b1c3");
-		
-		ACE ace = new ACE();
-		ace.depth = 1;
-		Move move = ace.think(moves, new ThinkingParams());
-		System.out.println(move);
-		assertFalse(move.toString().equals("f6e4"));
-	
-	
 	private Function<Move, Boolean> is(String string) {
 		return move -> move.toString().equals(string);
 	}
@@ -56,7 +52,7 @@ public class ACETest {
 		List<String> moves = Splitter.on(' ').splitToList(sMoves);
 		
 		ACE ace = new ACE();
-		ace.DEPTH = depth;
+		ace.depth = depth;
 		Move move = ace.think(moves, new ThinkingParams());
 		System.out.println(move);
 		assertTrue(expect.apply(move));

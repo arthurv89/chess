@@ -27,13 +27,6 @@
 		<module>chess-utils</module>
 	</modules>
 
-	<repositories>
-		<repository>
-			<id>atlassian-public</id>
-			<url>https://maven.atlassian.com/content/groups/public/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
