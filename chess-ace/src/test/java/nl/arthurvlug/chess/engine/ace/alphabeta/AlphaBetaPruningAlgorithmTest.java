@@ -16,62 +16,88 @@ import org.junit.Test;
 public class AlphaBetaPruningAlgorithmTest {
 	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator());
 
+//	@Test
+//	public void testTakePieceWhite() {
+//		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
+//		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
+//		engineBoard.addPiece(EngineConstants.BLACK, PieceType.BISHOP, BitboardUtils.toIndex("b2"));
+//		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("h8"));
+//		engineBoard.finalizeBitboards();
+//		
+//		AceMove bestMove = algorithm.think(engineBoard, 2);
+//		assertEquals(MoveUtils.toMove("a1b2"), EngineTestUtils.engineMoveToMove(bestMove));
+//	}
+//
+//	@Test
+//	public void testTakePieceBlack() {
+//		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK);
+//		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a1"));
+//		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, BitboardUtils.toIndex("b2"));
+//		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("h8"));
+//		engineBoard.finalizeBitboards();
+//		
+//		AceMove bestMove = algorithm.think(engineBoard, 2);
+//		assertEquals(MoveUtils.toMove("a1b2"), EngineTestUtils.engineMoveToMove(bestMove));
+//	}
+//
+//	@Test
+//	public void testPieceProtected() {
+//		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
+//		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("b2"));
+//		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, BitboardUtils.toIndex("c3"));
+//		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("d4"));
+//		engineBoard.finalizeBitboards();
+//		
+//		AceMove bestMove = algorithm.think(engineBoard, 2);
+//		assertEquals(MoveUtils.toMove("b2a1"), EngineTestUtils.engineMoveToMove(bestMove));
+//	}
+//
+//	@Test
+//	public void testCantTakePieceBecauseOfPenning() {
+//		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
+//		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a2"));
+//		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, BitboardUtils.toIndex("b2"));
+//		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, BitboardUtils.toIndex("c1"));
+//		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KNIGHT, BitboardUtils.toIndex("c4"));
+//		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, BitboardUtils.toIndex("c2"));
+//		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("h8"));
+//		engineBoard.finalizeBitboards();
+//		
+//		AceMove bestMove = algorithm.think(engineBoard, 2);
+//		assertEquals(MoveUtils.toMove("a2b3"), EngineTestUtils.engineMoveToMove(bestMove));
+//	}
+//
+//	@Test
+//	public void testStartPosition() {
+//		ACEBoard engineBoard = new InitialEngineBoard();
+//		
+//		AceMove bestMove = algorithm.think(engineBoard, 2);
+//		assertEquals(MoveUtils.toMove("b1a3"), EngineTestUtils.engineMoveToMove(bestMove));
+//	}
+	
+	/*
+	 * 
+//		...q..n.
+//		.pk.ppp.
+//		........
+//		........
+//		........
+//		........
+//		.PPl.PP.
+//		.N.Q.K..
+	 */
 	@Test
-	public void testTakePieceWhite() {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.BISHOP, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("h8"));
-		engineBoard.finalizeBitboards();
-		
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("a1b2"), EngineTestUtils.engineMoveToMove(bestMove));
-	}
-
-	@Test
-	public void testTakePieceBlack() {
+	public void testQueenTakeMove() {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK);
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("h8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("f1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.QUEEN, BitboardUtils.toIndex("d2"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.QUEEN, BitboardUtils.toIndex("d1"));
+
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("c7"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.QUEEN, BitboardUtils.toIndex("d8"));
 		engineBoard.finalizeBitboards();
 		
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("a1b2"), EngineTestUtils.engineMoveToMove(bestMove));
-	}
-
-	@Test
-	public void testPieceProtected() {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, BitboardUtils.toIndex("c3"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("d4"));
-		engineBoard.finalizeBitboards();
-		
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("b2a1"), EngineTestUtils.engineMoveToMove(bestMove));
-	}
-
-	@Test
-	public void testCantTakePieceBecauseOfPenning() {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, BitboardUtils.toIndex("c1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KNIGHT, BitboardUtils.toIndex("c4"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, BitboardUtils.toIndex("c2"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("h8"));
-		engineBoard.finalizeBitboards();
-		
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("a2b3"), EngineTestUtils.engineMoveToMove(bestMove));
-	}
-
-	@Test
-	public void testStartPosition() {
-		ACEBoard engineBoard = new InitialEngineBoard();
-		
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("b1a3"), EngineTestUtils.engineMoveToMove(bestMove));
+		AceMove bestMove = algorithm.think(engineBoard, 3);
+		assertEquals(MoveUtils.toMove("d8d2"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 }

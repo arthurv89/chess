@@ -143,18 +143,18 @@ public class ACEBoard extends AbstractEngineBoard {
 	private ColoredPiece pieceAt(Coordinates from) {
 		long bitboard = 1L << BitboardUtils.fieldIdx(from);
 		if((white_bishops & bitboard) != 0) return new ColoredPiece(PieceType.BISHOP, Color.WHITE);
-		if((white_kings & bitboard) != 0) return new ColoredPiece(PieceType.KING, Color.WHITE);
+		if((white_kings & bitboard) != 0)   return new ColoredPiece(PieceType.KING,   Color.WHITE);
 		if((white_knights & bitboard) != 0) return new ColoredPiece(PieceType.KNIGHT, Color.WHITE);
-		if((white_pawns & bitboard) != 0) return new ColoredPiece(PieceType.PAWN, Color.WHITE);
-		if((white_queens & bitboard) != 0) return new ColoredPiece(PieceType.QUEEN, Color.WHITE);
-		if((white_rooks & bitboard) != 0) return new ColoredPiece(PieceType.ROOK, Color.WHITE);
+		if((white_pawns & bitboard) != 0)   return new ColoredPiece(PieceType.PAWN,   Color.WHITE);
+		if((white_queens & bitboard) != 0)  return new ColoredPiece(PieceType.QUEEN,  Color.WHITE);
+		if((white_rooks & bitboard) != 0)   return new ColoredPiece(PieceType.ROOK,   Color.WHITE);
 		
 		if((black_bishops & bitboard) != 0) return new ColoredPiece(PieceType.BISHOP, Color.BLACK);
-		if((black_kings & bitboard) != 0) return new ColoredPiece(PieceType.KING, Color.BLACK);
+		if((black_kings & bitboard) != 0)   return new ColoredPiece(PieceType.KING,   Color.BLACK);
 		if((black_knights & bitboard) != 0) return new ColoredPiece(PieceType.KNIGHT, Color.BLACK);
-		if((black_pawns & bitboard) != 0) return new ColoredPiece(PieceType.PAWN, Color.BLACK);
-		if((black_queens & bitboard) != 0) return new ColoredPiece(PieceType.QUEEN, Color.BLACK);
-		if((black_rooks & bitboard) != 0) return new ColoredPiece(PieceType.ROOK, Color.BLACK);
+		if((black_pawns & bitboard) != 0)   return new ColoredPiece(PieceType.PAWN,   Color.BLACK);
+		if((black_queens & bitboard) != 0)  return new ColoredPiece(PieceType.QUEEN,  Color.BLACK);
+		if((black_rooks & bitboard) != 0)   return new ColoredPiece(PieceType.ROOK,   Color.BLACK);
 		
 		return null;
 	}
@@ -358,6 +358,7 @@ public class ACEBoard extends AbstractEngineBoard {
 	public String toString() {
 		Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
 		Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
+		Preconditions.checkArgument((whiteOccupiedSquares & blackOccupiedSquares) == 0);
 		
 		StringBuilder sb = new StringBuilder();
 		for (int fieldIdx = 0; fieldIdx < 64; fieldIdx++) {

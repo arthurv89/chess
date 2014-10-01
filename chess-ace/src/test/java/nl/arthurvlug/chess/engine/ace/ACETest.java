@@ -53,4 +53,15 @@ public class ACETest {
 		System.out.println(move);
 		assertFalse(move.toString().equals("f6e4"));
 	}
+
+	@Test
+	public void testShouldMoveKnight_white() {
+		List<String> moves = Splitter.on(' ').splitToList("g1f3 e7e5 b2b3 e5e4");
+		
+		ACE ace = new ACE();
+		ace.depth = 2;
+		Move move = ace.think(moves, new ThinkingParams());
+		System.out.println(move);
+		assertEquals("f3g1", move.toString());
+	}
 }

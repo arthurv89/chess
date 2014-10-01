@@ -5,13 +5,13 @@ import java.util.List;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
-import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
+import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.CustomEngine;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.utils.game.Move;
 
 public class ACE extends CustomEngine {
-	private static final AlphaBetaPruningAlgorithm ALPHA_BETA_PRUNING_ALGORITHM = new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator());
+	private static final AlphaBetaPruningAlgorithm searchAlgorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
 	int depth = 2;
 
 	@Override
@@ -23,12 +23,12 @@ public class ACE extends CustomEngine {
 	public Move think(List<String> moveList, ThinkingParams thinkingParams) {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.apply(moveList);
-		AceMove aceMove = ALPHA_BETA_PRUNING_ALGORITHM.think(engineBoard, depth);
+		AceMove aceMove = searchAlgorithm.think(engineBoard, depth);
 		return aceMove.toMove();
 	}
 	
 	public int getNodesSearched() {
-		return ALPHA_BETA_PRUNING_ALGORITHM.getNodesSearched();
+		return searchAlgorithm.getNodesSearched();
 	}
 
 	public void setDepth(int depth) {

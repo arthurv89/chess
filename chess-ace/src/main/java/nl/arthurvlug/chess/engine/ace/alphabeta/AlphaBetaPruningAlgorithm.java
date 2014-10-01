@@ -22,9 +22,6 @@ public class AlphaBetaPruningAlgorithm {
 	private static final int WHITE_WINS = 1000000000;
 	private static final int BLACK_WINS = -WHITE_WINS;
 	
-	// TODO: Remove?
-	private static final int maxExtraMoves = 100;
-	
 	@Getter
 	private int nodesSearched = 0;
 
@@ -73,7 +70,7 @@ public class AlphaBetaPruningAlgorithm {
 					? depth
 					: depth-1;
 			
-			int score = -alphaBeta(successorBoard, depthMoves, newDepth, -beta, -alpha, 0);
+			int score = -alphaBeta(successorBoard, depthMoves, newDepth, -beta, -alpha, 1-(depth - newDepth));
 			successorBoard.setEvaluation(score);
 			if (score > alpha) {
 				alpha = score;
@@ -84,7 +81,10 @@ public class AlphaBetaPruningAlgorithm {
 		
 		// TODO: Remove
 		bestEngineBoard.finalizeBitboards();
-		Preconditions.checkState(bestEngineBoard.getEvaluation() > Integer.MIN_VALUE);
+		if(bestEngineBoard.getEvaluation() == Integer.MIN_VALUE) {
+			return successorBoards.get(0).lastMove;
+		}
+//		Preconditions.checkState(bestEngineBoard.getEvaluation() > Integer.MIN_VALUE);
 		
 		// TODO: Remove
 		if(bestEngineBoard.lastMove == null) {
@@ -155,17 +155,26 @@ public class AlphaBetaPruningAlgorithm {
 			// continue; // Invalid move
 			// }
 
-			int newDepth = depth == 1 && successorBoard.lastMoveWasTakeMove && extraMoves <= maxExtraMoves
-					? depth
-					: depth-1;
-			if(newDepth == depth) {
-//				log.info("Depth++ {} {}\n{}", depthMoves.toString(), successorBoard.lastMove, engineBoard.toString());
-			}
+			
 			ImmutableList<AceMove> newDepthMoves = ImmutableList.<AceMove> builder()
-//					.addAll(depthMoves)
-//					.add(successorBoard.lastMove)
+					.addAll(depthMoves)
+					.add(successorBoard.lastMove)
 					.build();
-			int value = -alphaBeta(successorBoard, newDepthMoves, newDepth, -beta, -alpha, extraMoves+1);
+
+			int newDepth;
+			int newExtraMoves;
+			if(depth == 1 && successorBoard.lastMoveWasTakeMove) {
+				newDepth = depth;
+				newExtraMoves = extraMoves +1;
+				if(newExtraMoves > 100) {
+					log.error("Error");
+				}
+			} else {
+				newDepth = depth-1;
+				newExtraMoves = extraMoves;
+			}
+			
+			int value = -alphaBeta(successorBoard, newDepthMoves, newDepth, -beta, -alpha, newExtraMoves);
 
 			if (value >= beta) {
 				// Beta cut-off

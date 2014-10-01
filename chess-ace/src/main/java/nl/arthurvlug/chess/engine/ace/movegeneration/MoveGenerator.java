@@ -70,8 +70,8 @@ public class MoveGenerator {
 			long queen_diagonal_moves = rookMoves(engineBoard, sq);
 
 			queens -= 1L << sq;
-			moves.addAll(moves(sq, queen_perpendicular_moves, PieceType.BISHOP, engineBoard.toMove));
-			moves.addAll(moves(sq, queen_diagonal_moves, PieceType.BISHOP, engineBoard.toMove));
+			moves.addAll(moves(sq, queen_perpendicular_moves, PieceType.QUEEN, engineBoard.toMove));
+			moves.addAll(moves(sq, queen_diagonal_moves, PieceType.QUEEN, engineBoard.toMove));
 		}
 		return moves;
 	}
