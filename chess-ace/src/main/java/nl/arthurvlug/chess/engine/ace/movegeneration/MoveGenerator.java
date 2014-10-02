@@ -56,7 +56,7 @@ public class MoveGenerator {
 				validMoves.add(validOrInvalidMove);
 				engineBoard.successorBoards.add(successorBoard);
 			} else {
-				log.debug("Not valid position: " + validOrInvalidMove);
+//				log.debug("Not valid position (current user will become checked): {}", validOrInvalidMove);
 			}
 		}
 		return validMoves;

@@ -141,7 +141,12 @@ public class ACEBoard extends AbstractEngineBoard {
 	}
 
 	private ColoredPiece pieceAt(Coordinates from) {
-		long bitboard = 1L << BitboardUtils.fieldIdx(from);
+		return pieceAt(BitboardUtils.fieldIdx(from));
+	}
+
+	public ColoredPiece pieceAt(long fieldIdx) {
+		long bitboard = 1L << fieldIdx;
+
 		if((white_bishops & bitboard) != 0) return new ColoredPiece(PieceType.BISHOP, Color.WHITE);
 		if((white_kings & bitboard) != 0)   return new ColoredPiece(PieceType.KING,   Color.WHITE);
 		if((white_knights & bitboard) != 0) return new ColoredPiece(PieceType.KNIGHT, Color.WHITE);

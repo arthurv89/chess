@@ -66,11 +66,10 @@ public class AlphaBetaPruningAlgorithm {
 		for (ACEBoard successorBoard : successorBoards) {
 			ImmutableList<AceMove> depthMoves = ImmutableList.<AceMove> of(successorBoard.lastMove);
 
-			int newDepth = depth == 1 && successorBoard.lastMoveWasTakeMove
-					? depth
-					: depth-1;
+			int depthChange = depth == 1 && successorBoard.lastMoveWasTakeMove ? 0 : -1;
+			int newDepth = depth + depthChange;
 			
-			int score = -alphaBeta(successorBoard, depthMoves, newDepth, -beta, -alpha, 1-(depth - newDepth));
+			int score = -alphaBeta(successorBoard, depthMoves, newDepth, -beta, -alpha, -newDepth);
 			successorBoard.setSideBasedEvaluation(score);
 			if (score > alpha) {
 				alpha = score;

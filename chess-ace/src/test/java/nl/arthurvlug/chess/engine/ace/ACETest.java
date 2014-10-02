@@ -1,6 +1,5 @@
 package nl.arthurvlug.chess.engine.ace;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -40,13 +39,15 @@ public class ACETest {
 		checkAceMove("e2e4 g8f6 e4e5", string -> string.toString().startsWith("f6"), 2);
 	}
 
-	private Function<Move, Boolean> is(String string) {
-		return move -> move.toString().equals(string);
+	@Test
+	public void testShouldMoveKnight_white() {
+		checkAceMove("g1f3 e7e5 b2b3 e5e4", string -> string.toString().startsWith("f3g1"), 2);
 	}
+	
+	
+	
+	
 
-	private Function<Move, Boolean> not(Function<Move, Boolean> function) {
-		return move -> !function.apply(move);
-	}
 
 	private void checkAceMove(String sMoves, Function<Move, Boolean> expect, int depth) {
 		List<String> moves = Splitter.on(' ').splitToList(sMoves);
@@ -58,14 +59,11 @@ public class ACETest {
 		assertTrue(expect.apply(move));
 	}
 
-	@Test
-	public void testShouldMoveKnight_white() {
-		List<String> moves = Splitter.on(' ').splitToList("g1f3 e7e5 b2b3 e5e4");
-		
-		ACE ace = new ACE();
-		ace.depth = 2;
-		Move move = ace.think(moves, new ThinkingParams());
-		System.out.println(move);
-		assertEquals("f3g1", move.toString());
+	private Function<Move, Boolean> is(String string) {
+		return move -> move.toString().equals(string);
+	}
+
+	private Function<Move, Boolean> not(Function<Move, Boolean> function) {
+		return move -> !function.apply(move);
 	}
 }
