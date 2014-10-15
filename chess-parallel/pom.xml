@@ -2,24 +2,30 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.arthurvlug.chess</groupId>
-	<artifactId>chess-binary</artifactId>
+	<artifactId>chess-parallel</artifactId>
 	<parent>
 		<artifactId>chess</artifactId>
 		<groupId>chess</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>nl.arthurvlug.chess</groupId>
-			<artifactId>chess-engine</artifactId>
+			<artifactId>chess-ace</artifactId>
 			<version>${version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-common</artifactId>
+			<version>2.5.1</version>
 		</dependency>
 
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>17.0</version>
+			<groupId>org.apache.crunch</groupId>
+			<artifactId>crunch-core</artifactId>
+			<version>0.11.0-hadoop2</version>
 		</dependency>
 	</dependencies>
 </project>

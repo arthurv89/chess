@@ -3,20 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.arthurvlug.chess</groupId>
 	<artifactId>chess-gui</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-
-	<properties>
-		<spring.version>4.0.5.RELEASE</spring.version>
-		<slf4j.version>1.7.7</slf4j.version>
-		<logback.version>1.0.1</logback.version>
-	</properties>
-
-	<repositories>
-		<repository>
-			<id>atlassian-public</id>
-			<url>https://maven.atlassian.com/content/groups/public/</url>
-		</repository>
-	</repositories>
+	<parent>
+		<artifactId>chess</artifactId>
+		<groupId>chess</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -36,25 +27,25 @@
 		<dependency>
 			<groupId>nl.arthurvlug.chess</groupId>
 			<artifactId>chess-engine</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>nl.arthurvlug.chess</groupId>
 			<artifactId>chess-binary</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>nl.arthurvlug.chess</groupId>
 			<artifactId>chess-utils</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>nl.arthurvlug.chess</groupId>
 			<artifactId>chess-ace</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${version}</version>
 		</dependency>
 
 		<dependency>

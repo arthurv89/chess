@@ -13,12 +13,12 @@
 		<dependency>
 			<groupId>nl.arthurvlug.chess</groupId>
 			<artifactId>chess-engine</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${version}</version>
 		</dependency>
 		<dependency>
 			<groupId>nl.arthurvlug.chess</groupId>
 			<artifactId>chess-utils</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${version}</version>
 		</dependency>
 	</dependencies>
 </project>
