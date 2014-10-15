@@ -33,7 +33,9 @@ public class AceEvaluator implements BoardEvaluator {
 			totalScore += ACEConstants.pieceValue(coloredPiece.getPieceType());
 			totalScore += extraScore(fieldIdx, coloredPiece);
 			
-			return coloredPiece.getColor().isWhite() ? totalScore : -totalScore;
+			return coloredPiece.getColor().isWhite()
+					? totalScore
+					: -totalScore;
 		}
 
 		private int extraScore(int fieldIdx, ColoredPiece coloredPiece) {
@@ -50,8 +52,8 @@ public class AceEvaluator implements BoardEvaluator {
 		
 		private int positionScore(int fieldIdx, int[] positionBonusses, Color color) {
 			return color == Color.WHITE
-						? ACEConstants.pawnPositionBonus[fieldIdx]
-						: ACEConstants.pawnPositionBonus[mirrorredFieldIndex(fieldIdx)];
+					? ACEConstants.pawnPositionBonus[fieldIdx]
+					: ACEConstants.pawnPositionBonus[mirrorredFieldIndex(fieldIdx)];
 		}
 
 		private int mirrorredFieldIndex(int fieldIdx) {
