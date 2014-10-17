@@ -23,11 +23,13 @@ public abstract class ChessParallel implements Serializable {
 		final Pipeline pipeline = new MRPipeline(Recursive.class);
 
 		PCollection<TreeNode> moves = Recursive.createMoves(pipeline);
+		PCollection<TreeNode> bestMoves = Recursive.bestMove(moves);
+		System.out.println("Max nodes: " + bestMoves.materialize());
 		
 		pipeline.writeTextFile(moves, OUTPUT_FOLDER);
 		pipeline.done();
 		
 		String result = FileUtils.readFileToString(new File(outputFile, OUTPUT_FILE));
-		System.out.println(result);
+//		System.err.println(result);
 	}
 }

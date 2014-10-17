@@ -1,31 +1,53 @@
 package nl.arthurvlug.chess;
 
-public class TreeNode {
-	private TreeNode parent;
-	private String name;
-	private int value = 0;
+import lombok.Getter;
 
-	public TreeNode(String name, TreeNode parent) {
-		this.name = name;
+public class TreeNode implements Comparable<TreeNode> {
+	@Getter
+	private TreeNode parent;
+	private String move;
+	@Getter
+	private int value = 0;
+	
+	public String getAncestorsAndCurrent() {
+		return parent + " " + move;
+	}
+	
+	public TreeNode() { }
+
+	public TreeNode(String move, TreeNode parent) {
+		this.move = move;
 		this.parent = parent;
-		
-		switch (name) {
-			case "1": value = 3; break;
-			case "2": value = 1; break;
-			case "3": value = 2; break;
+	}
+	
+	public void setScore() {
+		switch (move) {
+			case "A": value = 3; break;
+			case "B": value = 1; break;
+			case "C": value = 2; break;
 		}
 	}
 
 	public static TreeNode root() {
-		return new TreeNode("", null);
+		return new TreeNode("",  null);
 	}
 	
 	@Override
 	public String toString() {
-		String string = name;
-		if(parent != null && !parent.name.isEmpty()) {
-			string = parent.toString() + " " + string;
+		String string = "";
+		if(parent != null) {
+			string = parent.toString() + " ";
 		}
-		return string;
+		return string + move + " (v=" + value + ")";
+	}
+
+	@Override
+	public int compareTo(TreeNode o) {
+		return value - o.value;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return toString().equals(obj.toString());
 	}
 }
