@@ -23,11 +23,13 @@ public class TreeNode implements Comparable<TreeNode> {
 		this.parent = parent;
 	}
 	
-	public static TreeNode root() {
-		TreeNode treeNode = new TreeNode("",  null);
-		treeNode.setScore(Integer.MIN_VALUE);
-		return treeNode;
-	}
+	public static TreeNode ROOT_MIN = new TreeNode("",  null) {{
+		setScore(Integer.MIN_VALUE);
+	}};
+	
+	public static TreeNode ROOT_MAX = new TreeNode("",  null) {{
+		setScore(Integer.MAX_VALUE);
+	}};
 	
 	String getCurrentAndAncestors() {
 		String s = "";

@@ -34,13 +34,13 @@ public abstract class ChessParallel implements Serializable {
 
 
 	private static void memoryCalculation() {
-		MemCollection<String> firstNode = new MemCollection<>(Arrays.asList(""));
+		final MemCollection<String> firstNode = new MemCollection<>(Arrays.asList(""));
 		System.out.println(bestMoves(firstNode));
 	}
 
 
 	private static void distributedCalculation() throws IOException {
-		File outputFile = new File(OUTPUT_FOLDER);
+		final File outputFile = new File(OUTPUT_FOLDER);
 		FileUtils.deleteDirectory(outputFile);
 		
 		final MRPipeline pipeline = new MRPipeline(BestMoveCalculator.class);
@@ -49,16 +49,17 @@ public abstract class ChessParallel implements Serializable {
 		pipeline.writeTextFile(bestMoves(firstNode), OUTPUT_FOLDER);
 		pipeline.done();
 		
-		String result = FileUtils.readFileToString(new File(outputFile, OUTPUT_FILE));
+		final String result = FileUtils.readFileToString(new File(outputFile, OUTPUT_FILE));
 		System.out.println(result);
 	}
 
 
-	private static PCollection<TreeNode> bestMoves(PCollection<String> firstNode) {
-		BestMoveCalculator recursive = new BestMoveCalculator(firstNode);
-		PCollection<TreeNode> moves = recursive.createMoves();
-		PCollection<TreeNode> bestMoves = recursive.bestMove(moves);
-		PCollection<TreeNode> bestMovesSorted = Sort.sort(bestMoves, Order.DESCENDING);
-		return bestMovesSorted;
+	private static PCollection<TreeNode> bestMoves(final PCollection<String> firstNode) {
+		final BestMoveCalculator calculator = new BestMoveCalculator(firstNode);
+		final PCollection<TreeNode> moves = calculator.createMoves();
+		final PCollection<TreeNode> scoredMoves = calculator.scoredMoves(moves);
+		final PCollection<TreeNode> bestMoves = calculator.bestMove(scoredMoves);
+//		final PCollection<TreeNode> bestMovesSorted = Sort.sort(bestMoves, Order.DESCENDING);
+		return bestMoves;
 	}
 }
