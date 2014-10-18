@@ -1,18 +1,21 @@
 package nl.arthurvlug.chess;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class TreeNode implements Comparable<TreeNode> {
 	@Getter
 	private TreeNode parent;
+	@Getter
 	private String move;
 	@Getter
-	private int value = 0;
+	@Setter
+	private int score = 0;
 	
-	public String getAncestorsAndCurrent() {
-		return parent + " " + move;
-	}
-	
+//	public String getAncestorsAndCurrent() {
+//		return parent + " " + move;
+//	}
+//	
 	public TreeNode() { }
 
 	public TreeNode(String move, TreeNode parent) {
@@ -20,34 +23,32 @@ public class TreeNode implements Comparable<TreeNode> {
 		this.parent = parent;
 	}
 	
-	public void setScore() {
-		switch (move) {
-			case "A": value = 3; break;
-			case "B": value = 1; break;
-			case "C": value = 2; break;
-		}
-	}
-
 	public static TreeNode root() {
-		return new TreeNode("",  null);
+		TreeNode treeNode = new TreeNode("",  null);
+		treeNode.setScore(Integer.MIN_VALUE);
+		return treeNode;
+	}
+	
+	String getCurrentAndAncestors() {
+		String s = "";
+		s += (parent != null) ? parent.getCurrentAndAncestors() + "" : "";
+		s += move;
+		return s;
 	}
 	
 	@Override
 	public String toString() {
-		String string = "";
-		if(parent != null) {
-			string = parent.toString() + " ";
-		}
-		return string + move + " (v=" + value + ")";
+		return getCurrentAndAncestors() + " (v=" + score + ")";
 	}
 
 	@Override
 	public int compareTo(TreeNode o) {
-		return value - o.value;
+		return score - o.score;
 	}
 	
 	@Override
 	public boolean equals(Object obj) {
-		return toString().equals(obj.toString());
+		TreeNode other = (TreeNode) obj;
+		return getCurrentAndAncestors().equals(other.getCurrentAndAncestors());
 	}
 }
