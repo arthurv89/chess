@@ -2,6 +2,7 @@ package nl.arthurvlug.chess;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 
 public class Position implements Comparable<Position> {
 	@Getter
@@ -11,6 +12,8 @@ public class Position implements Comparable<Position> {
 	@Getter
 	@Setter
 	private int score = 0;
+	@Getter
+	private ACEBoard newBoard;
 	
 //	public String getAncestorsAndCurrent() {
 //		return parent + " " + move;
@@ -18,16 +21,17 @@ public class Position implements Comparable<Position> {
 //	
 	public Position() { }
 
-	public Position(String move, Position parent) {
+	public Position(String move, Position parent, ACEBoard newBoard) {
 		this.lastMove = move;
 		this.parentPosition = parent;
+		this.newBoard = newBoard;
 	}
 	
-	public static Position ROOT_MIN = new Position("",  null) {{
+	public static Position ROOT_MIN = new Position("",  null, null) {{
 		setScore(Integer.MIN_VALUE);
 	}};
 	
-	public static Position ROOT_MAX = new Position("",  null) {{
+	public static Position ROOT_MAX = new Position("",  null, null) {{
 		setScore(Integer.MAX_VALUE);
 	}};
 	

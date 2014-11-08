@@ -1,6 +1,12 @@
 package nl.arthurvlug.chess;
 
-import java.util.Random;
+import java.util.List;
+
+import nl.arthurvlug.chess.engine.ace.AceMove;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
+import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
+import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 
 import org.apache.crunch.CombineFn;
 import org.apache.crunch.DoFn;
@@ -9,19 +15,30 @@ import org.apache.crunch.MapFn;
 import org.apache.crunch.Pair;
 
 import com.google.common.base.Function;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 
 public class Functions {
+	private static final AceEvaluator evaluator = new AceEvaluator();
+	
 	private static final int MAX_SCORE = 1000;
-	private static final int MOVES_PER_DEPTH = 2;
 	
 	static final DoFn<Position, Position> ADD_NEW_POSITIONS = new DoFn<Position, Position>() {
 		private static final long serialVersionUID = 1L;
 		public void process(final Position position, final Emitter<Position> emitter) {
-			for (int i = 0; i < MOVES_PER_DEPTH; i++) {
-				final char c = (char) ('A' + i);
-				final String move = Character.toString(c);
-				Position newPosition = new Position(move, position);
-				emitter.emit(newPosition);
+			final String currentAndAncestors = position.getCurrentAndAncestors();
+			final List<String> moves = currentAndAncestors.isEmpty()
+					? ImmutableList.<String> of()
+					: Splitter.on(' ').splitToList(currentAndAncestors);
+			
+			final ACEBoard board = new InitialEngineBoard();
+			board.apply(moves);
+			
+			final List<AceMove> newMoves = MoveGenerator.generateMoves(board);
+			for(AceMove newMove : newMoves) {
+				final ACEBoard newBoard = new ACEBoard(board);
+				newBoard.apply(newMove);
+				emitter.emit(new Position(newMove.toString(), position, newBoard));
 			}
 		}
 	};
@@ -49,13 +66,13 @@ public class Functions {
 	};
 	
 	@SuppressWarnings("serial")
-	static final DoFn<Position, Position> RANDOM_SCORE = new MapFn<Position, Position>() {
+	static final DoFn<Position, Position> SCORE_POSITIONS = new MapFn<Position, Position>() {
 		@Override
-		public Position map(final Position input) {
-			final int hashCode = input.getCurrentAndAncestors().hashCode();
-			final int score = new Random(hashCode).nextInt(MAX_SCORE);
-			input.setScore(score);
-			return input;
+		public Position map(final Position position) {
+			ACEBoard board = position.getNewBoard();
+			Integer score = evaluator.evaluate(board).getValue();
+			position.setScore(score);
+			return position;
 		}
 	};
 	static final CombineFn<String, Position> PARENT_TAKE_BEST_MOVE = new CombineFn<String, Position>() {
@@ -81,7 +98,7 @@ public class Functions {
 		}
 
 		private Function<Pair<Position, Position>, Boolean> better(Pair<String, Iterable<Position>> twoPositions) {
-			return twoPositions.first().length() % 2 == 0 ? MAX : MIN;
+			return twoPositions.first().length() % 2 == 1 ? MAX : MIN;
 		}
 
 		protected final Function<Pair<Position, Position>, Boolean> MAX = new Function<Pair<Position, Position>, Boolean>() {

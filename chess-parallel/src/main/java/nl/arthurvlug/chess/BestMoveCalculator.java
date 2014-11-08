@@ -4,7 +4,7 @@ import static nl.arthurvlug.chess.Functions.ADD_PARENT_AS_KEY;
 import static nl.arthurvlug.chess.Functions.PARENT_TAKE_BEST_MOVE;
 import static nl.arthurvlug.chess.Functions.ROOT_TO_POSITION;
 import static nl.arthurvlug.chess.Functions.GET_PARENT;
-import static nl.arthurvlug.chess.Functions.RANDOM_SCORE;
+import static nl.arthurvlug.chess.Functions.SCORE_POSITIONS;
 
 import java.util.ArrayList;
 
@@ -55,7 +55,7 @@ public class BestMoveCalculator {
 
 
 	public PCollection<Position> scoredPositions(final PCollection<Position> positions) {
-		return positions.parallelDo(RANDOM_SCORE, TREE_NODE_TYPE);
+		return positions.parallelDo(SCORE_POSITIONS, TREE_NODE_TYPE);
 	}
 
 
