@@ -9,8 +9,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.crunch.PCollection;
 import org.apache.crunch.impl.mem.collect.MemCollection;
 import org.apache.crunch.impl.mr.MRPipeline;
-import org.apache.crunch.lib.Sort;
-import org.apache.crunch.lib.Sort.Order;
 
 import com.google.common.base.Preconditions;
 
