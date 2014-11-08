@@ -38,24 +38,24 @@ public class BestMoveCalculator {
 	}
 
 
-	PCollection<Position> bestMove(PCollection<Position> moves) {
+	PCollection<Position> moveScores(PCollection<Position> positions) {
 		for (int i = 0; i < depth-1; i++) {
-			System.out.println(materializeList(moves));
-			moves = moves
+			System.out.println(materializeList(positions));
+			positions = positions
 					.by(ADD_PARENT_AS_KEY, STRING_TYPE)
 					.groupByKey()
 					.combineValues(PARENT_TAKE_BEST_MOVE)
 					.values()
 					.parallelDo(GET_PARENT, TREE_NODE_TYPE);
 		}
-		System.out.println(materializeList(moves));
+		System.out.println(materializeList(positions));
 		
-		return moves;
+		return positions;
 	}
 
 
-	public PCollection<Position> scoredPositions(final PCollection<Position> moves) {
-		return moves.parallelDo(RANDOM_SCORE, TREE_NODE_TYPE);
+	public PCollection<Position> scoredPositions(final PCollection<Position> positions) {
+		return positions.parallelDo(RANDOM_SCORE, TREE_NODE_TYPE);
 	}
 
 

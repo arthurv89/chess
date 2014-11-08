@@ -33,7 +33,8 @@ public abstract class ChessParallel implements Serializable {
 
 	private static void memoryCalculation() {
 		final MemCollection<String> initialPosition = new MemCollection<>(Arrays.asList(""));
-		System.out.println(bestPositions(initialPosition));
+		String bestMove = bestMove(initialPosition);
+		System.out.println(bestMove);
 	}
 
 
@@ -44,7 +45,8 @@ public abstract class ChessParallel implements Serializable {
 		final MRPipeline pipeline = new MRPipeline(BestMoveCalculator.class);
 		final PCollection<String> initialPosition = pipeline.readTextFile(INPUT_FILE);
 		
-		pipeline.writeTextFile(bestPositions(initialPosition), OUTPUT_FOLDER);
+		MemCollection<String> bestMoveCollection = new MemCollection<>(Arrays.asList(bestMove(initialPosition)));
+		pipeline.writeTextFile(bestMoveCollection, OUTPUT_FOLDER);
 		pipeline.done();
 		
 		final String result = FileUtils.readFileToString(new File(outputFile, OUTPUT_FILE));
@@ -52,12 +54,12 @@ public abstract class ChessParallel implements Serializable {
 	}
 
 
-	private static PCollection<Position> bestPositions(final PCollection<String> firstNode) {
+	private static String bestMove(final PCollection<String> firstNode) {
 		final BestMoveCalculator calculator = new BestMoveCalculator(firstNode);
 		final PCollection<Position> positions = calculator.createSuccessorPositions();
 		final PCollection<Position> scoredPositions = calculator.scoredPositions(positions);
-		final PCollection<Position> bestPositions = calculator.bestMove(scoredPositions);
-//		final PCollection<TreeNode> bestMovesSorted = Sort.sort(bestMoves, Order.DESCENDING);
-		return bestPositions;
+		final PCollection<Position> bestPositions = calculator.moveScores(scoredPositions);
+		final Position bestMove = bestPositions.max().getValue();
+		return bestMove.getLastMove();
 	}
 }
