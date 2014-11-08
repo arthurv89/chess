@@ -1,6 +1,5 @@
 package nl.arthurvlug.chess;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 import org.apache.crunch.CombineFn;
@@ -10,38 +9,38 @@ import org.apache.crunch.MapFn;
 import org.apache.crunch.Pair;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 public class Functions {
 	private static final int MAX_SCORE = 1000;
 	private static final int MOVES_PER_DEPTH = 2;
 	
-	static final DoFn<TreeNode, TreeNode> ADD_NEW_MOVES = new DoFn<TreeNode, TreeNode>() {
+	static final DoFn<Position, Position> ADD_NEW_POSITIONS = new DoFn<Position, Position>() {
 		private static final long serialVersionUID = 1L;
-		public void process(final TreeNode node, final Emitter<TreeNode> emitter) {
+		public void process(final Position position, final Emitter<Position> emitter) {
 			for (int i = 0; i < MOVES_PER_DEPTH; i++) {
 				final char c = (char) ('A' + i);
 				final String move = Character.toString(c);
-				emitter.emit(new TreeNode(move, node));
+				Position newPosition = new Position(move, position);
+				emitter.emit(newPosition);
 			}
 		}
 	};
 
-	static final DoFn<String, TreeNode> ROOT_TO_TREENODE = new DoFn<String, TreeNode>() {
+	static final DoFn<String, Position> ROOT_TO_POSITION = new DoFn<String, Position>() {
 		private static final long serialVersionUID = 2670656147763008503L;
 
 		@Override
-		public void process(final String _, final Emitter<TreeNode> emitter) {
-			emitter.emit(TreeNode.ROOT_MIN);
+		public void process(final String _, final Emitter<Position> emitter) {
+			emitter.emit(Position.ROOT_MIN);
 		}
 	};
 
-	static final MapFn<TreeNode, String> ADD_PARENT_AS_KEY = new MapFn<TreeNode, String>() {
+	static final MapFn<Position, String> ADD_PARENT_AS_KEY = new MapFn<Position, String>() {
 		private static final long serialVersionUID = 8871734393164750058L;
 
 		@Override
-		public String map(final TreeNode input) {
-			final TreeNode parent = input.getParent();
+		public String map(final Position input) {
+			final Position parent = input.getParentPosition();
 			if(parent == null) {
 				return "";
 			}
@@ -50,57 +49,60 @@ public class Functions {
 	};
 	
 	@SuppressWarnings("serial")
-	static final DoFn<TreeNode, TreeNode> RANDOM_SCORE = new MapFn<TreeNode, TreeNode>() {
+	static final DoFn<Position, Position> RANDOM_SCORE = new MapFn<Position, Position>() {
 		@Override
-		public TreeNode map(final TreeNode input) {
+		public Position map(final Position input) {
 			final int hashCode = input.getCurrentAndAncestors().hashCode();
 			final int score = new Random(hashCode).nextInt(MAX_SCORE);
 			input.setScore(score);
 			return input;
 		}
 	};
-	static final CombineFn<String, TreeNode> PARENT_TAKE_BEST_MOVE = new CombineFn<String, TreeNode>() {
+	static final CombineFn<String, Position> PARENT_TAKE_BEST_MOVE = new CombineFn<String, Position>() {
 		private static final long serialVersionUID = -621144572607844850L;
 
 		@Override
-		public void process(final Pair<String, Iterable<TreeNode>> input, final Emitter<Pair<String, TreeNode>> emitter) {
-			final ArrayList<TreeNode> children = Lists.newArrayList(input.second());
+		public void process(final Pair<String, Iterable<Position>> moveAndChildrenPositions, final Emitter<Pair<String, Position>> emitter) {
+			Iterable<Position> childrenPositions = moveAndChildrenPositions.second();
+			String move = moveAndChildrenPositions.first();
 			
-			Function<Pair<TreeNode, TreeNode>, Boolean> better = better(input);
+			Function<Pair<Position, Position>, Boolean> better = better(moveAndChildrenPositions);
+			Position bestPosition = better == MIN
+					? Position.ROOT_MAX
+					: Position.ROOT_MIN;
 			
-			TreeNode maxNode = better == MIN ? TreeNode.ROOT_MAX : TreeNode.ROOT_MIN;
-			for(final TreeNode node : children) {
-				if(better.apply(new Pair<TreeNode, TreeNode>(node, maxNode))) {
-					maxNode = node;
+			for(final Position childPosition : childrenPositions) {
+				if(better.apply(new Pair<Position, Position>(childPosition, bestPosition))) {
+					bestPosition = childPosition;
 				}
 			}
-			final Pair<String, TreeNode> pair = new Pair<String, TreeNode>(input.first(), maxNode);
-			emitter.emit(pair);
+			final Pair<String, Position> moveAndBestPosition = new Pair<String, Position>(move, bestPosition);
+			emitter.emit(moveAndBestPosition);
 		}
 
-		private Function<Pair<TreeNode, TreeNode>, Boolean> better(Pair<String, Iterable<TreeNode>> input) {
-			return input.first().length() % 2 == 0 ? MAX : MIN;
+		private Function<Pair<Position, Position>, Boolean> better(Pair<String, Iterable<Position>> twoPositions) {
+			return twoPositions.first().length() % 2 == 0 ? MAX : MIN;
 		}
 
-		protected final Function<Pair<TreeNode, TreeNode>, Boolean> MAX = new Function<Pair<TreeNode, TreeNode>, Boolean>() {
-			public Boolean apply(Pair<TreeNode, TreeNode> input) {
-				return input.first().getScore() > input.second().getScore();
+		protected final Function<Pair<Position, Position>, Boolean> MAX = new Function<Pair<Position, Position>, Boolean>() {
+			public Boolean apply(Pair<Position, Position> twoPositions) {
+				return twoPositions.first().getScore() > twoPositions.second().getScore();
 			}
 		};
-		protected final Function<Pair<TreeNode, TreeNode>, Boolean> MIN = new Function<Pair<TreeNode, TreeNode>, Boolean>() {
-			public Boolean apply(Pair<TreeNode, TreeNode> input) {
-				return input.first().getScore() < input.second().getScore();
+		protected final Function<Pair<Position, Position>, Boolean> MIN = new Function<Pair<Position, Position>, Boolean>() {
+			public Boolean apply(Pair<Position, Position> twoPositions) {
+				return twoPositions.first().getScore() < twoPositions.second().getScore();
 			}
 		};
 	};
 	
-	static final DoFn<TreeNode, TreeNode> GET_PARENT = new DoFn<TreeNode, TreeNode>() {
+	static final DoFn<Position, Position> GET_PARENT = new DoFn<Position, Position>() {
 		private static final long serialVersionUID = 5358247606242228527L;
 
 		@Override
-		public void process(final TreeNode node, final Emitter<TreeNode> emitter) {
-			node.getParent().setScore(node.getScore());
-			emitter.emit(node.getParent());
+		public void process(final Position position, final Emitter<Position> emitter) {
+			position.getParentPosition().setScore(position.getScore());
+			emitter.emit(position.getParentPosition());
 		}
 	};
 }

@@ -3,11 +3,11 @@ package nl.arthurvlug.chess;
 import lombok.Getter;
 import lombok.Setter;
 
-public class TreeNode implements Comparable<TreeNode> {
+public class Position implements Comparable<Position> {
 	@Getter
-	private TreeNode parent;
+	private Position parentPosition;
 	@Getter
-	private String move;
+	private String lastMove;
 	@Getter
 	@Setter
 	private int score = 0;
@@ -16,25 +16,25 @@ public class TreeNode implements Comparable<TreeNode> {
 //		return parent + " " + move;
 //	}
 //	
-	public TreeNode() { }
+	public Position() { }
 
-	public TreeNode(String move, TreeNode parent) {
-		this.move = move;
-		this.parent = parent;
+	public Position(String move, Position parent) {
+		this.lastMove = move;
+		this.parentPosition = parent;
 	}
 	
-	public static TreeNode ROOT_MIN = new TreeNode("",  null) {{
+	public static Position ROOT_MIN = new Position("",  null) {{
 		setScore(Integer.MIN_VALUE);
 	}};
 	
-	public static TreeNode ROOT_MAX = new TreeNode("",  null) {{
+	public static Position ROOT_MAX = new Position("",  null) {{
 		setScore(Integer.MAX_VALUE);
 	}};
 	
 	String getCurrentAndAncestors() {
 		String s = "";
-		s += (parent != null) ? parent.getCurrentAndAncestors() + "" : "";
-		s += move;
+		s += (parentPosition != null) ? parentPosition.getCurrentAndAncestors() + "" : "";
+		s += lastMove;
 		return s;
 	}
 	
@@ -44,13 +44,13 @@ public class TreeNode implements Comparable<TreeNode> {
 	}
 
 	@Override
-	public int compareTo(TreeNode o) {
+	public int compareTo(Position o) {
 		return score - o.score;
 	}
 	
 	@Override
 	public boolean equals(Object obj) {
-		TreeNode other = (TreeNode) obj;
+		Position other = (Position) obj;
 		return getCurrentAndAncestors().equals(other.getCurrentAndAncestors());
 	}
 }
