@@ -30,8 +30,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 public class ACEBoard extends AbstractEngineBoard {
-	private static MoveGenerator moveGenerator = new MoveGenerator();
-	
 	public int toMove;
 	
 	public long black_kings;

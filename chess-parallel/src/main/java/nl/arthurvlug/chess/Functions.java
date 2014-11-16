@@ -15,40 +15,37 @@ import org.apache.crunch.MapFn;
 import org.apache.crunch.Pair;
 
 import com.google.common.base.Function;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 
 public class Functions {
 	private static final AceEvaluator evaluator = new AceEvaluator();
 	
-	private static final int MAX_SCORE = 1000;
-	
 	static final DoFn<Position, Position> ADD_NEW_POSITIONS = new DoFn<Position, Position>() {
 		private static final long serialVersionUID = 1L;
 		public void process(final Position position, final Emitter<Position> emitter) {
-			final String currentAndAncestors = position.getCurrentAndAncestors();
-			final List<String> moves = currentAndAncestors.isEmpty()
-					? ImmutableList.<String> of()
-					: Splitter.on(' ').splitToList(currentAndAncestors);
-			
-			final ACEBoard board = new InitialEngineBoard();
-			board.apply(moves);
-			
-			final List<AceMove> newMoves = MoveGenerator.generateMoves(board);
-			for(AceMove newMove : newMoves) {
-				final ACEBoard newBoard = new ACEBoard(board);
-				newBoard.apply(newMove);
-				emitter.emit(new Position(newMove.toString(), position, newBoard));
+			final ACEBoard board = createBoard(position);
+			for(AceMove newMove : MoveGenerator.generateMoves(board)) {
+				Position childPosition = new Position(newMove.toString(), position);
+				emitter.emit(childPosition);
 			}
 		}
 	};
+
+	
+
+	private static ACEBoard createBoard(Position position) {
+		final List<String> currentAndAncestorMoves = position.getCurrentAndAncestorMoves();
+		
+		final ACEBoard board = new InitialEngineBoard();
+		board.apply(currentAndAncestorMoves);
+		return board;
+	}
 
 	static final DoFn<String, Position> ROOT_TO_POSITION = new DoFn<String, Position>() {
 		private static final long serialVersionUID = 2670656147763008503L;
 
 		@Override
 		public void process(final String _, final Emitter<Position> emitter) {
-			emitter.emit(Position.ROOT_MIN);
+			emitter.emit(Position.MIN_POSITION);
 		}
 	};
 
@@ -61,7 +58,7 @@ public class Functions {
 			if(parent == null) {
 				return "";
 			}
-			return parent.getCurrentAndAncestors();
+			return parent.getCurrentAndAncestorsString();
 		}
 	};
 	
@@ -69,12 +66,13 @@ public class Functions {
 	static final DoFn<Position, Position> SCORE_POSITIONS = new MapFn<Position, Position>() {
 		@Override
 		public Position map(final Position position) {
-			ACEBoard board = position.getNewBoard();
+			ACEBoard board = createBoard(position);
 			Integer score = evaluator.evaluate(board).getValue();
 			position.setScore(score);
 			return position;
 		}
 	};
+
 	static final CombineFn<String, Position> PARENT_TAKE_BEST_MOVE = new CombineFn<String, Position>() {
 		private static final long serialVersionUID = -621144572607844850L;
 
@@ -85,8 +83,8 @@ public class Functions {
 			
 			Function<Pair<Position, Position>, Boolean> better = better(moveAndChildrenPositions);
 			Position bestPosition = better == MIN
-					? Position.ROOT_MAX
-					: Position.ROOT_MIN;
+					? Position.MAX_POSITION
+					: Position.MIN_POSITION;
 			
 			for(final Position childPosition : childrenPositions) {
 				if(better.apply(new Pair<Position, Position>(childPosition, bestPosition))) {
@@ -100,17 +98,17 @@ public class Functions {
 		private Function<Pair<Position, Position>, Boolean> better(Pair<String, Iterable<Position>> twoPositions) {
 			return twoPositions.first().length() % 2 == 1 ? MAX : MIN;
 		}
+	};
 
-		protected final Function<Pair<Position, Position>, Boolean> MAX = new Function<Pair<Position, Position>, Boolean>() {
-			public Boolean apply(Pair<Position, Position> twoPositions) {
-				return twoPositions.first().getScore() > twoPositions.second().getScore();
-			}
-		};
-		protected final Function<Pair<Position, Position>, Boolean> MIN = new Function<Pair<Position, Position>, Boolean>() {
-			public Boolean apply(Pair<Position, Position> twoPositions) {
-				return twoPositions.first().getScore() < twoPositions.second().getScore();
-			}
-		};
+	static final Function<Pair<Position, Position>, Boolean> MAX = new Function<Pair<Position, Position>, Boolean>() {
+		public Boolean apply(Pair<Position, Position> twoPositions) {
+			return twoPositions.first().getScore() > twoPositions.second().getScore();
+		}
+	};
+	static final Function<Pair<Position, Position>, Boolean> MIN = new Function<Pair<Position, Position>, Boolean>() {
+		public Boolean apply(Pair<Position, Position> twoPositions) {
+			return twoPositions.first().getScore() < twoPositions.second().getScore();
+		}
 	};
 	
 	static final DoFn<Position, Position> GET_PARENT = new DoFn<Position, Position>() {

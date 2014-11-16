@@ -1,10 +1,20 @@
 package nl.arthurvlug.chess;
 
+import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.LinkedList;
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
-import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 
-public class Position implements Comparable<Position> {
+public class Position implements Comparable<Position>, Serializable {
+	private static final long serialVersionUID = -1030887784637657981L;
+
+	protected static final Position MIN_POSITION = new Position(null, null, Integer.MIN_VALUE);
+	protected static final Position MAX_POSITION = new Position(null, null, Integer.MAX_VALUE);
+		
 	@Getter
 	private Position parentPosition;
 	@Getter
@@ -12,39 +22,32 @@ public class Position implements Comparable<Position> {
 	@Getter
 	@Setter
 	private int score = 0;
-	@Getter
-	private ACEBoard newBoard;
 	
-//	public String getAncestorsAndCurrent() {
-//		return parent + " " + move;
-//	}
-//	
 	public Position() { }
 
-	public Position(String move, Position parent, ACEBoard newBoard) {
+	public Position(String move, Position parent) {
 		this.lastMove = move;
 		this.parentPosition = parent;
-		this.newBoard = newBoard;
 	}
 	
-	public static Position ROOT_MIN = new Position("",  null, null) {{
-		setScore(Integer.MIN_VALUE);
-	}};
-	
-	public static Position ROOT_MAX = new Position("",  null, null) {{
-		setScore(Integer.MAX_VALUE);
-	}};
-	
-	String getCurrentAndAncestors() {
+	private Position(String move, Position parent, int score) {
+		this(move, parent);
+		setScore(score);
+	}
+
+	String getCurrentAndAncestorsString() {
 		String s = "";
-		s += (parentPosition != null) ? parentPosition.getCurrentAndAncestors() + "" : "";
-		s += lastMove;
+		if(parentPosition != null) {
+			s += parentPosition.getCurrentAndAncestorsString();
+			s += lastMove;
+		}
 		return s;
 	}
 	
 	@Override
 	public String toString() {
-		return getCurrentAndAncestors() + " (v=" + score + ")";
+		NumberFormat nf = new DecimalFormat("0.00");
+		return getCurrentAndAncestorsString() + " (v=" + nf.format(score*0.01) + ")";
 	}
 
 	@Override
@@ -55,6 +58,17 @@ public class Position implements Comparable<Position> {
 	@Override
 	public boolean equals(Object obj) {
 		Position other = (Position) obj;
-		return getCurrentAndAncestors().equals(other.getCurrentAndAncestors());
+		return getCurrentAndAncestorsString().equals(other.getCurrentAndAncestorsString());
+	}
+
+	public List<String> getCurrentAndAncestorMoves() {
+		Position position = this;
+		
+		LinkedList<String> list = new LinkedList<String>();
+		while(position.getParentPosition() != null) {
+			list.addFirst(position.getLastMove());
+			position = position.parentPosition;
+		}
+		return list;
 	}
 }
