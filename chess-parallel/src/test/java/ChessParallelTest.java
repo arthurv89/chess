@@ -10,17 +10,6 @@ public class ChessParallelTest {
 	private static final double DELTA = 0.001;
 
 	@Test
-	public void testMem1() throws Exception {
-		ChessParallel parallel = new ChessParallel(1);
-		List<String> result = parallel.mem();
-
-		assertEquals(-0.05, score("a2a4", result), DELTA);
-		assertEquals(-0.05, score("h2h4", result), DELTA);
-		assertEquals(0.50, score("e2e4", result), DELTA);
-		assertEquals(0.50, score("d2d4", result), DELTA);
-	}
-
-	@Test
 	public void testMapReduce1() throws Exception {
 		ChessParallel parallel = new ChessParallel(1);
 		List<String> result = parallel.mapReduce();
@@ -40,6 +29,22 @@ public class ChessParallelTest {
 		assertEquals(-0.55, score("h2h4", result), DELTA);
 		assertEquals(0.00, score("d2d4", result), DELTA);
 		assertEquals(0.00, score("e2e4", result), DELTA);
+	}
+
+	
+	
+	
+	
+	
+	@Test
+	public void testMem1() throws Exception {
+		ChessParallel parallel = new ChessParallel(1);
+		List<String> result = parallel.mem();
+
+		assertEquals(-0.05, score("a2a4", result), DELTA);
+		assertEquals(-0.05, score("h2h4", result), DELTA);
+		assertEquals(0.50, score("e2e4", result), DELTA);
+		assertEquals(0.50, score("d2d4", result), DELTA);
 	}
 
 	@Test

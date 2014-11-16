@@ -40,7 +40,21 @@ public class Functions {
 		return board;
 	}
 
-	static final DoFn<String, Position> ROOT_TO_POSITION = new DoFn<String, Position>() {
+	public static final CombineFn<String, Position> X = new CombineFn<String, Position>() {
+		private static final long serialVersionUID = -412842198L;
+
+		@Override
+		public void process(Pair<String, Iterable<Position>> input, Emitter<Pair<String, Position>> emitter) {
+			String key = input.first();
+			String ss = "";
+			for(Position s : input.second()) {
+				ss += s.getCurrentAndAncestorsString() + "=" + s.getScore() + " ";
+			}
+			emitter.emit(new Pair<String, Position>(key, new Position(ss, Position.MIN_POSITION)));
+		}
+	};
+
+	public static final DoFn<String, Position> ROOT_TO_POSITION = new DoFn<String, Position>() {
 		private static final long serialVersionUID = 2670656147763008503L;
 
 		@Override
@@ -82,13 +96,13 @@ public class Functions {
 			String move = moveAndChildrenPositions.first();
 			
 			Function<Pair<Position, Position>, Boolean> better = better(moveAndChildrenPositions);
-			Position bestPosition = better == MIN
+			Position bestPosition = (better == MIN)
 					? Position.MAX_POSITION
 					: Position.MIN_POSITION;
 			
 			for(final Position childPosition : childrenPositions) {
 				if(better.apply(new Pair<Position, Position>(childPosition, bestPosition))) {
-					bestPosition = childPosition;
+					bestPosition = new Position(childPosition);
 				}
 			}
 			final Pair<String, Position> moveAndBestPosition = new Pair<String, Position>(move, bestPosition);
@@ -101,13 +115,13 @@ public class Functions {
 	};
 
 	static final Function<Pair<Position, Position>, Boolean> MAX = new Function<Pair<Position, Position>, Boolean>() {
-		public Boolean apply(Pair<Position, Position> twoPositions) {
-			return twoPositions.first().getScore() > twoPositions.second().getScore();
+		public Boolean apply(Pair<Position, Position> positions) {
+			return positions.first().getScore() > positions.second().getScore();
 		}
 	};
 	static final Function<Pair<Position, Position>, Boolean> MIN = new Function<Pair<Position, Position>, Boolean>() {
-		public Boolean apply(Pair<Position, Position> twoPositions) {
-			return twoPositions.first().getScore() < twoPositions.second().getScore();
+		public Boolean apply(Pair<Position, Position> positions) {
+			return positions.first().getScore() < positions.second().getScore();
 		}
 	};
 	

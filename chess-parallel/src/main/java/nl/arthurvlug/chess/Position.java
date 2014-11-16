@@ -8,22 +8,25 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 public class Position implements Comparable<Position>, Serializable {
 	private static final long serialVersionUID = -1030887784637657981L;
 
-	protected static final Position MIN_POSITION = new Position(null, null, Integer.MIN_VALUE);
+	public static final Position MIN_POSITION = new Position(null, null, Integer.MIN_VALUE);
 	protected static final Position MAX_POSITION = new Position(null, null, Integer.MAX_VALUE);
 		
 	@Getter
 	private Position parentPosition;
 	@Getter
-	private String lastMove;
+	private final String lastMove;
 	@Getter
-	@Setter
+	@Setter @Accessors(chain = true)
 	private int score = 0;
 	
-	public Position() { }
+	public Position() {
+		lastMove = null;
+	}
 
 	public Position(String move, Position parent) {
 		this.lastMove = move;
@@ -35,6 +38,12 @@ public class Position implements Comparable<Position>, Serializable {
 		setScore(score);
 	}
 
+	public Position(Position childPosition) {
+		this.lastMove = childPosition.lastMove;
+		this.parentPosition = childPosition.parentPosition;
+		this.score = childPosition.score;
+	}
+
 	String getCurrentAndAncestorsString() {
 		String s = "";
 		if(parentPosition != null) {
@@ -42,6 +51,17 @@ public class Position implements Comparable<Position>, Serializable {
 			s += lastMove;
 		}
 		return s;
+	}
+
+	public List<String> getCurrentAndAncestorMoves() {
+		Position position = this;
+		
+		LinkedList<String> list = new LinkedList<String>();
+		while(position.getParentPosition() != null) {
+			list.addFirst(position.getLastMove());
+			position = position.parentPosition;
+		}
+		return list;
 	}
 	
 	@Override
@@ -59,16 +79,5 @@ public class Position implements Comparable<Position>, Serializable {
 	public boolean equals(Object obj) {
 		Position other = (Position) obj;
 		return getCurrentAndAncestorsString().equals(other.getCurrentAndAncestorsString());
-	}
-
-	public List<String> getCurrentAndAncestorMoves() {
-		Position position = this;
-		
-		LinkedList<String> list = new LinkedList<String>();
-		while(position.getParentPosition() != null) {
-			list.addFirst(position.getLastMove());
-			position = position.parentPosition;
-		}
-		return list;
 	}
 }
