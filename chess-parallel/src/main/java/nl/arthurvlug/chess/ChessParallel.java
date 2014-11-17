@@ -68,4 +68,8 @@ public class ChessParallel implements Serializable {
 		final PCollection<Position> bestPositions = calculator.moveScores(scoredPositions);
 		return bestPositions;
 	}
+	
+	public static void main(String[] args) throws IOException {
+		System.out.println(new ChessParallel(2).mem());
+	}
 }

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 
-public class AcePerformance {
+public class AceEvaluatorPerformanceTest {
 	public static void main(String[] args) {
 		InitialEngineBoard board = new InitialEngineBoard();
 		board.apply(Arrays.asList("e2e4"));

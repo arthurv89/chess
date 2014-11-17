@@ -25,12 +25,12 @@ public class MoveGenerator {
 	
 	public static List<AceMove> generateMoves(ACEBoard engineBoard, boolean validateMoves) {
 		ImmutableList<AceMove> validAndInvalidMoves = ImmutableList.<AceMove> builder()
-//			.addAll(knightMoves(engineBoard))
+			.addAll(knightMoves(engineBoard))
 			.addAll(pawnMoves(engineBoard))
-//			.addAll(rookMoves(engineBoard))
-//			.addAll(bishopMoves(engineBoard))
-//			.addAll(queenMoves(engineBoard))
-//			.addAll(kingMoves(engineBoard))
+			.addAll(rookMoves(engineBoard))
+			.addAll(bishopMoves(engineBoard))
+			.addAll(queenMoves(engineBoard))
+			.addAll(kingMoves(engineBoard))
 			// TODO: Implement pawn, castling, en passent
 			.build();
 		
@@ -73,15 +73,15 @@ public class MoveGenerator {
 			int sq = Long.numberOfTrailingZeros(pawns);
 			pawns -= 1L << sq;
 			
-//			long oneFieldMove = pawnXrayOneFieldMove[sq] & engineBoard.empty_board;
-//			moves.addAll(moves(sq, oneFieldMove, PieceType.PAWN, engineBoard.toMove));
+			long oneFieldMove = pawnXrayOneFieldMove[sq] & engineBoard.empty_board;
+			moves.addAll(moves(sq, oneFieldMove, PieceType.PAWN, engineBoard.toMove));
 			
-//			if(oneFieldMove != 0) {
+			if(oneFieldMove != 0) {
 				long twoFieldMove = pawnXrayTwoFieldMove[sq] & engineBoard.empty_board;
 				moves.addAll(moves(sq, twoFieldMove, PieceType.PAWN, engineBoard.toMove));
-//			}
-//			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.enemy_board;
-//			moves.addAll(moves(sq, twoFieldsMove, PieceType.PAWN, engineBoard.toMove));
+			}
+			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.enemy_board;
+			moves.addAll(moves(sq, twoFieldsMove, PieceType.PAWN, engineBoard.toMove));
 		}
 		return moves;
 	}
