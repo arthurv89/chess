@@ -23,7 +23,7 @@ public class AlphaBetaPruningAlgorithm {
 	private static final int BLACK_WINS = -WHITE_WINS;
 	
 	@Getter
-	private int nodesSearched = 0;
+	private int nodesEvaluated;
 
 	private BoardEvaluator evaluator;
 
@@ -32,7 +32,7 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	public AceMove think(ACEBoard engineBoard, int depth) {
-		nodesSearched = 0;
+		nodesEvaluated = 0;
 
 		AceMove move = alphaBetaRoot(engineBoard, depth);
 		return move;
@@ -44,7 +44,6 @@ public class AlphaBetaPruningAlgorithm {
 
 		
 		engineBoard.generateSuccessorBoards();
-		evaluateBoards(engineBoard.getSuccessorBoards());
 
 //		successorBoards.sort(scoreComparator);
 //
@@ -56,13 +55,10 @@ public class AlphaBetaPruningAlgorithm {
 //		}
 
 		List<ACEBoard> successorBoards = engineBoard.getSuccessorBoards();
-		// TODO: Remove Sort?
-		successorBoards.sort(scoreComparator);
 		// TODO: Remove
 		Preconditions.checkState(successorBoards.size() > 0);
 
 		ACEBoard bestEngineBoard = new ACEBoard(EngineConstants.WHITE);
-		ImmutableList<AceMove> newBestDepthMoves = null;
 		for (ACEBoard successorBoard : successorBoards) {
 			ImmutableList<AceMove> depthMoves = ImmutableList.<AceMove> of(successorBoard.lastMove);
 
@@ -70,10 +66,8 @@ public class AlphaBetaPruningAlgorithm {
 			int newDepth = depth + depthChange;
 			
 			int score = -alphaBeta(successorBoard, depthMoves, newDepth, -beta, -alpha, -newDepth);
-			successorBoard.setSideBasedEvaluation(score);
 			if (score > alpha) {
 				alpha = score;
-				newBestDepthMoves = depthMoves;
 				bestEngineBoard = new ACEBoard(successorBoard);
 			}
 		}
@@ -94,15 +88,7 @@ public class AlphaBetaPruningAlgorithm {
 		return bestEngineBoard.lastMove;
 	}
 
-	private void evaluateBoards(List<ACEBoard> successorBoards) {
-		for(ACEBoard successorBoard : successorBoards) {
-			Integer score = successorBoard.sideDependentScore(evaluator);
-			successorBoard.setSideBasedEvaluation(score);
-		}
-	}
-
 	private int alphaBeta(ACEBoard engineBoard, List<AceMove> depthMoves, int depth, int alpha, int beta, int extraMoves) {
-		nodesSearched++;
 //		log.debug(nodesSearched + " nodes searched (depth=" + depth + ")");
 
 		if (engineBoard.fiftyMove >= 50 || engineBoard.repeatedMove >= 3) {
@@ -110,15 +96,17 @@ public class AlphaBetaPruningAlgorithm {
 		}
 
 		if (depth == 0) {
-			return engineBoard.sideDependentScore(evaluator);
+			return evaluateBoard(engineBoard);
 		}
 		
 		// TODO: Remove this
 		if(engineBoard.white_kings == 0 || engineBoard.black_kings == 0) {
-			return engineBoard.sideDependentScore(evaluator);
+//			engineBoard.sideDependentScore(evaluator);
+			throw new RuntimeException("No kings :(");
 		}
 
-		List<ACEBoard> successorBoards = evaluateMoves(engineBoard);
+		List<ACEBoard> successorBoards = engineBoard.generateSuccessorBoards();
+		
 //		if (engineBoard.whiteCheck() || engineBoard.blackCheck() || successorBoards.size > 0) {
 //			if (isMate(succColor, engineBoard, engineBoard.whiteCheck() || engineBoard.blackCheck(), engineBoard.stalemate())) {
 //				if (engineBoard.blackMate()) {
@@ -141,8 +129,7 @@ public class AlphaBetaPruningAlgorithm {
 //			}
 //		}
 
-		// TODO: Sort
-		successorBoards.sort(scoreComparator);
+		// TODO: Priority queue
 		ImmutableList<AceMove> bestDepthMoves = null;
 		for (ACEBoard successorBoard : successorBoards) {
 			// TODO: Implement this?
@@ -176,6 +163,7 @@ public class AlphaBetaPruningAlgorithm {
 			int value = -alphaBeta(successorBoard, newDepthMoves, newDepth, -beta, -alpha, newExtraMoves);
 
 			if (value >= beta) {
+//				log.debug("Beta cut-off");
 				// Beta cut-off
 				return beta;
 			} else if (value > alpha) {
@@ -186,21 +174,27 @@ public class AlphaBetaPruningAlgorithm {
 		return alpha;
 	}
 
-	private List<ACEBoard> evaluateMoves(ACEBoard engineBoard) {
-		// We are going to store our result boards here
-		List<ACEBoard> scoredMoves = new ArrayList<>();
-
-		List<AceMove> moves = MoveGenerator.generateMoves(engineBoard);
-		for(AceMove move : moves) {
-			ACEBoard copyEngineBoard = new ACEBoard(engineBoard);
-			copyEngineBoard.apply(move);
-			
-			// TODO: Implement Checkmate
-			Integer score = engineBoard.sideDependentScore(evaluator);
-			copyEngineBoard.setSideBasedEvaluation(score);
-			
-			scoredMoves.add(copyEngineBoard);
-		}
-		return scoredMoves;
+	private Integer evaluateBoard(ACEBoard board) {
+		nodesEvaluated++;
+		return board.calculateSideDependentScore(evaluator);
 	}
+
+//	private List<ACEBoard> generateSuccessorBoards(ACEBoard engineBoard) {
+//		// We are going to store our result boards here
+//		List<ACEBoard> scoredMoves = new ArrayList<>();
+//
+//		List<AceMove> moves = MoveGenerator.generateMoves(engineBoard);
+//		for(AceMove move : moves) {
+//			ACEBoard copyEngineBoard = new ACEBoard(engineBoard);
+//			copyEngineBoard.apply(move);
+//			
+//			// TODO: Implement Checkmate
+//			nodesSearched++;
+//			System.err.println("Skip calculating again!");
+//			copyEngineBoard.calculateSideDependentScore(evaluator);
+//			
+//			scoredMoves.add(copyEngineBoard);
+//		}
+//		return scoredMoves;
+//	}
 }

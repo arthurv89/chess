@@ -15,7 +15,22 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class AlphaBetaPruningAlgorithmTest {
+	// Moves in initial position
+	private static final int M = 20;
+	
 	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator());
+	
+	@Test
+	public void testNodesSearched1() {
+		algorithm.think(new InitialEngineBoard(), 1);
+		assertEquals(algorithm.getNodesEvaluated(), M);
+	}
+	
+	@Test
+	public void testNodesSearched2() {
+		algorithm.think(new InitialEngineBoard(), 2);
+		assertEquals(algorithm.getNodesEvaluated(), 2*M - 1);
+	}
 
 	@Test
 	public void testTakePieceWhite() {
@@ -78,28 +93,27 @@ public class AlphaBetaPruningAlgorithmTest {
 	}
 	
 	/*
-	 * 
-//		...q..n.
-//		.pk.ppp.
-//		........
-//		........
-//		........
-//		........
-//		.PPl.PP.
-//		.N.Q.K..
+	    ...♛....
+		..♚.....
+		........
+		........
+		........
+		........
+		...♕....
+		...♗.♔..
 	 */
 	@Test
 	public void testQueenTakeMove() {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("f1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.QUEEN, BitboardUtils.toIndex("d2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.QUEEN, BitboardUtils.toIndex("d1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.BISHOP, BitboardUtils.toIndex("d1"));
 
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("c7"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.QUEEN, BitboardUtils.toIndex("d8"));
 		engineBoard.finalizeBitboards();
 		
-		AceMove bestMove = algorithm.think(engineBoard, 3);
+		AceMove bestMove = algorithm.think(engineBoard, 1);
 		assertEquals(MoveUtils.toMove("d8d2"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 }

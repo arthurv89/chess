@@ -12,7 +12,7 @@ import nl.arthurvlug.chess.utils.game.Move;
 
 public class ACE extends CustomEngine {
 	private static final AlphaBetaPruningAlgorithm searchAlgorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
-	int depth = 3;
+	int depth = 4;
 
 	@Override
 	public String getName() {
@@ -28,7 +28,7 @@ public class ACE extends CustomEngine {
 	}
 	
 	public int getNodesSearched() {
-		return searchAlgorithm.getNodesSearched();
+		return searchAlgorithm.getNodesEvaluated();
 	}
 
 	public void setDepth(int depth) {

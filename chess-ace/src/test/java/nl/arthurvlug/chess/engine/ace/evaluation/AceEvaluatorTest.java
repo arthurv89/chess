@@ -28,6 +28,6 @@ public class AceEvaluatorTest {
 		InitialEngineBoard board = new InitialEngineBoard();
 		board.apply(Arrays.asList("e2e4"));
 		int evaluation = aceEvaluator.evaluate(board).getValue();
-		assertEquals(4, evaluation);
+		assertEquals(50, evaluation);
 	}
 }

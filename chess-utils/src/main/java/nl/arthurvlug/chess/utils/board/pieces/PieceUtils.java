@@ -1,43 +1,28 @@
 package nl.arthurvlug.chess.utils.board.pieces;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
-import com.google.common.collect.ImmutableMap;
+import com.atlassian.fugue.Option;
 
 public class PieceUtils {
-	private static Map<PieceType, Character> pieceCharacterMap = ImmutableMap.<PieceType, Character> builder()
-			.put(PieceType.PAWN, 'p')
-			.put(PieceType.KNIGHT, 'n')
-			.put(PieceType.BISHOP, 'l')
-			.put(PieceType.ROOK, 'r')
-			.put(PieceType.QUEEN, 'q')
-			.put(PieceType.KING, 'k')
-			.build();
+	public static final PieceCharacterConverter pieceToCharacterConverter = new PieceCharacterConverter();
+	public static final PieceToChessSymbolConverter pieceToChessSymbolMap = new PieceToChessSymbolConverter();
 
-	public static String toCharacterString(ColoredPiece coloredPiece) {
-		return toCharacterString(coloredPiece.getPieceType(), coloredPiece.getColor());
+	public static String toCharacterString(final ColoredPiece coloredPiece, final PieceConverter<?> converter) {
+		return toCharacterString(coloredPiece.getPieceType(), coloredPiece.getColor(), converter);
 	}
 
-	public static String toCharacterString(PieceType pieceType, Color color) {
-		return Character.toString(toCharacter(pieceType, color));
+	public static String toCharacterString(final PieceType pieceType, final Color color, final PieceConverter<?> converter) {
+		return Character.toString(toCharacter(pieceType, color, converter));
 	}
 
-	private static Character toCharacter(PieceType pieceType, Color color) {
-		Character pieceChar = pieceCharacterMap.get(pieceType);
-		if(color.isWhite()) {
-			return Character.toUpperCase(pieceChar);
-		} else {
-			return Character.toLowerCase(pieceChar);
+	private static char toCharacter(final PieceType pieceType, final Color color, final PieceConverter<?> converter) {
+		return converter.convert(pieceType, color);
+	}
+
+	public static Option<PieceType> fromChar(final char character, final PieceConverter<?> converter) {
+		Option<PieceType> type = converter.fromChar(character);
+		if(type.isEmpty()) {
+			throw new IllegalArgumentException("Could not find piece with char " + character);
 		}
-	}
-
-	public static PieceType fromChar(char character) {
-		for(Entry<PieceType, Character> pieceCharacterEntry : pieceCharacterMap.entrySet()) {
-			if(Character.toLowerCase(pieceCharacterEntry.getValue()) == Character.toLowerCase(character)) {
-				return pieceCharacterEntry.getKey();
-			}
-		}
-		throw new IllegalArgumentException("Could not find piece with char " + character);
+		return type;
 	}
 }

@@ -15,6 +15,6 @@ public class ColoredPiece {
 	}
 
 	public String getCharacterString() {
-		return PieceUtils.toCharacterString(this);
+		return PieceUtils.toCharacterString(this, PieceUtils.pieceToCharacterConverter);
 	}
 }

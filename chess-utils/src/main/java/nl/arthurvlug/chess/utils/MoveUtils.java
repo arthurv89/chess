@@ -21,7 +21,7 @@ public class MoveUtils {
 	};
 	private static final Function<PieceType, String> TO_CHARACTER = new Function<PieceType, String>() {
 		public String apply(PieceType pieceType) {
-			return PieceUtils.toCharacterString(pieceType, Color.BLACK); // Lowercase
+			return PieceUtils.toCharacterString(pieceType, Color.BLACK, PieceUtils.pieceToCharacterConverter); // Lowercase
 		}
 	};
 	
@@ -53,7 +53,7 @@ public class MoveUtils {
 		Coordinates from = toField(sMove.substring(0, 2));
 		Coordinates to = toField(sMove.substring(2, 4));
 		Option<PieceType> promotionPiece = sMove.length() == 5
-				? Option.<PieceType> some(PieceUtils.fromChar(sMove.charAt(4)))
+				? PieceUtils.fromChar(sMove.charAt(4), PieceUtils.pieceToCharacterConverter)
 				: Option.<PieceType> none();
 		return new Move(from, to, promotionPiece);
 	}

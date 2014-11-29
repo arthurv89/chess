@@ -317,7 +317,7 @@ public class ACEBoard extends AbstractEngineBoard {
 //		Preconditions.checkState(successorBoards == null);
 	}
 	
-	public void generateSuccessorBoards() {
+	public List<ACEBoard> generateSuccessorBoards() {
 		List<ACEBoard> successorBoards = new ArrayList<>();
 
 		ACEBoard opponentMoveBoard = new ACEBoard(this);
@@ -340,13 +340,14 @@ public class ACEBoard extends AbstractEngineBoard {
 			successorBoards.add(successorBoard);
 		}
 		this.successorBoards = successorBoards;
+		return successorBoards;
 	}
 
 	private boolean noKings() {
 		return white_kings == 0L || black_kings == 0L;
 	}
 
-	public Integer sideDependentScore(BoardEvaluator evaluator) {
+	public Integer calculateSideDependentScore(BoardEvaluator evaluator) {
 		// TODO: Implement checkmate
 		NormalScore score = (NormalScore) evaluator.evaluate(this);
 		
@@ -377,7 +378,7 @@ public class ACEBoard extends AbstractEngineBoard {
 			if(pieceAt == null) {
 				sb.append('.');
 			} else {
-				String c = PieceUtils.toCharacterString(pieceAt);
+				String c = PieceUtils.toCharacterString(pieceAt, PieceUtils.pieceToChessSymbolMap);
 				sb.append(c);
 			}
 		}

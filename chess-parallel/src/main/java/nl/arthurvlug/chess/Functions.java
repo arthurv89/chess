@@ -58,7 +58,7 @@ public class Functions {
 		private static final long serialVersionUID = 2670656147763008503L;
 
 		@Override
-		public void process(final String _, final Emitter<Position> emitter) {
+		public void process(final String __, final Emitter<Position> emitter) {
 			emitter.emit(Position.MIN_POSITION);
 		}
 	};
