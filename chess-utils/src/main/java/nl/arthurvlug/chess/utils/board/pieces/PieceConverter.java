@@ -5,15 +5,24 @@ import java.util.Map;
 import com.atlassian.fugue.Option;
 
 public abstract class PieceConverter<T> {
-	Option<PieceType> fromChar(char character) {
+	Option<PieceType> fromChar(final char character) {
 		return com.atlassian.fugue.Iterables.findFirst(getMap().keySet(), k -> {
-			T symbol = getMap().get(k);
-			return pred(symbol, character);
+			final T symbol = getMap().get(k);
+			return isPiece(symbol, character);
 		});
 	}
+	
+	public char convert(final PieceType pieceType, final Color color) {
+		T t = getMap().get(pieceType);
+		if(color == Color.WHITE) {
+			return whiteChar(t);
+		} else {
+			return blackChar(t);
+		}
+	}
 
-	abstract boolean pred(T t, char character);
-
-	abstract char convert(PieceType pieceType, Color color);
+	abstract char whiteChar(T t);
+	abstract char blackChar(T t);
+	abstract boolean isPiece(final T t, final char character);
 	abstract Map<PieceType, T> getMap();
 }

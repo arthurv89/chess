@@ -1,12 +1,22 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
-import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.*;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.deg135_board;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.deg225_board;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.deg315_board;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.deg45_board;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.left_board;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.pawn_xray_black_one_field_move;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.pawn_xray_black_take_field_move;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.pawn_xray_black_two_field_move;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.pawn_xray_white_one_field_move;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.pawn_xray_white_take_field_move;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.pawn_xray_white_two_field_move;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.right_board;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
@@ -17,7 +27,6 @@ import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import com.atlassian.fugue.Option;
 import com.google.common.collect.ImmutableList;
 
-@Slf4j
 public class MoveGenerator {
 	public static List<AceMove> generateMoves(ACEBoard engineBoard) {
 		return generateMoves(engineBoard, true);

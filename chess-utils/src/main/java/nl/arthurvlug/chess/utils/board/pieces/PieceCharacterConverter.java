@@ -15,16 +15,22 @@ public class PieceCharacterConverter extends PieceConverter<Character> {
 			.build();
 
 	@Override
-	public char convert(PieceType pieceType, Color color) {
-		return map.get(pieceType).charValue();
+	boolean isPiece(Character pieceCharater, char inputCharacter) {
+		return pieceCharater.charValue() == Character.toLowerCase(inputCharacter);
 	}
 
 	@Override
-	boolean pred(Character pieceCharater, char inputCharacter) {
-		return pieceCharater.charValue() == Character.toLowerCase(inputCharacter);
-	}
-	
 	Map<PieceType, Character> getMap() {
 		return map;
+	}
+
+	@Override
+	char whiteChar(Character c) {
+		return Character.toUpperCase(c);
+	}
+
+	@Override
+	char blackChar(Character c) {
+		return c;
 	}
 }

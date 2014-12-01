@@ -11,25 +11,26 @@ public class PieceToChessSymbolConverter extends PieceConverter<PieceSymbol> {
 			.put(PieceType.BISHOP, new PieceSymbol('♗', '♝'))
 			.put(PieceType.ROOK, new PieceSymbol('♖', '♜'))
 			.put(PieceType.QUEEN, new PieceSymbol('♕', '♛'))
-			.put(PieceType.KING, new PieceSymbol('♔', '♚')).build();
+			.put(PieceType.KING, new PieceSymbol('♔', '♚'))
+			.build();
 
 	@Override
-	public char convert(final PieceType pieceType, final Color color) {
-		final PieceSymbol pieceSymbol = map.get(pieceType);
-		if(color.isWhite()) {
-			return pieceSymbol.getWhite();
-		} else {
-			return pieceSymbol.getBlack();
-		}
-	}
-
-	@Override
-	boolean pred(PieceSymbol symbol, char character) {
-		return symbol.getWhite() == character || symbol.getBlack() == character;
+	boolean isPiece(PieceSymbol symbol, char character) {
+		return whiteChar(symbol) == character || blackChar(symbol) == character;
 	}
 
 	@Override
 	Map<PieceType, PieceSymbol> getMap() {
 		return map;
+	}
+
+	@Override
+	char whiteChar(PieceSymbol symbol) {
+		return symbol.getWhite();
+	}
+
+	@Override
+	char blackChar(PieceSymbol symbol) {
+		return symbol.getBlack();
 	}
 }

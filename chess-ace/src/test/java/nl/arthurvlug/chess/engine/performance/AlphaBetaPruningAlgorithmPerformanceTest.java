@@ -19,7 +19,8 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 	}
 
 	private static void performanceTest(int depth) {
-		log.debug("Performance test for depth {}", depth);
+		log.debug("");
+		log.debug("Starting performance test for depth {}", depth);
 		final InitialEngineBoard board = new InitialEngineBoard();
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
 		
@@ -29,8 +30,10 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 		
 		final int nodesSearched = algorithm.getNodesEvaluated();
 		final double secondsTaken = end.minus(start.getMillis()).getMillis() * 0.001;
-		System.out.println(nodesSearched);
 		
+		
+		log.info("{} nodes searched", nodesSearched);
+		log.info("{} cut-offs", algorithm.getCutoffs());
 		log.info("{} nodes per second", (int) (nodesSearched / secondsTaken));
 	}
 }
