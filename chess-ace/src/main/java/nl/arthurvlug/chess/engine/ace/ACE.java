@@ -22,6 +22,7 @@ public class ACE extends CustomEngine {
 	@Override
 	public Move think(List<String> moveList, ThinkingParams thinkingParams) {
 		ACEBoard engineBoard = new InitialEngineBoard();
+		engineBoard.finalizeBitboards();
 		engineBoard.apply(moveList);
 		AceMove aceMove = searchAlgorithm.think(engineBoard, depth);
 		return aceMove.toMove();

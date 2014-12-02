@@ -77,14 +77,12 @@ public class ACEBoard extends AbstractEngineBoard {
 		this();
 		this.toMove = toMove;
 		this.sideBasedEvaluation = Integer.MIN_VALUE;
-		finalizeBitboards();
 	}
 
 	public ACEBoard(ACEBoard board, int toMove) {
 		this(board);
 		this.toMove = toMove;
 		finalizeBitboards();
-		generateSuccessorBoards();
 	}
 	
 	public ACEBoard(ACEBoard board) {
@@ -105,8 +103,6 @@ public class ACEBoard extends AbstractEngineBoard {
 		black_knights = board.black_knights;
 		white_pawns = board.white_pawns;
 		black_pawns = board.black_pawns;
-		successorBoards = board.successorBoards;
-		finalizeBitboards();
 	}
 
 	private ACEBoard() {
@@ -318,8 +314,6 @@ public class ACEBoard extends AbstractEngineBoard {
 	}
 	
 	public List<ACEBoard> generateSuccessorBoards() {
-		List<ACEBoard> successorBoards = new ArrayList<>();
-
 		ACEBoard opponentMoveBoard = new ACEBoard(this);
 		opponentMoveBoard.toMove = EngineUtils.otherToMove(this.toMove);
 		opponentMoveBoard.finalizeBitboards();
@@ -331,15 +325,15 @@ public class ACEBoard extends AbstractEngineBoard {
 			}
 		}
 		
-		
 		List<AceMove> moves = MoveGenerator.generateMoves(this);
+		
+		List<ACEBoard> successorBoards = new ArrayList<>(30);
 		for (AceMove move : moves) {
 			ACEBoard successorBoard = new ACEBoard(this);
 			successorBoard.apply(move);
 
 			successorBoards.add(successorBoard);
 		}
-		this.successorBoards = successorBoards;
 		return successorBoards;
 	}
 
@@ -388,13 +382,5 @@ public class ACEBoard extends AbstractEngineBoard {
 		List<String> l = Lists.newArrayList(Splitter.on('\n').split(reversedBoard));
 		Collections.reverse(l);
 		return Joiner.on('\n').join(l);
-	}
-
-	public void setSuccessorBoards(List<ACEBoard> successorBoards) {
-		this.successorBoards = successorBoards;
-	}
-
-	public List<ACEBoard> getSuccessorBoards() {
-		return successorBoards;
 	}
 }

@@ -5,7 +5,6 @@ import java.util.PriorityQueue;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.ScoreComparator;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
@@ -45,11 +44,12 @@ public class AlphaBetaPruningAlgorithm {
 
 		final PriorityQueue<ACEBoard> sortedSuccessorBoards = sortedSuccessorBoards(engineBoard);
 		final ACEBoard anyBoard = sortedSuccessorBoards.peek();
+		// Also check for mate in 1 moves
 		
 		// TODO: Remove
 		Preconditions.checkState(sortedSuccessorBoards.size() > 0);
 
-		ACEBoard bestEngineBoard = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard bestEngineBoard = null;
 		while(!sortedSuccessorBoards.isEmpty()) {
 			final ACEBoard successorBoard = sortedSuccessorBoards.poll();
 			
@@ -68,7 +68,7 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	private PriorityQueue<ACEBoard> sortedSuccessorBoards(final ACEBoard engineBoard) {
-		List<ACEBoard> successorBoards = engineBoard.generateSuccessorBoards();
+		final List<ACEBoard> successorBoards = engineBoard.generateSuccessorBoards();
 		evaluateBoards(successorBoards);
 		
 		final PriorityQueue<ACEBoard> sortedSuccessorBoards = new PriorityQueue<ACEBoard>(scoreComparator);
@@ -82,7 +82,7 @@ public class AlphaBetaPruningAlgorithm {
 		}
 
 		if (depth == 0) {
-			return evaluateBoard(engineBoard);
+			return engineBoard.getSideBasedEvaluation();
 		}
 		
 		if(engineBoard.white_kings == 0 || engineBoard.black_kings == 0) {
@@ -94,6 +94,7 @@ public class AlphaBetaPruningAlgorithm {
 			final ACEBoard successorBoard = sortedSuccessorBoards.poll();
 			
 			final int value = -alphaBeta(successorBoard, depth-1, -beta, -alpha);
+//			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
 
 			if (value >= beta) {
 				// Beta cut-off

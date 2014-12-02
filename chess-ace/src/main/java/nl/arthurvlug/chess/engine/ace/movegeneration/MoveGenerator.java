@@ -25,6 +25,7 @@ import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import com.atlassian.fugue.Option;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 public class MoveGenerator {
@@ -33,6 +34,9 @@ public class MoveGenerator {
 	}
 	
 	public static List<AceMove> generateMoves(ACEBoard engineBoard, boolean validateMoves) {
+		Preconditions.checkArgument(engineBoard.occupied_board != 0L);
+		Preconditions.checkArgument(engineBoard.enemy_and_empty_board != 0L);
+		
 		ImmutableList<AceMove> validAndInvalidMoves = ImmutableList.<AceMove> builder()
 			.addAll(knightMoves(engineBoard))
 			.addAll(pawnMoves(engineBoard))
@@ -47,6 +51,7 @@ public class MoveGenerator {
 		engineBoard.successorBoards = new ArrayList<>();
 		for (AceMove validOrInvalidMove : validAndInvalidMoves) {
 			ACEBoard successorBoard = new ACEBoard(engineBoard);
+			successorBoard.finalizeBitboards();
 			successorBoard.apply(validOrInvalidMove);
 			
 			boolean isValid = true;

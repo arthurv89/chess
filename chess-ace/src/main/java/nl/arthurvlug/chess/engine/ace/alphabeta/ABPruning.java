@@ -15,6 +15,7 @@ public class ABPruning {
 		PriorityQueue<EvaluatedMove> sortedMoves = new PriorityQueue<>();
 		for(AceMove move : MoveGenerator.generateMoves(board)) {
 			ACEBoard movedBoard = new ACEBoard(board);
+			movedBoard.finalizeBitboards();
 			movedBoard.apply(move);
 			if(movedBoard.currentPlayerInCheck) {
 				continue;

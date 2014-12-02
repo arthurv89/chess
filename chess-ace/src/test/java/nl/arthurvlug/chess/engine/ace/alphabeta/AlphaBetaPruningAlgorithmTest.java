@@ -5,7 +5,7 @@ import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
-import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
+import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.utils.EngineTestUtils;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
@@ -17,19 +17,35 @@ import org.junit.Test;
 public class AlphaBetaPruningAlgorithmTest {
 	// Moves in initial position
 	private static final int M = 20;
+//	private static final int M = 4;
 	
-	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator());
+	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
 	
 	@Test
 	public void testNodesSearched1() {
-		algorithm.think(new InitialEngineBoard(), 1);
-		assertEquals(algorithm.getNodesEvaluated(), M);
+		ACEBoard engineBoard = new InitialEngineBoard();
+		engineBoard.finalizeBitboards();
+		algorithm.think(engineBoard, 1);
+		assertEquals(0, algorithm.getCutoffs());
+		assertEquals(M, algorithm.getNodesEvaluated());
 	}
-	
+
 	@Test
 	public void testNodesSearched2() {
-		algorithm.think(new InitialEngineBoard(), 2);
-		assertEquals(algorithm.getNodesEvaluated(), 2*M - 1);
+		ACEBoard engineBoard = new InitialEngineBoard();
+		engineBoard.finalizeBitboards();
+		algorithm.think(engineBoard, 2);
+		assertEquals(M-1, algorithm.getCutoffs());
+		assertEquals(M*M + M, algorithm.getNodesEvaluated());
+	}
+
+	@Test
+	public void testNodesSearched3() {
+		ACEBoard engineBoard = new InitialEngineBoard();
+		engineBoard.finalizeBitboards();
+		algorithm.think(engineBoard, 3);
+		assertEquals(2*M - 2, algorithm.getCutoffs());
+		assertEquals(1472, algorithm.getNodesEvaluated());
 	}
 
 	@Test
@@ -65,7 +81,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.finalizeBitboards();
 		
 		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("b2a1"), EngineTestUtils.engineMoveToMove(bestMove));
+		assertEquals(MoveUtils.toMove("b2c2"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 
 	@Test
@@ -87,9 +103,10 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testStartPosition() {
 		ACEBoard engineBoard = new InitialEngineBoard();
+		engineBoard.finalizeBitboards();
 		
 		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("b1a3"), EngineTestUtils.engineMoveToMove(bestMove));
+		assertEquals(MoveUtils.toMove("d2d4"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 	
 	/*

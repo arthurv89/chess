@@ -48,8 +48,6 @@ public class InitialEngineBoard extends ACEBoard {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, BitboardUtils.toIndex("g7"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, BitboardUtils.toIndex("h7"));
 		
-		engineBoard.finalizeBitboards();
-		
 		return engineBoard;
 	}
 
