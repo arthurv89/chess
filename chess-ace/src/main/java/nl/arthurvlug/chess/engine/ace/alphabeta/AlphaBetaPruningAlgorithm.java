@@ -32,10 +32,11 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	public AceMove think(final ACEBoard engineBoard, final int depth) {
+		Preconditions.checkArgument(depth > 0);
+		
 		nodesEvaluated = 0;
 
-		final AceMove move = alphaBetaRoot(engineBoard, depth);
-		return move;
+		return alphaBetaRoot(engineBoard, depth);
 	}
 
 	private AceMove alphaBetaRoot(final ACEBoard engineBoard, final int depth) {

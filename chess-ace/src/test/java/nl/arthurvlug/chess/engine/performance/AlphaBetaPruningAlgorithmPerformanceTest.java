@@ -10,12 +10,9 @@ import org.joda.time.DateTime;
 @Slf4j
 public class AlphaBetaPruningAlgorithmPerformanceTest {
 	public static void main(String[] args) {
-		performanceTest(1);
-		performanceTest(2);
-		performanceTest(3);
-		performanceTest(4);
-		performanceTest(5);
-		performanceTest(6);
+		for (int i = 1; i < 10; i++) {
+			performanceTest(i);
+		}
 	}
 
 	private static void performanceTest(int depth) {
