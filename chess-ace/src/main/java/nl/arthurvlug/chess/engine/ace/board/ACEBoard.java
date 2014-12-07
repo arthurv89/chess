@@ -314,21 +314,50 @@ public class ACEBoard extends AbstractEngineBoard {
 	}
 	
 	public List<ACEBoard> generateSuccessorBoards() {
-		ACEBoard opponentMoveBoard = new ACEBoard(this);
-		opponentMoveBoard.toMove = EngineUtils.otherToMove(this.toMove);
-		opponentMoveBoard.finalizeBitboards();
-		MoveGenerator.generateMoves(opponentMoveBoard, false);
-		for(ACEBoard board : opponentMoveBoard.successorBoards) {
-			if(board.noKings()) {
-				currentPlayerInCheck = true;
-				break;
-			}
-		}
+//		ACEBoard opponentMoveBoard = new ACEBoard(this);
+//		opponentMoveBoard.toMove = EngineUtils.otherToMove(this.toMove);
+//		opponentMoveBoard.finalizeBitboards();
+//		MoveGenerator.generateMoves(opponentMoveBoard, false);
+//		for(ACEBoard board : opponentMoveBoard.successorBoards) {
+//			if(board.noKings()) {
+//				currentPlayerInCheck = true;
+//				break;
+//			}
+//		}
 		
 		List<AceMove> moves = MoveGenerator.generateMoves(this);
 		
 		List<ACEBoard> successorBoards = new ArrayList<>(30);
 		for (AceMove move : moves) {
+			ACEBoard successorBoard = new ACEBoard(this);
+			successorBoard.apply(move);
+
+			successorBoards.add(successorBoard);
+		}
+		return successorBoards;
+	}
+
+	public List<ACEBoard> generateSuccessorTakeBoards() {
+//		ACEBoard opponentMoveBoard = new ACEBoard(this);
+//		opponentMoveBoard.toMove = EngineUtils.otherToMove(this.toMove);
+//		opponentMoveBoard.finalizeBitboards();
+//		MoveGenerator.generateMoves(opponentMoveBoard, false);
+//		for(ACEBoard board : opponentMoveBoard.successorBoards) {
+//			if(board.noKings()) {
+//				currentPlayerInCheck = true;
+//				break;
+//			}
+//		}
+		
+		List<AceMove> moves = MoveGenerator.generateMoves(this);
+		
+		List<ACEBoard> successorBoards = new ArrayList<>(30);
+		for (AceMove move : moves) {
+			int idx = BitboardUtils.fieldIdx(move.getToCoordinate());
+			if(pieceAt(idx) == null) {
+				continue;
+			}
+			
 			ACEBoard successorBoard = new ACEBoard(this);
 			successorBoard.apply(move);
 
