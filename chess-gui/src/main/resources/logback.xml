@@ -31,7 +31,7 @@
 
 	<appender name="FILE_MOVE" class="ch.qos.logback.core.FileAppender">
 		<append>false</append>
-		<file>llchess-move.log</file>
+		<file>chess-move.log</file>
 		<encoder>
 			<pattern>[%d{hh:mm:ss:sss z}] %5p [%thread] %c{2}: %m%n</pattern>
 		</encoder>

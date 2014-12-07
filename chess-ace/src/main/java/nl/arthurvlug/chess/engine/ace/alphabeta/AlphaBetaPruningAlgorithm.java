@@ -67,8 +67,8 @@ public class AlphaBetaPruningAlgorithm {
 		if(bestEngineBoard.getSideBasedEvaluation() == Integer.MIN_VALUE) {
 			return anyBoard.lastMove;
 		}
-		System.out.println(bestEngineBoard.lastMove);
-		System.out.println(bestEngineBoard.getSideBasedEvaluation());
+//		log.debug("{}", bestEngineBoard.lastMove);
+//		log.debug("{}", bestEngineBoard.getSideBasedEvaluation());
 		return bestEngineBoard.lastMove;
 	}
 

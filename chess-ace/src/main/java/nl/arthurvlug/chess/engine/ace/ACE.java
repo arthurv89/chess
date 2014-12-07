@@ -2,6 +2,7 @@ package nl.arthurvlug.chess.engine.ace;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
@@ -10,6 +11,7 @@ import nl.arthurvlug.chess.engine.customEngine.CustomEngine;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.utils.game.Move;
 
+@Slf4j
 public class ACE extends CustomEngine {
 	private static final AlphaBetaPruningAlgorithm searchAlgorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
 	int depth = 4;
@@ -24,7 +26,7 @@ public class ACE extends CustomEngine {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.finalizeBitboards();
 		engineBoard.apply(moveList);
-		System.out.println(engineBoard);
+		log.debug("{}", engineBoard);
 		
 		AceMove aceMove = searchAlgorithm.think(engineBoard, depth);
 		return aceMove.toMove();

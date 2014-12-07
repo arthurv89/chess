@@ -1,22 +1,36 @@
 package nl.arthurvlug.chess.engine.ace.evaluation;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
+import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
+import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 
 public class EvaluationHolder {
 	private int whiteBishopCount;
 	private int blackBishopCount;
 
 	public int calculate(final ACEBoard engineBoard) {
+		final List<AceMove> moves = MoveGenerator.generateMoves(engineBoard);
+		LinkedHashMultimap<Integer, AceMove> byFromPositionMap = byFromPosition(moves);
 		int score = 0;
 		
 		long occupiedBoard = engineBoard.occupied_board;
 		while(occupiedBoard != 0L) {
+			System.out.println();
 			final int fieldIdx = Long.numberOfTrailingZeros(occupiedBoard);
 			
 			final ColoredPiece coloredPiece = engineBoard.pieceAt(fieldIdx);
-			score += score(fieldIdx, coloredPiece);
+			score += score(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx));
 			
 			occupiedBoard ^= 1L << fieldIdx;
 		}
@@ -24,19 +38,39 @@ public class EvaluationHolder {
 	}
 
 
-	private int score(final int fieldIdx, final ColoredPiece coloredPiece) {
+	private LinkedHashMultimap<Integer, AceMove> byFromPosition(final List<AceMove> moves) {
+		final LinkedHashMultimap<Integer, AceMove> multiMap = LinkedHashMultimap.create();
+		for (final AceMove move : moves) {
+			final Coordinates from = move.getFromCoordinate();
+			final Integer fromIdx = BitboardUtils.fieldIdx(from);
+			multiMap.put(fromIdx, move);
+		}
+		return multiMap;
+	}
+
+
+	private int score(final int fieldIdx, final ColoredPiece coloredPiece, final Set<AceMove> moves) {
 		int totalScore = 0;
 		
-		int pieceValue = ACEConstants.pieceValue(coloredPiece.getPieceType());
+		final int pieceValue = ACEConstants.pieceValue(coloredPiece.getPieceType());
 		totalScore += pieceValue;
 		
-		int extraScore = extraScore(fieldIdx, coloredPiece);
+		final int extraScore = extraScore(fieldIdx, coloredPiece);
 		totalScore += extraScore;
+		
+		int mobilityScore = mobilityScore(moves);
+		totalScore += mobilityScore;
 		
 		return coloredPiece.getColor().isWhite()
 				? totalScore
 				: -totalScore;
 	}
+
+
+	private int mobilityScore(Set<AceMove> moves) {
+		return moves.size();
+	}
+
 
 	private int extraScore(final int fieldIdx, final ColoredPiece coloredPiece) {
 		switch (coloredPiece.getPieceType()) {
@@ -50,13 +84,13 @@ public class EvaluationHolder {
 		throw new RuntimeException("Not yet implemented");
 	}
 
-	private int queenBonus(int fieldIdx, Color color) {
+	private int queenBonus(final int fieldIdx, final Color color) {
 		return 0;
 	}
 
 
-	private int rookBonus(int fieldIdx, Color color) {
-		int score = 0;
+	private int rookBonus(final int fieldIdx, final Color color) {
+		final int score = 0;
 //		if (square.Piece.Moved && castled == false) {
 //			score -= 10;
 //		}

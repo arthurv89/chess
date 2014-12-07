@@ -44,8 +44,8 @@ public class AlphaBetaPruningAlgorithmTest {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.finalizeBitboards();
 		algorithm.think(engineBoard, 3);
-		assertEquals(39, algorithm.getCutoffs());
-		assertEquals(1283, algorithm.getNodesEvaluated());
+		assertEquals(38, algorithm.getCutoffs());
+		assertEquals(1284, algorithm.getNodesEvaluated());
 	}
 
 	@Test

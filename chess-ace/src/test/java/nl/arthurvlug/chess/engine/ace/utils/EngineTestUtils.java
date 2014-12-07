@@ -25,8 +25,8 @@ public class EngineTestUtils {
 		return ENGINE_MOVE_TO_MOVE.apply(move);
 	}
 	
-	public static void compare(long board1, long board2) {
-		System.out.println(BitboardUtils.toBitboardString(board1));
-		System.out.println(BitboardUtils.toBitboardString(board2));
-	}
+//	public static void compare(long board1, long board2) {
+//		System.out.println(BitboardUtils.toBitboardString(board1));
+//		System.out.println(BitboardUtils.toBitboardString(board2));
+//	}
 }
