@@ -26,11 +26,11 @@ public class EvaluationHolder {
 
 	private int score(final int fieldIdx, final ColoredPiece coloredPiece) {
 		int totalScore = 0;
+		
 		int pieceValue = ACEConstants.pieceValue(coloredPiece.getPieceType());
 		totalScore += pieceValue;
 		
 		int extraScore = extraScore(fieldIdx, coloredPiece);
-		System.out.print(coloredPiece.getPieceType().name() + "="  + extraScore + " ");
 		totalScore += extraScore;
 		
 		return coloredPiece.getColor().isWhite()

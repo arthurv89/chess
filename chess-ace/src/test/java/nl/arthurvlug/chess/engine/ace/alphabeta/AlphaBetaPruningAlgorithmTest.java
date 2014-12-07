@@ -44,8 +44,8 @@ public class AlphaBetaPruningAlgorithmTest {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.finalizeBitboards();
 		algorithm.think(engineBoard, 3);
-		assertEquals(2*M - 2, algorithm.getCutoffs());
-		assertEquals(1472, algorithm.getNodesEvaluated());
+		assertEquals(39, algorithm.getCutoffs());
+		assertEquals(1283, algorithm.getNodesEvaluated());
 	}
 
 	@Test
@@ -80,8 +80,17 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("d4"));
 		engineBoard.finalizeBitboards();
 		
+		/*	........
+			........
+			........
+			........
+			...♚....
+			..♟.....
+			.♔......
+			........  */
+		
 		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("b2c2"), EngineTestUtils.engineMoveToMove(bestMove));
+		assertEquals(MoveUtils.toMove("b2b1"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 
 	@Test
@@ -106,7 +115,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.finalizeBitboards();
 		
 		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("d2d4"), EngineTestUtils.engineMoveToMove(bestMove));
+		assertEquals(MoveUtils.toMove("b1c3"), EngineTestUtils.engineMoveToMove(bestMove));
 	}
 	
 	/*

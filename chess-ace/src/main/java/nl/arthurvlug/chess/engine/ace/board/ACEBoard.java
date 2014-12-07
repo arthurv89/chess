@@ -330,6 +330,7 @@ public class ACEBoard extends AbstractEngineBoard {
 		List<ACEBoard> successorBoards = new ArrayList<>(30);
 		for (AceMove move : moves) {
 			ACEBoard successorBoard = new ACEBoard(this);
+			successorBoard.finalizeBitboards();
 			successorBoard.apply(move);
 
 			successorBoards.add(successorBoard);
@@ -359,6 +360,7 @@ public class ACEBoard extends AbstractEngineBoard {
 			}
 			
 			ACEBoard successorBoard = new ACEBoard(this);
+			successorBoard.finalizeBitboards();
 			successorBoard.apply(move);
 
 			successorBoards.add(successorBoard);

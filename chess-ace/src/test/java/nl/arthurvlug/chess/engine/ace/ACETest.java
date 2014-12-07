@@ -16,7 +16,7 @@ public class ACETest {
 	
 	@Test
 	public void testTrap_Depth1() {
-		checkAceMove("b1c3 b8c6 g1f3 e7e5", is("f3e5"), 1); // After taking a piece, we should do another move
+		checkAceMove("b1c3 b8c6 g1f3 e7e5", not(is("f3e5")), 1); // After taking a piece, we should do another move
 	}
 	
 	@Test
@@ -26,7 +26,7 @@ public class ACETest {
 	
 	@Test
 	public void testTrap_Depth1_black() {
-		checkAceMove("e2e4 g8f6 b1c3", is("f6e4"), 1); // After taking a piece, we should do another move
+		checkAceMove("e2e4 g8f6 b1c3", not(is("f6e4")), 1); // After taking a piece, we should do another move
 	}
 
 	@Test
@@ -36,12 +36,12 @@ public class ACETest {
 
 	@Test
 	public void testDontLetOpponentTakeKnight() {
-		checkAceMove("e2e4 g8f6 e4e5", string -> string.toString().startsWith("f6"), 2);
+		checkAceMove("e2e4 g8f6 e4e5", movesPiece("f6"), 2);
 	}
 
 	@Test
 	public void testShouldMoveKnight_white() {
-		checkAceMove("g1f3 e7e5 b2b3 e5e4", string -> string.toString().startsWith("f3"), 2);
+		checkAceMove("g1f3 e7e5 b2b3 e5e4", movesPiece("f3"), 2);
 	}
 	
 	
@@ -60,6 +60,10 @@ public class ACETest {
 
 	private Function<Move, Boolean> is(String string) {
 		return move -> move.toString().equals(string);
+	}
+
+	private Function<Move, Boolean> movesPiece(String fromField) {
+		return move -> move.toString().startsWith(fromField);
 	}
 
 	private Function<Move, Boolean> not(Function<Move, Boolean> function) {

@@ -25,6 +25,7 @@ public class AlphaBetaPruningAlgorithm {
 	private int cutoffs;
 
 	private final BoardEvaluator evaluator;
+//	private final TranspositionTable transpositionTable = new ;
 
 
 	public AlphaBetaPruningAlgorithm(final BoardEvaluator evaluator) {
@@ -58,23 +59,17 @@ public class AlphaBetaPruningAlgorithm {
 			if (score > alpha) {
 				alpha = score;
 				bestEngineBoard = new ACEBoard(successorBoard);
+				bestEngineBoard.setSideBasedEvaluation(score);
 			}
 		}
 		
-		bestEngineBoard.finalizeBitboards();
+//		bestEngineBoard.finalizeBitboards();
 		if(bestEngineBoard.getSideBasedEvaluation() == Integer.MIN_VALUE) {
 			return anyBoard.lastMove;
 		}
+		System.out.println(bestEngineBoard.lastMove);
+		System.out.println(bestEngineBoard.getSideBasedEvaluation());
 		return bestEngineBoard.lastMove;
-	}
-
-	private PriorityQueue<ACEBoard> sortedSuccessorBoards(final ACEBoard engineBoard) {
-		final List<ACEBoard> successorBoards = engineBoard.generateSuccessorBoards();
-		evaluateBoards(successorBoards);
-		
-		final PriorityQueue<ACEBoard> sortedSuccessorBoards = new PriorityQueue<ACEBoard>(scoreComparator);
-		sortedSuccessorBoards.addAll(successorBoards);
-		return sortedSuccessorBoards;
 	}
 
 	private int alphaBeta(final ACEBoard engineBoard, final int depth, int alpha, final int beta) {
@@ -83,9 +78,11 @@ public class AlphaBetaPruningAlgorithm {
 		}
 
 		if (depth == 0) {
-			return engineBoard.getSideBasedEvaluation();
+			// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
+			return quiesceSearch(engineBoard, alpha, beta);
 		}
 		
+		// TODO: Remove
 		if(engineBoard.white_kings == 0 || engineBoard.black_kings == 0) {
 			throw new RuntimeException("No kings :(");
 		}
@@ -107,6 +104,63 @@ public class AlphaBetaPruningAlgorithm {
 			}
 		}
 		return alpha;
+	}
+
+	private int quiesceSearch(final ACEBoard engineBoard, final int _alpha, final int beta) {
+		// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
+		if(!engineBoard.lastMoveWasTakeMove) {
+			return engineBoard.getSideBasedEvaluation();
+		}
+		
+		if (engineBoard.getSideBasedEvaluation() >= beta) {
+			return beta;
+		}
+		
+		int newAlpha = _alpha;
+		if (engineBoard.getSideBasedEvaluation() > newAlpha) {
+			newAlpha = engineBoard.getSideBasedEvaluation();
+		}
+
+
+		
+		// TODO: Remove
+		if(engineBoard.white_kings == 0 || engineBoard.black_kings == 0) {
+			throw new RuntimeException("No kings :(");
+		}
+
+		final PriorityQueue<ACEBoard> sortedSuccessorBoards = sortedSuccessorTakeBoards(engineBoard);
+		while(!sortedSuccessorBoards.isEmpty()) {
+			final ACEBoard successorBoard = sortedSuccessorBoards.poll();
+			
+			final int value = -quiesceSearch(successorBoard, -beta, -newAlpha);
+//			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
+
+			if (value >= beta) {
+				// Beta cut-off
+				cutoffs++;
+//				log.debug("Beta cut-off");
+				return beta;
+			} else if (value > newAlpha) {
+				newAlpha = value;
+			}
+		}
+		return newAlpha;
+	}
+
+	private PriorityQueue<ACEBoard> sortedSuccessorBoards(final ACEBoard engineBoard) {
+		return priorityQueue(engineBoard.generateSuccessorBoards());
+	}
+
+	private PriorityQueue<ACEBoard> sortedSuccessorTakeBoards(final ACEBoard engineBoard) {
+		return priorityQueue(engineBoard.generateSuccessorTakeBoards());
+	}
+
+	private PriorityQueue<ACEBoard> priorityQueue(final List<ACEBoard> successorBoards) {
+		evaluateBoards(successorBoards);
+		
+		final PriorityQueue<ACEBoard> sortedSuccessorBoards = new PriorityQueue<ACEBoard>(scoreComparator);
+		sortedSuccessorBoards.addAll(successorBoards);
+		return sortedSuccessorBoards;
 	}
 
 	private void evaluateBoards(final List<ACEBoard> boards) {
