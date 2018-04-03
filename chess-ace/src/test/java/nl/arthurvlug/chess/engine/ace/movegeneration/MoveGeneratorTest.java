@@ -198,7 +198,7 @@ public class MoveGeneratorTest {
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a3"));
 		engineBoard.finalizeBitboards();
-		engineBoard.generateSuccessorBoards();
+		engineBoard.generateSuccessorBoards(MoveGenerator.generateMoves(engineBoard));
 
 		
 		List<Move> whiteMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));

@@ -1,0 +1,15 @@
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/customEngine/CustomEngine.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/customEngine/BoardEvaluator.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/EngineUtils.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/customEngine/ThinkingParams.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/game/Clock.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/customEngine/Evaluation.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/customEngine/movegeneration/BitboardUtils.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/customEngine/NormalScore.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/test/java/nl/arthurvlug/chess/engine/performance/PerformanceRunner.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/EngineConstants.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/customEngine/AbstractEngineBoard.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/customEngine/ZeroEvaluator.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/Engine.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/UCIEngine.java
+/Users/arthur-prive/workspace/chess/chess-engine/src/main/java/nl/arthurvlug/chess/engine/customEngine/CheckmateScore.java

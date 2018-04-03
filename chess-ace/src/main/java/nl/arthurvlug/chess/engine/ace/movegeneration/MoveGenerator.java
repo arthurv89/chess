@@ -30,10 +30,10 @@ import com.google.common.collect.ImmutableList;
 
 public class MoveGenerator {
 	public static List<AceMove> generateMoves(ACEBoard engineBoard) {
-		return generateMoves(engineBoard, true);
-	}
-	
-	public static List<AceMove> generateMoves(ACEBoard engineBoard, boolean validateMoves) {
+//		return generateMoves(engineBoard, true);
+//	}
+//
+//	public static List<AceMove> generateMoves(ACEBoard engineBoard, boolean validateMoves) {
 		Preconditions.checkArgument(engineBoard.occupied_board != 0L);
 		Preconditions.checkArgument(engineBoard.enemy_and_empty_board != 0L);
 		
@@ -54,24 +54,24 @@ public class MoveGenerator {
 			successorBoard.finalizeBitboards();
 			successorBoard.apply(validOrInvalidMove);
 			
-			boolean isValid = true;
-			if(validateMoves) {
-				generateMoves(successorBoard, false);
-				for(ACEBoard successorSuccessorBoard : successorBoard.successorBoards) {
-					successorSuccessorBoard.finalizeBitboards();
-					if(successorSuccessorBoard.white_kings == 0L && engineBoard.toMove == EngineConstants.WHITE
-							|| successorSuccessorBoard.black_kings == 0L && engineBoard.toMove == EngineConstants.BLACK) {
-						isValid = false;
-					}
-				}
-			}
-
-			if(isValid) {
+//			boolean isValid = true;
+//			if(validateMoves) {
+//				generateMoves(successorBoard, false);
+//				for(ACEBoard successorSuccessorBoard : successorBoard.successorBoards) {
+//					successorSuccessorBoard.finalizeBitboards();
+//					if(successorSuccessorBoard.white_kings == 0L && engineBoard.toMove == EngineConstants.WHITE
+//							|| successorSuccessorBoard.black_kings == 0L && engineBoard.toMove == EngineConstants.BLACK) {
+//						isValid = false;
+//					}
+//				}
+//			}
+//
+//			if(isValid) {
 				validMoves.add(validOrInvalidMove);
-				engineBoard.successorBoards.add(successorBoard);
-			} else {
-//				log.debug("Not valid position (current user will become checked): {}", validOrInvalidMove);
-			}
+//				engineBoard.successorBoards.add(successorBoard);
+//			} else {
+////				log.debug("Not valid position (current user will become checked): {}", validOrInvalidMove);
+//			}
 		}
 		return validMoves;
 	}

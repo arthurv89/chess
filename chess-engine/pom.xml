@@ -3,7 +3,19 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.arthurvlug.chess</groupId>
 	<artifactId>chess-engine</artifactId>
-	<parent>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <parent>
 		<artifactId>chess</artifactId>
 		<groupId>chess</groupId>
 		<version>0.0.1-SNAPSHOT</version>

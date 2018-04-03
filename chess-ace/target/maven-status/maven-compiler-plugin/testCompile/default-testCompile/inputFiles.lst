@@ -1,0 +1,11 @@
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/ace/evaluation/SimplePieceEvaluatorTest.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/performance/AceEvaluatorPerformanceTest.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/ace/board/ACEBoardTest.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/ace/evaluation/AceEvaluatorTest.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/ace/movegeneration/MoveGeneratorTest.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/ace/utils/EngineTestUtils.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/ace/ACETest.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/ace/movegeneration/XRayTest.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/performance/AlphaBetaPruningAlgorithmPerformanceTest.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/ace/evaluation/NotPlayTest.java
+/Users/arthur-prive/workspace/chess/chess-ace/src/test/java/nl/arthurvlug/chess/engine/ace/alphabeta/AlphaBetaPruningAlgorithmTest.java

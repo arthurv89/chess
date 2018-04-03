@@ -26,7 +26,7 @@ public class ACE extends CustomEngine {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.finalizeBitboards();
 		engineBoard.apply(moveList);
-		log.debug("{}", engineBoard);
+		log.debug("\n{}", engineBoard);
 		
 		AceMove aceMove = searchAlgorithm.think(engineBoard, depth);
 		return aceMove.toMove();

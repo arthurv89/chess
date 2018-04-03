@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.EngineUtils;
 import nl.arthurvlug.chess.engine.ace.AceMove;
+import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
@@ -148,7 +149,7 @@ public class ACEBoardTest {
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a3"));
 		engineBoard.finalizeBitboards();
-		engineBoard.generateSuccessorBoards();
+		engineBoard.generateSuccessorBoards(MoveGenerator.generateMoves(engineBoard));
 
 		assertFalse(engineBoard.currentPlayerInCheck);
 	}
@@ -159,7 +160,7 @@ public class ACEBoardTest {
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a2"));
 		engineBoard.finalizeBitboards();
-		engineBoard.generateSuccessorBoards();
+		engineBoard.generateSuccessorBoards(MoveGenerator.generateMoves(engineBoard));
 
 		assertTrue(engineBoard.currentPlayerInCheck);
 	}
@@ -170,7 +171,7 @@ public class ACEBoardTest {
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a2"));
 		engineBoard.finalizeBitboards();
-		engineBoard.generateSuccessorBoards();
+		engineBoard.generateSuccessorBoards(MoveGenerator.generateMoves(engineBoard));
 
 		assertTrue(engineBoard.currentPlayerInCheck);
 	}

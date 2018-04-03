@@ -67,22 +67,19 @@ public abstract class CustomEngine extends UCIEngine {
 
 			@Override
 			public void run() {
-				new NamedThread(new Runnable() {
-					@Override
-					public void run() {
-						while(true) {
-							try {
-								synchronized (newMoveWaitObject) {
-									newMoveWaitObject.wait();
-									log.info(moveList.toString());
-									Move move = think(moveList, thinkingParams);
-									
-									// TODO: Add ponder
-									write("bestmove " + move);
-								}
-							} catch (InterruptedException | IOException e1) {
-								e1.printStackTrace();
+				new NamedThread(() -> {
+					while(true) {
+						try {
+							synchronized (newMoveWaitObject) {
+								newMoveWaitObject.wait();
+								log.info(moveList.toString());
+								Move move = think(moveList, thinkingParams);
+
+								// TODO: Add ponder
+								write("bestmove " + move);
 							}
+						} catch (InterruptedException | IOException e1) {
+							e1.printStackTrace();
 						}
 					}
 				}, "CustomEngine").start();
