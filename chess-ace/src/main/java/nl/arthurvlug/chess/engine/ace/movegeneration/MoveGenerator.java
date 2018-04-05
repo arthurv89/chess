@@ -228,7 +228,7 @@ public class MoveGenerator {
 		while(bitboard != 0) {
 			int onePos = Long.numberOfTrailingZeros(bitboard);
 			Coordinates toCoordinate = BitboardUtils.coordinates(onePos);
-			AceMove move = new AceMove(pieceType, toMove, fromCoordinate, toCoordinate, Option.<PieceType> none());
+			AceMove move = new AceMove(toMove, fromCoordinate, toCoordinate, Option.none());
 			moves.add(move);
 			
 			bitboard -= 1L << onePos;

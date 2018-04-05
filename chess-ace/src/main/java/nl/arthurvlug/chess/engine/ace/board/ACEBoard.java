@@ -126,7 +126,7 @@ public class ACEBoard extends AbstractEngineBoard {
 				currentToMove = currentToMove.other();
 			}
 			int toMove = EngineConstants.fromColor(movingPiece.getColor());
-			apply(new AceMove(movingPiece.getPieceType(), toMove, move.getFrom(), move.getTo(), move.getPromotionPiece()));
+			apply(new AceMove(toMove, move.getFrom(), move.getTo(), move.getPromotionPiece()));
 		}
 //		throw new UnsupportedOperationException();
 		
@@ -183,8 +183,9 @@ public class ACEBoard extends AbstractEngineBoard {
 		int fromIdx = BitboardUtils.fieldIdx(move.getFromCoordinate());
 		long fromBitboard = 1L << fromIdx;
 		long removeFromBoard = ~fromBitboard;
-		
-		switch (move.getMovingPiece()) {
+
+		PieceType movingPiece = pieceAt(fromIdx).getPieceType();
+		switch (movingPiece) {
 			case PAWN:
 				if(move.getToMove() == EngineConstants.WHITE) {
 					white_pawns &= removeFromBoard;

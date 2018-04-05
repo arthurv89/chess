@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.EngineUtils;
 import nl.arthurvlug.chess.engine.ace.AceMove;
-import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
@@ -48,24 +47,41 @@ public class ACEBoardTest {
 
 		
 		ACEBoard copyBoard = startPositionBoard;
-		copyBoard = apply(PieceType.PAWN, "a1", "a2", copyBoard, EngineConstants.WHITE);
-		
+		copyBoard = apply("a1", "a2", copyBoard, EngineConstants.WHITE);
 		assertFalse(copyBoard.lastMoveWasTakeMove);
 		
-		copyBoard = apply(PieceType.PAWN, "a8", "a7", copyBoard, EngineConstants.BLACK);
-		copyBoard = apply(PieceType.KNIGHT, "b1", "b2", copyBoard, EngineConstants.WHITE);
-		copyBoard = apply(PieceType.KNIGHT, "b8", "b7", copyBoard, EngineConstants.BLACK);
-		copyBoard = apply(PieceType.BISHOP, "c1", "c2", copyBoard, EngineConstants.WHITE);
-		copyBoard = apply(PieceType.BISHOP, "c8", "c7", copyBoard, EngineConstants.BLACK);
+		copyBoard = apply("a8", "a7", copyBoard, EngineConstants.BLACK);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+
+		copyBoard = apply("b1", "b2", copyBoard, EngineConstants.WHITE);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+
+		copyBoard = apply("b8", "b7", copyBoard, EngineConstants.BLACK);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+
+		copyBoard = apply("c1", "c2", copyBoard, EngineConstants.WHITE);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+
+		copyBoard = apply("c8", "c7", copyBoard, EngineConstants.BLACK);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
 
 		
-		copyBoard = apply(PieceType.ROOK, "d1", "d2", copyBoard, EngineConstants.WHITE);
-		copyBoard = apply(PieceType.ROOK, "d8", "d7", copyBoard, EngineConstants.BLACK);
-		copyBoard = apply(PieceType.QUEEN, "e1", "e2", copyBoard, EngineConstants.WHITE);
-		copyBoard = apply(PieceType.QUEEN, "e8", "e7", copyBoard, EngineConstants.BLACK);
-		copyBoard = apply(PieceType.KING, "f1", "f2", copyBoard, EngineConstants.WHITE);
-		copyBoard = apply(PieceType.KING, "f8", "f7", copyBoard, EngineConstants.BLACK);
-		
+		copyBoard = apply("d1", "d2", copyBoard, EngineConstants.WHITE);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+
+		copyBoard = apply("d8", "d7", copyBoard, EngineConstants.BLACK);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+
+		copyBoard = apply("e1", "e2", copyBoard, EngineConstants.WHITE);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+
+		copyBoard = apply("e8", "e7", copyBoard, EngineConstants.BLACK);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+
+		copyBoard = apply("f1", "f2", copyBoard, EngineConstants.WHITE);
+		assertFalse(copyBoard.lastMoveWasTakeMove);
+
+		copyBoard = apply("f8", "f7", copyBoard, EngineConstants.BLACK);
 		assertTrue(copyBoard.lastMoveWasTakeMove);
 
 		copyBoard = new ACEBoard(copyBoard, EngineConstants.BLACK);
@@ -143,8 +159,8 @@ public class ACEBoardTest {
 		assertTrue(copyBoard.lastMoveWasTakeMove);
 	}
 
-	private ACEBoard apply(PieceType pieceType, String from, String to, ACEBoard board, int color) {
-		AceMove move = new AceMove(pieceType, color,
+	private ACEBoard apply(String from, String to, ACEBoard board, int color) {
+		AceMove move = new AceMove(color,
 				BitboardUtils.coordinates(from), 
 				BitboardUtils.coordinates(to),
 				Option.none());
