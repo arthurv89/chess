@@ -11,7 +11,6 @@ import com.atlassian.fugue.Option;
 @Getter
 @AllArgsConstructor
 public class AceMove {
-	private int toMove;
 	private Coordinates fromCoordinate;
 	private Coordinates toCoordinate;
 	private Option<PieceType> promotionPiece;

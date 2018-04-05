@@ -125,8 +125,7 @@ public class ACEBoard extends AbstractEngineBoard {
 				}
 				currentToMove = currentToMove.other();
 			}
-			int toMove = EngineConstants.fromColor(movingPiece.getColor());
-			apply(new AceMove(toMove, move.getFrom(), move.getTo(), move.getPromotionPiece()));
+			apply(new AceMove(move.getFrom(), move.getTo(), move.getPromotionPiece()));
 		}
 //		throw new UnsupportedOperationException();
 		
@@ -187,7 +186,7 @@ public class ACEBoard extends AbstractEngineBoard {
 		PieceType movingPiece = pieceAt(fromIdx).getPieceType();
 		switch (movingPiece) {
 			case PAWN:
-				if(move.getToMove() == EngineConstants.WHITE) {
+				if(toMove == EngineConstants.WHITE) {
 					white_pawns &= removeFromBoard;
 					white_pawns |= toBitboard;
 				} else {
@@ -196,7 +195,7 @@ public class ACEBoard extends AbstractEngineBoard {
 				}
 				break;
 			case BISHOP:
-				if(move.getToMove() == EngineConstants.WHITE) {
+				if(toMove == EngineConstants.WHITE) {
 					white_bishops &= removeFromBoard;
 					white_bishops |= toBitboard;
 				} else {
@@ -205,7 +204,7 @@ public class ACEBoard extends AbstractEngineBoard {
 				}
 				break;
 			case KNIGHT:
-				if(move.getToMove() == EngineConstants.WHITE) {
+				if(toMove == EngineConstants.WHITE) {
 					white_knights &= removeFromBoard;
 					white_knights |= toBitboard;
 				} else {
@@ -214,7 +213,7 @@ public class ACEBoard extends AbstractEngineBoard {
 				}
 				break;
 			case ROOK:
-				if(move.getToMove() == EngineConstants.WHITE) {
+				if(toMove == EngineConstants.WHITE) {
 					white_rooks &= removeFromBoard;
 					white_rooks |= toBitboard;
 				} else {
@@ -223,7 +222,7 @@ public class ACEBoard extends AbstractEngineBoard {
 				}
 				break;
 			case QUEEN:
-				if(move.getToMove() == EngineConstants.WHITE) {
+				if(toMove == EngineConstants.WHITE) {
 					white_queens &= removeFromBoard;
 					white_queens |= toBitboard;
 				} else {
@@ -232,7 +231,7 @@ public class ACEBoard extends AbstractEngineBoard {
 				}
 				break;
 			case KING:
-				if(move.getToMove() == EngineConstants.WHITE) {
+				if(toMove == EngineConstants.WHITE) {
 					white_kings &= removeFromBoard;
 					white_kings |= toBitboard;
 				} else {
@@ -243,7 +242,7 @@ public class ACEBoard extends AbstractEngineBoard {
 			default:
 				throw new RuntimeException("Undefined piece");
 		}
-		toMove = EngineUtils.otherToMove(toMove);
+		this.toMove = EngineUtils.otherToMove(this.toMove);
 		finalizeBitboards();
 	}
 

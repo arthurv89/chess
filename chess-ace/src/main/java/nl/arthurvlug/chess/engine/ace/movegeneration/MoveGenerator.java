@@ -24,12 +24,10 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
-import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import com.atlassian.fugue.Option;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import nl.arthurvlug.chess.utils.game.Move;
 
 public class MoveGenerator {
 	public static boolean opponentIsInCheck(final ACEBoard engineBoard, final List<AceMove> generatedMoves) {
@@ -101,14 +99,14 @@ public class MoveGenerator {
 			pawns -= 1L << sq;
 			
 			long oneFieldMove = pawnXrayOneFieldMove[sq] & engineBoard.empty_board;
-			moves.addAll(moves(sq, oneFieldMove, PieceType.PAWN, engineBoard.toMove));
+			moves.addAll(moves(sq, oneFieldMove));
 			
 			if(oneFieldMove != 0) {
 				long twoFieldMove = pawnXrayTwoFieldMove[sq] & engineBoard.empty_board;
-				moves.addAll(moves(sq, twoFieldMove, PieceType.PAWN, engineBoard.toMove));
+				moves.addAll(moves(sq, twoFieldMove));
 			}
 			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.enemy_board;
-			moves.addAll(moves(sq, twoFieldsMove, PieceType.PAWN, engineBoard.toMove));
+			moves.addAll(moves(sq, twoFieldsMove));
 		}
 		return moves;
 	}
@@ -123,8 +121,8 @@ public class MoveGenerator {
 			long queen_diagonal_moves = rookMoves(engineBoard, sq);
 
 			queens -= 1L << sq;
-			moves.addAll(moves(sq, queen_perpendicular_moves, PieceType.QUEEN, engineBoard.toMove));
-			moves.addAll(moves(sq, queen_diagonal_moves, PieceType.QUEEN, engineBoard.toMove));
+			moves.addAll(moves(sq, queen_perpendicular_moves));
+			moves.addAll(moves(sq, queen_diagonal_moves));
 		}
 		return moves;
 	}
@@ -138,7 +136,7 @@ public class MoveGenerator {
 			long bishop_moves = bishopMoves(engineBoard, sq);
 			
 			bishops -= 1L << sq;
-			moves.addAll(moves(sq, bishop_moves, PieceType.BISHOP, engineBoard.toMove));
+			moves.addAll(moves(sq, bishop_moves));
 		}
 		return moves;
 	}
@@ -173,7 +171,7 @@ public class MoveGenerator {
 			long rook_moves = rookMoves(engineBoard, sq);
 			
 			rooks -= 1L << sq;
-			moves.addAll(moves(sq, rook_moves, PieceType.ROOK, engineBoard.toMove));
+			moves.addAll(moves(sq, rook_moves));
 		}
 		return moves;
 	}
@@ -206,7 +204,7 @@ public class MoveGenerator {
 			int sq = Long.numberOfTrailingZeros(knights);
 			long destinationBitboard = Xray.knight_xray[sq] & engineBoard.enemy_and_empty_board;
 			knights -= 1L << sq;
-			moves.addAll(moves(sq, destinationBitboard, PieceType.KNIGHT, engineBoard.toMove));
+			moves.addAll(moves(sq, destinationBitboard));
 		}
 		return moves;
 	}
@@ -218,17 +216,17 @@ public class MoveGenerator {
 		}
 		
 		long destinationBitboard = Xray.king_xray[sq] & engineBoard.enemy_and_empty_board;
-		return moves(sq, destinationBitboard, PieceType.KING, engineBoard.toMove);
+		return moves(sq, destinationBitboard);
 	}
 
-	private static List<AceMove> moves(int index, long bitboard, PieceType pieceType, int toMove) {
+	private static List<AceMove> moves(int index, long bitboard) {
 		List<AceMove> moves = new ArrayList<>();
 		Coordinates fromCoordinate = BitboardUtils.coordinates(index);
 		
 		while(bitboard != 0) {
 			int onePos = Long.numberOfTrailingZeros(bitboard);
 			Coordinates toCoordinate = BitboardUtils.coordinates(onePos);
-			AceMove move = new AceMove(toMove, fromCoordinate, toCoordinate, Option.none());
+			AceMove move = new AceMove(fromCoordinate, toCoordinate, Option.none());
 			moves.add(move);
 			
 			bitboard -= 1L << onePos;
