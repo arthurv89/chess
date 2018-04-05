@@ -143,44 +143,11 @@ public class ACEBoardTest {
 		assertTrue(copyBoard.lastMoveWasTakeMove);
 	}
 
-	@Test
-	public void testBitboardNotCheck() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a3"));
-		engineBoard.finalizeBitboards();
-		engineBoard.generateSuccessorBoards(MoveGenerator.generateMoves(engineBoard));
-
-		assertFalse(engineBoard.currentPlayerInCheck);
-	}
-
-	@Test
-	public void testBitboardWhiteCheck() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a2"));
-		engineBoard.finalizeBitboards();
-		engineBoard.generateSuccessorBoards(MoveGenerator.generateMoves(engineBoard));
-
-		assertTrue(engineBoard.currentPlayerInCheck);
-	}
-
-	@Test
-	public void testBitboardBlackCheck() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a2"));
-		engineBoard.finalizeBitboards();
-		engineBoard.generateSuccessorBoards(MoveGenerator.generateMoves(engineBoard));
-
-		assertTrue(engineBoard.currentPlayerInCheck);
-	}
-
 	private ACEBoard apply(PieceType pieceType, String from, String to, ACEBoard board, int color) {
 		AceMove move = new AceMove(pieceType, color,
 				BitboardUtils.coordinates(from), 
 				BitboardUtils.coordinates(to),
-				Option.<PieceType> none());
+				Option.none());
 		ACEBoard copiedBoard = new ACEBoard(board, EngineUtils.otherToMove(color));
 		copiedBoard.apply(move);
 		return copiedBoard;

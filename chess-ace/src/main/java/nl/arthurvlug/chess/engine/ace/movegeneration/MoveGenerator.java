@@ -12,6 +12,7 @@ import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.pawn_xray_white
 import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.pawn_xray_white_take_field_move;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.pawn_xray_white_two_field_move;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.right_board;
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KING;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,18 +23,30 @@ import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import com.atlassian.fugue.Option;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import nl.arthurvlug.chess.utils.game.Move;
 
 public class MoveGenerator {
+	public static boolean opponentIsInCheck(final ACEBoard engineBoard, final List<AceMove> generatedMoves) {
+		for(AceMove move : generatedMoves) {
+			final ColoredPiece takePiece = engineBoard.pieceAt(move.getToCoordinate());
+			if(takePiece != null && takePiece.getPieceType() == KING) {
+				return true;
+			}
+		}
+		return false;
+	}
+	/**
+	 * Generates both valid moves and invalid moves
+	 * @param engineBoard
+	 * @return
+	 */
 	public static List<AceMove> generateMoves(ACEBoard engineBoard) {
-//		return generateMoves(engineBoard, true);
-//	}
-//
-//	public static List<AceMove> generateMoves(ACEBoard engineBoard, boolean validateMoves) {
 		Preconditions.checkArgument(engineBoard.occupied_board != 0L);
 		Preconditions.checkArgument(engineBoard.enemy_and_empty_board != 0L);
 		

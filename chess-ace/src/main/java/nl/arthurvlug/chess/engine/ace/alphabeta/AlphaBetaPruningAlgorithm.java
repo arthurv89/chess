@@ -1,6 +1,5 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
-import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -15,9 +14,10 @@ import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 
 import com.google.common.base.Preconditions;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
-import nl.arthurvlug.chess.utils.board.Board;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
+import static nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator.opponentIsInCheck;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KING;
 
 @Slf4j
@@ -90,11 +90,8 @@ public class AlphaBetaPruningAlgorithm {
 		int bestScore = OTHER_PLAYER_WINS;
 
 		List<AceMove> generatedMoves = MoveGenerator.generateMoves(engineBoard);
-		for(AceMove move : generatedMoves) {
-			final ColoredPiece takePiece = engineBoard.pieceAt(move.getToCoordinate());
-			if(takePiece != null && takePiece.getPieceType() == KING) {
-				return CURRENT_PLAYER_WINS;
-			}
+		if (opponentIsInCheck(engineBoard, generatedMoves)) {
+			return CURRENT_PLAYER_WINS;
 		}
 
 		final PriorityQueue<ACEBoard> sortedSuccessorBoards = sortedSuccessorBoards(engineBoard, generatedMoves);
@@ -126,15 +123,14 @@ public class AlphaBetaPruningAlgorithm {
 		return bestScore;
 	}
 
-	private int quiesceSearch(final ACEBoard engineBoard, int _alpha, final int beta) {
+	private int quiesceSearch(final ACEBoard engineBoard, int alpha, final int beta) {
 		int stand_pat = engineBoard.getSideBasedEvaluation();
-		return stand_pat;
-//		if (stand_pat >= beta) {
-//			return beta;
-//		}
-//		if( _alpha < stand_pat )
-//			_alpha = stand_pat;
-//
+		if (stand_pat >= beta) {
+			return beta;
+		}
+		if( alpha < stand_pat )
+			alpha = stand_pat;
+
 //		// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
 //		if(!engineBoard.lastMoveWasTakeMove) {
 //			return stand_pat;
@@ -146,24 +142,24 @@ public class AlphaBetaPruningAlgorithm {
 //		if(engineBoard.white_kings == 0 || engineBoard.black_kings == 0) {
 //			throw new RuntimeException("No kings :(");
 //		}
-//
-//		final PriorityQueue<ACEBoard> sortedSuccessorBoards = sortedSuccessorTakeBoards(engineBoard);
-//		while(!sortedSuccessorBoards.isEmpty()) {
-//			final ACEBoard successorBoard = sortedSuccessorBoards.poll();
-//
-//			final int value = -quiesceSearch(successorBoard, -beta, -newAlpha);
-////			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
-//
-//			if (value >= beta) {
-//				// Beta cut-off
-//				cutoffs++;
-////				log.debug("Beta cut-off");
-//				return beta;
-//			} else if (value > newAlpha) {
-//				newAlpha = value;
-//			}
-//		}
-//		return newAlpha;
+
+		final PriorityQueue<ACEBoard> sortedSuccessorBoards = sortedSuccessorTakeBoards(engineBoard);
+		while(!sortedSuccessorBoards.isEmpty()) {
+			final ACEBoard successorBoard = sortedSuccessorBoards.poll();
+
+			final int value = -quiesceSearch(successorBoard, -beta, -alpha);
+//			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
+
+			if (value >= beta) {
+				// Beta cut-off
+				cutoffs++;
+//				log.debug("Beta cut-off");
+				return beta;
+			} else if (value > alpha) {
+				alpha = value;
+			}
+		}
+		return alpha;
 	}
 
 	private PriorityQueue<ACEBoard> sortedSuccessorBoards(final ACEBoard engineBoard, final List<AceMove> generatedMoves) {

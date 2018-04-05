@@ -8,10 +8,7 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
-import nl.arthurvlug.chess.engine.customEngine.Evaluation;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
-
-import com.google.common.base.Function;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
@@ -40,7 +37,7 @@ public class AceEvaluator implements BoardEvaluator {
 
 			final ColoredPiece coloredPiece = engineBoard.pieceAt(fieldIdx);
 			score += pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx));
-//			System.out.println(fieldIdx + " -> " + pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx)));
+//			System.out.println(BitboardUtils.coordinates(fieldIdx) + " -> " + pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx)));
 			occupiedBoard ^= 1L << fieldIdx;
 		}
 		return score;
@@ -67,8 +64,8 @@ public class AceEvaluator implements BoardEvaluator {
 		final int extraScore = extraScore(fieldIdx, coloredPiece);
 		totalScore += extraScore;
 
-		int mobilityScore = mobilityScore(moves);
-		totalScore += mobilityScore;
+//		int mobilityScore = mobilityScore(moves);
+//		totalScore += mobilityScore;
 
 		return coloredPiece.getColor().isWhite()
 				? totalScore

@@ -19,7 +19,9 @@ public class AceEvaluatorTest {
 	
 	@Test
 	public void testStartingPosition() {
-		int evaluation = aceEvaluator.evaluate(new InitialEngineBoard()).getValue();
+		InitialEngineBoard board = new InitialEngineBoard();
+		board.finalizeBitboards();
+		int evaluation = aceEvaluator.evaluate(board).getValue();
 		assertEquals(0, evaluation);
 	}
 	

@@ -32,24 +32,6 @@ public class AlphaBetaPruningAlgorithmTest {
 	}
 
 	@Test
-	public void testNodesSearched2() {
-		ACEBoard engineBoard = new InitialEngineBoard();
-		engineBoard.finalizeBitboards();
-		algorithm.think(engineBoard, 2);
-		assertEquals(0, algorithm.getCutoffs());
-		assertEquals(M*M + M, algorithm.getNodesEvaluated());
-	}
-
-	@Test
-	public void testNodesSearched3() {
-		ACEBoard engineBoard = new InitialEngineBoard();
-		engineBoard.finalizeBitboards();
-		algorithm.think(engineBoard, 3);
-		assertEquals(376, algorithm.getCutoffs());
-		assertEquals(9322, algorithm.getNodesEvaluated());
-	}
-
-	@Test
 	public void testSelfCheckmate() {
 		ACEBoard engineBoard = new ACEBoard(BLACK);
 		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("a1"));
@@ -95,8 +77,6 @@ public class AlphaBetaPruningAlgorithmTest {
 			♔♖......  */
 		final AceMove move = algorithm.think(engineBoard, 3);
 		assertEquals("b4c2", move.toString());
-		assertEquals(67, algorithm.getCutoffs());
-		assertEquals(870, algorithm.getNodesEvaluated());
 	}
 
 	@Test

@@ -1,7 +1,5 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
-import com.google.common.collect.ImmutableList;
-import com.sun.istack.internal.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -71,9 +69,6 @@ public class ACEBoard extends AbstractEngineBoard {
 
 	public List<ACEBoard> successorBoards;
 
-	public boolean currentPlayerInCheck;
-
-
 
 
 	public ACEBoard(int toMove) {
@@ -137,12 +132,10 @@ public class ACEBoard extends AbstractEngineBoard {
 		
 	}
 
-	@Nullable
 	public ColoredPiece pieceAt(Coordinates from) {
 		return pieceAt(BitboardUtils.fieldIdx(from));
 	}
 
-	@Nullable
 	public ColoredPiece pieceAt(long fieldIdx) {
 		long bitboard = 1L << fieldIdx;
 

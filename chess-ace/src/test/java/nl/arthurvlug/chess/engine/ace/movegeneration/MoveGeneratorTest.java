@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
+import static nl.arthurvlug.chess.engine.ace.utils.EngineTestUtils.engineMovesToMoves;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -23,13 +24,13 @@ public class MoveGeneratorTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, BitboardUtils.toIndex("a7"));
 		engineBoard.finalizeBitboards();
 		
-		List<Move> whiteMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
+		List<Move> whiteMoves = engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
 		assertEquals(3, whiteMoves.size());
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a1b1")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a1a2")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a1b2")));
 		
-		List<Move> blackMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
+		List<Move> blackMoves = engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
 		assertEquals(9, blackMoves.size());
 		assertTrue(blackMoves.contains(BitboardUtils.move("a7a5")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("a7a6")));
@@ -52,9 +53,9 @@ public class MoveGeneratorTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, BitboardUtils.toIndex("b2"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, BitboardUtils.toIndex("f1"));
 		engineBoard.finalizeBitboards();
-		
-		List<Move> whiteMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
-		assertEquals(9, whiteMoves.size());
+
+		List<Move> whiteMoves = engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
+		assertEquals(11, whiteMoves.size());
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a4a5")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a1a2")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a1a3")));
@@ -64,9 +65,12 @@ public class MoveGeneratorTest {
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a1e1")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a1f1")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("h8g8")));
-		
-		List<Move> blackMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
-		assertEquals(17, blackMoves.size());
+		// Illegal moves
+		assertTrue(whiteMoves.contains(BitboardUtils.move("h8g7")));
+		assertTrue(whiteMoves.contains(BitboardUtils.move("h8h7")));
+
+		List<Move> blackMoves = engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
+		assertEquals(19, blackMoves.size());
 		assertTrue(blackMoves.contains(BitboardUtils.move("b2b1")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("b2b3")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("b2b4")));
@@ -84,6 +88,9 @@ public class MoveGeneratorTest {
 		assertTrue(blackMoves.contains(BitboardUtils.move("h6g6")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("h6g5")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("h6h5")));
+		// Illegal moves
+		assertTrue(blackMoves.contains(BitboardUtils.move("h6h7")));
+		assertTrue(blackMoves.contains(BitboardUtils.move("h6g7")));
 	}
 
 	@Test
@@ -97,15 +104,17 @@ public class MoveGeneratorTest {
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, BitboardUtils.toIndex("a4"));
 		engineBoard.finalizeBitboards();
 		
-		List<Move> whiteMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
-		assertEquals(4, whiteMoves.size());
+		List<Move> whiteMoves = engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
+		assertEquals(6, whiteMoves.size());
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a4a5")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a1b3")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("a1c2")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("h8g8")));
-		
-		List<Move> blackMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
-		assertEquals(7, blackMoves.size());
+		assertTrue(whiteMoves.contains(BitboardUtils.move("h8h7")));
+		assertTrue(whiteMoves.contains(BitboardUtils.move("h8g7")));
+
+		List<Move> blackMoves = engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
+		assertEquals(9, blackMoves.size());
 		assertTrue(blackMoves.contains(BitboardUtils.move("c4c3")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("b2a4")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("b2d3")));
@@ -113,6 +122,8 @@ public class MoveGeneratorTest {
 		assertTrue(blackMoves.contains(BitboardUtils.move("h6g6")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("h6g5")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("h6h5")));
+		assertTrue(blackMoves.contains(BitboardUtils.move("h6g7")));
+		assertTrue(blackMoves.contains(BitboardUtils.move("h6h7")));
 	}
 
 	@Test
@@ -131,8 +142,8 @@ public class MoveGeneratorTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("h6"));
 		engineBoard.finalizeBitboards();
 		
-		List<Move> whiteMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
-		assertEquals(7, whiteMoves.size());
+		List<Move> whiteMoves = engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
+		assertEquals(9, whiteMoves.size());
 		assertTrue(whiteMoves.contains(BitboardUtils.move("h8g8")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("e2e3")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("e2e4")));
@@ -140,15 +151,19 @@ public class MoveGeneratorTest {
 		assertTrue(whiteMoves.contains(BitboardUtils.move("d2d4")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("c2c3")));
 		assertTrue(whiteMoves.contains(BitboardUtils.move("c2c4")));
-		
-		List<Move> blackMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
-		assertEquals(6, blackMoves.size());
+		assertTrue(whiteMoves.contains(BitboardUtils.move("h8h7")));
+		assertTrue(whiteMoves.contains(BitboardUtils.move("h8g7")));
+
+		List<Move> blackMoves = engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
+		assertEquals(8, blackMoves.size());
 		assertTrue(blackMoves.contains(BitboardUtils.move("b7a8")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("b7c8")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("b7a6")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("h6g6")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("h6g5")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("h6h5")));
+		assertTrue(blackMoves.contains(BitboardUtils.move("h6h7")));
+		assertTrue(blackMoves.contains(BitboardUtils.move("h6g7")));
 	}
 
 	@Test
@@ -168,8 +183,8 @@ public class MoveGeneratorTest {
 //		List<Move> whiteMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
 //		assertEquals(0, whiteMoves.size());
 		
-		List<Move> blackMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
-		assertEquals(21, blackMoves.size());
+		List<Move> blackMoves = engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
+		assertEquals(23, blackMoves.size());
 		assertTrue(blackMoves.contains(BitboardUtils.move("a8a7")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("a8a6")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("a8a5")));
@@ -190,29 +205,10 @@ public class MoveGeneratorTest {
 		assertTrue(blackMoves.contains(BitboardUtils.move("a8f3")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("a8g2")));
 		assertTrue(blackMoves.contains(BitboardUtils.move("a8h1")));
+		assertTrue(blackMoves.contains(BitboardUtils.move("h8h7")));
+		assertTrue(blackMoves.contains(BitboardUtils.move("h8g7")));
 	}
 
-	@Test
-	public void testBitboardCheckCantMoveToCheckField() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("a3"));
-		engineBoard.finalizeBitboards();
-		engineBoard.generateSuccessorBoards(MoveGenerator.generateMoves(engineBoard));
 
-		
-		List<Move> whiteMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE)));
-		assertEquals(1, whiteMoves.size());
-		assertTrue(whiteMoves.contains(BitboardUtils.move("a1b1")));
-		
-		List<Move> blackMoves = EngineTestUtils.engineMovesToMoves(MoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK)));
-		assertEquals(3, blackMoves.size());
-		assertTrue(blackMoves.contains(BitboardUtils.move("a3a4")));
-		assertTrue(blackMoves.contains(BitboardUtils.move("a3b3")));
-		assertTrue(blackMoves.contains(BitboardUtils.move("a3b4")));
-	}
-	
-	
-	
 	// TODO: Write for pawn moves
 }
