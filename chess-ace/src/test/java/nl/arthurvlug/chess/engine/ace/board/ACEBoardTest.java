@@ -163,7 +163,8 @@ public class ACEBoardTest {
 				BitboardUtils.coordinates(from), 
 				BitboardUtils.coordinates(to),
 				Option.none());
-		ACEBoard copiedBoard = new ACEBoard(board, board.toMove);
+		ACEBoard copiedBoard = new ACEBoard(board);
+		copiedBoard.finalizeBitboards();
 		copiedBoard.apply(move);
 		return copiedBoard;
 	}
