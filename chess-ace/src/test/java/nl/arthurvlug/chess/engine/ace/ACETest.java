@@ -52,8 +52,7 @@ public class ACETest {
 	private void checkMove(String sMoves, Function<Move, Boolean> expect, int depth) {
 		List<String> moves = Splitter.on(' ').splitToList(sMoves);
 		
-		ACE ace = new ACE();
-		ace.depth = depth;
+		ACE ace = new ACE(depth);
 		Move move = ace.think(moves, new ThinkingParams());
 		assertTrue(expect.apply(move));
 	}

@@ -29,7 +29,7 @@ public class Main_Chess {
 		addShutdownHook();
 
 		eventBus.post(new StartupEvent());
-		Thread.sleep(Long.MAX_VALUE);
+			Thread.sleep(Long.MAX_VALUE);
 	}
 
 	private void addShutdownHook() {

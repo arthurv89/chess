@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.List;
 
+import nl.arthurvlug.chess.engine.ace.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.AceScoreComparator;
 import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
@@ -15,7 +16,7 @@ import org.junit.Test;
 
 public class NotPlayTest {
 	private static final AceScoreComparator scoreComparator = new AceScoreComparator();
-	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
+	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
 
 	@Ignore
 	@Test
@@ -27,7 +28,7 @@ public class NotPlayTest {
 	private Move think(List<String> moveList) {
 		InitialEngineBoard board = new InitialEngineBoard();
 		board.apply(moveList);
-		Move move = algorithm.think(board, 4);
+		Move move = algorithm.think(board);
 		System.out.println(move);
 		return move;
 	}

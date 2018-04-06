@@ -17,8 +17,10 @@ import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 public class AceEvaluator implements BoardEvaluator {
 	@Override
 	public NormalScore evaluate(final AbstractEngineBoard board) {
-		int score = calculate((ACEBoard) board);
-		
+		ACEBoard aceBoard = (ACEBoard) board;
+		int score = calculate(aceBoard);
+//		System.out.printf("Score: %d:\n%s%n", score, aceBoard.toString());
+
 		return new NormalScore(score);
 	}
 

@@ -36,8 +36,7 @@ public class Main_SpeedTest {
 	public static void main(String[] args) {
 		try {
 			ACE ace = new ACE();
-			ace.setDepth(10);
-			
+
 			NodeCountMonitor nodeCountMonitor = new NodeCountMonitor(ace);
 			nodeCountMonitor.start();
 			ace.think(ImmutableList.<String>of(), new ThinkingParams());

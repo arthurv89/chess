@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
+import nl.arthurvlug.chess.engine.ace.ChessEngineConfiguration;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
@@ -19,27 +20,32 @@ import static java.util.Collections.swap;
 public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	private static final int CURRENT_PLAYER_WINS = 1000000000;
 	private static final int OTHER_PLAYER_WINS = -CURRENT_PLAYER_WINS;
-	
+
 	@Getter
 	private int nodesEvaluated;
 	@Getter
 	private int cutoffs;
 
 	private final BoardEvaluator evaluator;
+	private final int quiesceMaxDepth;
+	private final int depth;
 //	private final TranspositionTable transpositionTable = new ;
 
-	public AlphaBetaPruningAlgorithm(final BoardEvaluator evaluator) {
-		this.evaluator = evaluator;
+	public AlphaBetaPruningAlgorithm(final ChessEngineConfiguration configuration) {
+		this.evaluator = configuration.getEvaluator();
+		this.quiesceMaxDepth = configuration.getQuiesceMaxDepth();
+		this.depth = configuration.getSearchDepth();
 	}
 
-	public Move think(final T engineBoard, final int depth) {
+	public Move think(final T engineBoard) {
 		Preconditions.checkArgument(depth > 0);
-		
+
+		cutoffs = 0;
 		nodesEvaluated = 0;
 
 		Optional<Move> priorityMove = Optional.empty();
-		for (int depthNow = 0; depthNow < depth; depthNow++) {
-			final Move bestMove = alphaBetaRoot(engineBoard, depth, priorityMove);
+		for (int depthNow = 1; depthNow <= depth; depthNow++) {
+			final Move bestMove = alphaBetaRoot(engineBoard, depthNow, priorityMove);
 			if(bestMove == null) {
 				return null;
 			}
@@ -94,7 +100,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 
 		if (depth == 0) {
 			// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
-			return quiesceSearch(engineBoard, alpha, beta);
+			return quiesceSearch(engineBoard, alpha, beta, quiesceMaxDepth);
 		}
 		
 		// TODO: Remove
@@ -113,6 +119,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		for(T successorBoard : successorBoards) {
 			if (bestScore >= beta) {
 				cutoffs++;
+				debug();
 				break;
 			}
 			if (bestScore > alpha) {
@@ -136,7 +143,11 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		return bestScore;
 	}
 
-	private int quiesceSearch(final T engineBoard, int alpha, final int beta) {
+	private void debug() {
+//		System.out.println(cutoffs + "/" + nodesEvaluated);
+	}
+
+	private int quiesceSearch(final T engineBoard, int alpha, final int beta, final int depth) {
 		setSideDependentScore(engineBoard);
 		int stand_pat = engineBoard.getSideBasedEvaluation();
 		if (stand_pat >= beta) {
@@ -158,12 +169,13 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 
 		final List<T> successorBoards = engineBoard.generateSuccessorTakeBoards();
 		for(T successorBoard : successorBoards) {
-			final int value = -quiesceSearch(successorBoard, -beta, -alpha);
+			final int value = -quiesceSearch(successorBoard, -beta, -alpha, depth);
 //			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
 
 			if (value >= beta) {
 				// Beta cut-off
 				cutoffs++;
+				debug();
 //				log.debug("Beta cut-off");
 				return beta;
 			} else if (value > alpha) {

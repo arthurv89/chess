@@ -5,16 +5,23 @@ import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
-import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.CustomEngine;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.utils.game.Move;
 
 @Slf4j
 public class ACE extends CustomEngine {
-	private static final AceScoreComparator scoreComparator = new AceScoreComparator();
-	private static final AlphaBetaPruningAlgorithm searchAlgorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
-	int depth = 4;
+	private AlphaBetaPruningAlgorithm searchAlgorithm;
+
+	public ACE() {
+		searchAlgorithm = new AlphaBetaPruningAlgorithm<ACEBoard>(new AceConfiguration());
+	}
+
+	public ACE(final int depth) {
+		final AceConfiguration configuration = new AceConfiguration();
+		configuration.setSearchDepth(depth);
+		searchAlgorithm = new AlphaBetaPruningAlgorithm<ACEBoard>(configuration);
+	}
 
 	@Override
 	public String getName() {
@@ -28,14 +35,11 @@ public class ACE extends CustomEngine {
 		engineBoard.apply(moveList);
 		log.debug("\n{}", engineBoard);
 
-		return searchAlgorithm.think(engineBoard, depth);
+		Move think = searchAlgorithm.think(engineBoard);
+		return think;
 	}
 	
 	public int getNodesSearched() {
 		return searchAlgorithm.getNodesEvaluated();
-	}
-
-	public void setDepth(int depth) {
-		this.depth = depth;
 	}
 }
