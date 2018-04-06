@@ -3,7 +3,7 @@ package nl.arthurvlug.chess.engine.ace.evaluation;
 import com.google.common.collect.LinkedHashMultimap;
 import java.util.List;
 import java.util.Set;
-import nl.arthurvlug.chess.engine.ace.AceMove;
+import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
@@ -27,8 +27,8 @@ public class AceEvaluator implements BoardEvaluator {
 	private int blackBishopCount;
 
 	public int calculate(final ACEBoard engineBoard) {
-		final List<AceMove> moves = MoveGenerator.generateMoves(engineBoard);
-		LinkedHashMultimap<Integer, AceMove> byFromPositionMap = byFromPosition(moves);
+		final List<Move> moves = MoveGenerator.generateMoves(engineBoard);
+		LinkedHashMultimap<Integer, Move> byFromPositionMap = byFromPosition(moves);
 		int score = 0;
 
 		long occupiedBoard = engineBoard.occupied_board;
@@ -44,10 +44,10 @@ public class AceEvaluator implements BoardEvaluator {
 	}
 
 
-	private LinkedHashMultimap<Integer, AceMove> byFromPosition(final List<AceMove> moves) {
-		final LinkedHashMultimap<Integer, AceMove> multiMap = LinkedHashMultimap.create();
-		for (final AceMove move : moves) {
-			final Coordinates from = move.getFromCoordinate();
+	private LinkedHashMultimap<Integer, Move> byFromPosition(final List<Move> moves) {
+		final LinkedHashMultimap<Integer, Move> multiMap = LinkedHashMultimap.create();
+		for (final Move move : moves) {
+			final Coordinates from = move.getFrom();
 			final Integer fromIdx = BitboardUtils.fieldIdx(from);
 			multiMap.put(fromIdx, move);
 		}
@@ -55,7 +55,7 @@ public class AceEvaluator implements BoardEvaluator {
 	}
 
 
-	private int pieceScore(final int fieldIdx, final ColoredPiece coloredPiece, final Set<AceMove> moves) {
+	private int pieceScore(final int fieldIdx, final ColoredPiece coloredPiece, final Set<Move> moves) {
 		int totalScore = 0;
 
 		final int pieceValue = ACEConstants.pieceValue(coloredPiece.getPieceType());
@@ -73,7 +73,7 @@ public class AceEvaluator implements BoardEvaluator {
 	}
 
 
-	private int mobilityScore(Set<AceMove> moves) {
+	private int mobilityScore(Set<Move> moves) {
 		return moves.size();
 	}
 

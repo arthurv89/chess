@@ -2,7 +2,7 @@ package nl.arthurvlug.chess;
 
 import java.util.List;
 
-import nl.arthurvlug.chess.engine.ace.AceMove;
+import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
@@ -23,7 +23,7 @@ public class Functions {
 		private static final long serialVersionUID = 1L;
 		public void process(final Position position, final Emitter<Position> emitter) {
 			final ACEBoard board = createBoard(position);
-			for(AceMove newMove : MoveGenerator.generateMoves(board)) {
+			for(Move newMove : MoveGenerator.generateMoves(board)) {
 				Position childPosition = new Position(newMove.toString(), position);
 				emitter.emit(childPosition);
 			}

@@ -1,24 +1,19 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
+import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.PriorityQueue;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.ScoreComparator;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
-
-import com.google.common.base.Preconditions;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
-import nl.arthurvlug.chess.utils.MoveUtils;
-import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.game.Move;
 
 import static nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator.opponentIsInCheck;
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KING;
 
 @Slf4j
 public class AlphaBetaPruningAlgorithm {
@@ -40,7 +35,7 @@ public class AlphaBetaPruningAlgorithm {
 		this.evaluator = evaluator;
 	}
 
-	public AceMove think(final ACEBoard engineBoard, final int depth) {
+	public Move think(final ACEBoard engineBoard, final int depth) {
 		Preconditions.checkArgument(depth > 0);
 		
 		nodesEvaluated = 0;
@@ -48,17 +43,17 @@ public class AlphaBetaPruningAlgorithm {
 		return alphaBetaRoot(engineBoard, depth);
 	}
 
-	private AceMove alphaBetaRoot(final ACEBoard engineBoard, final int depth) {
+	private Move alphaBetaRoot(final ACEBoard engineBoard, final int depth) {
 		int bestScore = OTHER_PLAYER_WINS;
 
-		List<AceMove> generatedMoves = MoveGenerator.generateMoves(engineBoard);
+		List<Move> generatedMoves = MoveGenerator.generateMoves(engineBoard);
 		final PriorityQueue<ACEBoard> sortedSuccessorBoards = sortedSuccessorBoards(engineBoard, generatedMoves);
 
 		// TODO: Remove
 		Preconditions.checkState(sortedSuccessorBoards.size() > 0);
 		// Also check for mate in 1 moves
 
-		AceMove bestMove = null;
+		Move bestMove = null;
 		while(!sortedSuccessorBoards.isEmpty()) {
 			final ACEBoard successorBoard = sortedSuccessorBoards.poll();
 
@@ -89,7 +84,7 @@ public class AlphaBetaPruningAlgorithm {
 
 		int bestScore = OTHER_PLAYER_WINS;
 
-		List<AceMove> generatedMoves = MoveGenerator.generateMoves(engineBoard);
+		List<Move> generatedMoves = MoveGenerator.generateMoves(engineBoard);
 		if (opponentIsInCheck(engineBoard, generatedMoves)) {
 			return CURRENT_PLAYER_WINS;
 		}
@@ -106,7 +101,7 @@ public class AlphaBetaPruningAlgorithm {
 				alpha = bestScore;
 			}
 
-//			final AceMove move = successorBoard.lastMove;
+//			final Move move = successorBoard.lastMove;
 //			if (move.is_captured_piece_a_king())
 //			{
 //				return 900 + level; // Opponent's king can be captured. That means he is check-mated.
@@ -162,7 +157,7 @@ public class AlphaBetaPruningAlgorithm {
 		return alpha;
 	}
 
-	private PriorityQueue<ACEBoard> sortedSuccessorBoards(final ACEBoard engineBoard, final List<AceMove> generatedMoves) {
+	private PriorityQueue<ACEBoard> sortedSuccessorBoards(final ACEBoard engineBoard, final List<Move> generatedMoves) {
 		return priorityQueue(engineBoard.generateSuccessorBoards(generatedMoves));
 	}
 
@@ -188,7 +183,7 @@ public class AlphaBetaPruningAlgorithm {
 		return board.getSideBasedEvaluation();
 	}
 
-	public static void setSideDependentScore(final ACEBoard board, final BoardEvaluator evaluator) {
+	private static void setSideDependentScore(final ACEBoard board, final BoardEvaluator evaluator) {
 		// TODO: Implement checkmate
 		NormalScore score = (NormalScore) evaluator.evaluate(board);
 

@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 
 import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
@@ -28,11 +27,12 @@ import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import com.atlassian.fugue.Option;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import nl.arthurvlug.chess.utils.game.Move;
 
 public class MoveGenerator {
-	public static boolean opponentIsInCheck(final ACEBoard engineBoard, final List<AceMove> generatedMoves) {
-		for(AceMove move : generatedMoves) {
-			final ColoredPiece takePiece = engineBoard.pieceAt(move.getToCoordinate());
+	public static boolean opponentIsInCheck(final ACEBoard engineBoard, final List<Move> generatedMoves) {
+		for(Move move : generatedMoves) {
+			final ColoredPiece takePiece = engineBoard.pieceAt(move.getTo());
 			if(takePiece != null && takePiece.getPieceType() == KING) {
 				return true;
 			}
@@ -44,11 +44,11 @@ public class MoveGenerator {
 	 * @param engineBoard
 	 * @return
 	 */
-	public static List<AceMove> generateMoves(ACEBoard engineBoard) {
+	public static List<Move> generateMoves(ACEBoard engineBoard) {
 		Preconditions.checkArgument(engineBoard.occupied_board != 0L);
 		Preconditions.checkArgument(engineBoard.enemy_and_empty_board != 0L);
 		
-		ImmutableList<AceMove> validAndInvalidMoves = ImmutableList.<AceMove> builder()
+		ImmutableList<Move> validAndInvalidMoves = ImmutableList.<Move> builder()
 			.addAll(knightMoves(engineBoard))
 			.addAll(pawnMoves(engineBoard))
 			.addAll(rookMoves(engineBoard))
@@ -58,9 +58,9 @@ public class MoveGenerator {
 			// TODO: Implement castling, en passent
 			.build();
 		
-		List<AceMove> validMoves = new ArrayList<>();
+		List<Move> validMoves = new ArrayList<>();
 		engineBoard.successorBoards = new ArrayList<>();
-		for (AceMove validOrInvalidMove : validAndInvalidMoves) {
+		for (Move validOrInvalidMove : validAndInvalidMoves) {
 			ACEBoard successorBoard = new ACEBoard(engineBoard);
 			successorBoard.finalizeBitboards();
 			successorBoard.apply(validOrInvalidMove);
@@ -87,12 +87,12 @@ public class MoveGenerator {
 		return validMoves;
 	}
 
-	private static List<AceMove> pawnMoves(ACEBoard engineBoard) {
+	private static List<Move> pawnMoves(ACEBoard engineBoard) {
 		long[] pawnXrayOneFieldMove = engineBoard.toMove == EngineConstants.WHITE ? pawn_xray_white_one_field_move : pawn_xray_black_one_field_move;
 		long[] pawnXrayTwoFieldMove = engineBoard.toMove == EngineConstants.WHITE ? pawn_xray_white_two_field_move : pawn_xray_black_two_field_move;;
 		long[] pawnXrayTakeFieldMove = engineBoard.toMove == EngineConstants.WHITE ? pawn_xray_white_take_field_move : pawn_xray_black_take_field_move;;
 		
-		List<AceMove> moves = new ArrayList<>();
+		List<Move> moves = new ArrayList<>();
 		long pawns = pawns(engineBoard);
 		while(pawns != 0L) {
 			int sq = Long.numberOfTrailingZeros(pawns);
@@ -111,8 +111,8 @@ public class MoveGenerator {
 		return moves;
 	}
 
-	private static List<AceMove> queenMoves(ACEBoard engineBoard) {
-		List<AceMove> moves = new ArrayList<>();
+	private static List<Move> queenMoves(ACEBoard engineBoard) {
+		List<Move> moves = new ArrayList<>();
 		long queens = queens(engineBoard);
 		while(queens != 0L) {
 			int sq = Long.numberOfTrailingZeros(queens);
@@ -127,8 +127,8 @@ public class MoveGenerator {
 		return moves;
 	}
 
-	private static List<AceMove> bishopMoves(ACEBoard engineBoard) {
-		List<AceMove> moves = new ArrayList<>();
+	private static List<Move> bishopMoves(ACEBoard engineBoard) {
+		List<Move> moves = new ArrayList<>();
 		long bishops = bishops(engineBoard);
 		while(bishops != 0L) {
 			int sq = Long.numberOfTrailingZeros(bishops);
@@ -162,8 +162,8 @@ public class MoveGenerator {
 		return bishop_moves;
 	}
 
-	private static List<AceMove> rookMoves(ACEBoard engineBoard) {
-		List<AceMove> moves = new ArrayList<>();
+	private static List<Move> rookMoves(ACEBoard engineBoard) {
+		List<Move> moves = new ArrayList<>();
 		long rooks = rooks(engineBoard);
 		while(rooks != 0L) {
 			int sq = Long.numberOfTrailingZeros(rooks);
@@ -197,8 +197,8 @@ public class MoveGenerator {
 		return rook_moves;
 	}
 
-	private static List<AceMove> knightMoves(ACEBoard engineBoard) {
-		List<AceMove> moves = new ArrayList<>();
+	private static List<Move> knightMoves(ACEBoard engineBoard) {
+		List<Move> moves = new ArrayList<>();
 		long knights = knights(engineBoard);
 		while(knights != 0L) {
 			int sq = Long.numberOfTrailingZeros(knights);
@@ -209,7 +209,7 @@ public class MoveGenerator {
 		return moves;
 	}
 
-	private static List<AceMove> kingMoves(ACEBoard engineBoard) {
+	private static List<Move> kingMoves(ACEBoard engineBoard) {
 		int sq = Long.numberOfTrailingZeros(kings(engineBoard));
 		if(sq == 64) {
 			return Collections.emptyList();
@@ -219,14 +219,14 @@ public class MoveGenerator {
 		return moves(sq, destinationBitboard);
 	}
 
-	private static List<AceMove> moves(int index, long bitboard) {
-		List<AceMove> moves = new ArrayList<>();
+	private static List<Move> moves(int index, long bitboard) {
+		List<Move> moves = new ArrayList<>();
 		Coordinates fromCoordinate = BitboardUtils.coordinates(index);
 		
 		while(bitboard != 0) {
 			int onePos = Long.numberOfTrailingZeros(bitboard);
 			Coordinates toCoordinate = BitboardUtils.coordinates(onePos);
-			AceMove move = new AceMove(fromCoordinate, toCoordinate, Option.none());
+			Move move = new Move(fromCoordinate, toCoordinate, Option.none());
 			moves.add(move);
 			
 			bitboard -= 1L << onePos;

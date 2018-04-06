@@ -1,10 +1,9 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
-import nl.arthurvlug.chess.engine.ace.AceMove;
+import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
-import nl.arthurvlug.chess.engine.ace.utils.EngineTestUtils;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import org.junit.Test;
@@ -52,7 +51,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			........
 			♙♙......
 			♔♖......  */
-		final AceMove move = algorithm.think(engineBoard, 3);
+		final Move move = algorithm.think(engineBoard, 3);
 		assertNull(move);
 	}
 
@@ -75,7 +74,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			........
 			♙♙......
 			♔♖......  */
-		final AceMove move = algorithm.think(engineBoard, 3);
+		final Move move = algorithm.think(engineBoard, 3);
 		assertEquals("b4c2", move.toString());
 	}
 
@@ -96,7 +95,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			........
 			........
 			♔.......  */
-		final AceMove move = algorithm.think(engineBoard, 7);
+		final Move move = algorithm.think(engineBoard, 7);
 		assertNull(move);
 	}
 
@@ -126,7 +125,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			♔.......
 
 		*/
-		final AceMove move = algorithm.think(engineBoard, 5);
+		final Move move = algorithm.think(engineBoard, 5);
 		assertEquals("a5a6", move.toString());
 	}
 
@@ -138,8 +137,8 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("h8"));
 		engineBoard.finalizeBitboards();
 		
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("a1b2"), EngineTestUtils.engineMoveToMove(bestMove));
+		Move bestMove = algorithm.think(engineBoard, 2);
+		assertEquals(MoveUtils.toMove("a1b2"), bestMove);
 	}
 
 	@Test
@@ -150,8 +149,8 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("h8"));
 		engineBoard.finalizeBitboards();
 		
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("a1b2"), EngineTestUtils.engineMoveToMove(bestMove));
+		Move bestMove = algorithm.think(engineBoard, 2);
+		assertEquals(MoveUtils.toMove("a1b2"), bestMove);
 	}
 
 	@Test
@@ -171,8 +170,8 @@ public class AlphaBetaPruningAlgorithmTest {
 			.♔......
 			........  */
 		
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("b2a2"), EngineTestUtils.engineMoveToMove(bestMove));
+		Move bestMove = algorithm.think(engineBoard, 2);
+		assertEquals(MoveUtils.toMove("b2a2"), bestMove);
 	}
 
 	@Test
@@ -195,8 +194,8 @@ public class AlphaBetaPruningAlgorithmTest {
 			♔♘♜.....
 			..♙.....  */
 
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("a2b3"), EngineTestUtils.engineMoveToMove(bestMove));
+		Move bestMove = algorithm.think(engineBoard, 2);
+		assertEquals(MoveUtils.toMove("a2b3"), bestMove);
 	}
 
 	@Test
@@ -219,8 +218,8 @@ public class AlphaBetaPruningAlgorithmTest {
 			.♘♜.....
 			♔.♙.....  */
 
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("b2c4"), EngineTestUtils.engineMoveToMove(bestMove));
+		Move bestMove = algorithm.think(engineBoard, 2);
+		assertEquals(MoveUtils.toMove("b2c4"), bestMove);
 	}
 
 	@Test
@@ -228,8 +227,8 @@ public class AlphaBetaPruningAlgorithmTest {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.finalizeBitboards();
 		
-		AceMove bestMove = algorithm.think(engineBoard, 2);
-		assertEquals(MoveUtils.toMove("b1a3"), EngineTestUtils.engineMoveToMove(bestMove));
+		Move bestMove = algorithm.think(engineBoard, 2);
+		assertEquals(MoveUtils.toMove("b1a3"), bestMove);
 	}
 
 	@Test
@@ -253,7 +252,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			...♕....
 			...♗.♔..
 		 */
-		AceMove bestMove = algorithm.think(engineBoard, 1);
-		assertEquals(MoveUtils.toMove("d8d2"), EngineTestUtils.engineMoveToMove(bestMove));
+		Move bestMove = algorithm.think(engineBoard, 1);
+		assertEquals(MoveUtils.toMove("d8d2"), bestMove);
 	}
 }

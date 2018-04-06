@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.EngineUtils;
-import nl.arthurvlug.chess.engine.ace.AceMove;
 import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
@@ -54,7 +53,7 @@ public class ACEBoard extends AbstractEngineBoard {
 	public long occupied_board;
 	public long enemy_and_empty_board;
 
-	public AceMove lastMove;
+	public Move lastMove;
 	public boolean lastMoveWasTakeMove;
 
 	// TODO: Implement
@@ -125,7 +124,7 @@ public class ACEBoard extends AbstractEngineBoard {
 				}
 				currentToMove = currentToMove.other();
 			}
-			apply(new AceMove(move.getFrom(), move.getTo(), move.getPromotionPiece()));
+			apply(new Move(move.getFrom(), move.getTo(), move.getPromotionPiece()));
 		}
 //		throw new UnsupportedOperationException();
 		
@@ -155,10 +154,10 @@ public class ACEBoard extends AbstractEngineBoard {
 		return null;
 	}
 
-	public void apply(AceMove move) {
+	public void apply(Move move) {
 		lastMove = move;
 		
-		int toIdx = BitboardUtils.fieldIdx(move.getToCoordinate());
+		int toIdx = BitboardUtils.fieldIdx(move.getTo());
 		long toBitboard = 1L << toIdx;
 		
 		lastMoveWasTakeMove = (toBitboard & occupied_board) != 0;
@@ -179,7 +178,7 @@ public class ACEBoard extends AbstractEngineBoard {
 		black_pawns &= removeToBoard;
 		
 		// toBitboard
-		int fromIdx = BitboardUtils.fieldIdx(move.getFromCoordinate());
+		int fromIdx = BitboardUtils.fieldIdx(move.getFrom());
 		long fromBitboard = 1L << fromIdx;
 		long removeFromBoard = ~fromBitboard;
 
@@ -311,7 +310,7 @@ public class ACEBoard extends AbstractEngineBoard {
 //		Preconditions.checkState(successorBoards == null);
 	}
 	
-	public List<ACEBoard> generateSuccessorBoards(final List<AceMove> generatedMoves) {
+	public List<ACEBoard> generateSuccessorBoards(final List<Move> generatedMoves) {
 		return generatedMoves.stream().map(move -> {
 			ACEBoard successorBoard = new ACEBoard(this);
 			successorBoard.finalizeBitboards();
@@ -332,11 +331,11 @@ public class ACEBoard extends AbstractEngineBoard {
 //			}
 //		}
 		
-		List<AceMove> moves = MoveGenerator.generateMoves(this);
+		List<Move> moves = MoveGenerator.generateMoves(this);
 		
 		List<ACEBoard> successorBoards = new ArrayList<>(30);
-		for (AceMove move : moves) {
-			int idx = BitboardUtils.fieldIdx(move.getToCoordinate());
+		for (Move move : moves) {
+			int idx = BitboardUtils.fieldIdx(move.getTo());
 			if(pieceAt(idx) == null) {
 				continue;
 			}

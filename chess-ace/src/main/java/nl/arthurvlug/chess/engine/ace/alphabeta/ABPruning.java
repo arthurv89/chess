@@ -2,7 +2,7 @@ package nl.arthurvlug.chess.engine.ace.alphabeta;
 
 import java.util.PriorityQueue;
 
-import nl.arthurvlug.chess.engine.ace.AceMove;
+import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
@@ -13,7 +13,7 @@ import nl.arthurvlug.chess.utils.game.Move;
 public class ABPruning {
 //	public Move think(final ACEBoard board, final int toMove, final int depth, final BoardEvaluator evaluator, final int alpha, final int beta) {
 //		PriorityQueue<EvaluatedMove> sortedMoves = new PriorityQueue<>();
-//		for(AceMove move : MoveGenerator.generateMoves(board)) {
+//		for(Move move : MoveGenerator.generateMoves(board)) {
 //			ACEBoard movedBoard = new ACEBoard(board);
 //			movedBoard.finalizeBitboards();
 //			movedBoard.apply(move);

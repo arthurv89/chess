@@ -4,10 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.ace.AceMove;
+import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
+import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Test;
 
 import com.atlassian.fugue.Option;
@@ -159,7 +160,7 @@ public class ACEBoardTest {
 	}
 
 	private ACEBoard apply(String from, String to, ACEBoard board) {
-		AceMove move = new AceMove(
+		Move move = new Move(
 				BitboardUtils.coordinates(from), 
 				BitboardUtils.coordinates(to),
 				Option.none());

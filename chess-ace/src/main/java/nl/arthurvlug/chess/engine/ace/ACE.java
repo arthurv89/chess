@@ -27,9 +27,8 @@ public class ACE extends CustomEngine {
 		engineBoard.finalizeBitboards();
 		engineBoard.apply(moveList);
 		log.debug("\n{}", engineBoard);
-		
-		AceMove aceMove = searchAlgorithm.think(engineBoard, depth);
-		return aceMove.toMove();
+
+		return searchAlgorithm.think(engineBoard, depth);
 	}
 	
 	public int getNodesSearched() {
