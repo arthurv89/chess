@@ -76,7 +76,7 @@ public class AlphaBetaPruningAlgorithm {
 		}
 		
 		// TODO: Remove
-		if(engineBoard.hasBothKings()) {
+		if(!engineBoard.hasBothKings()) {
 			throw new RuntimeException("No kings :(");
 		}
 
@@ -132,9 +132,9 @@ public class AlphaBetaPruningAlgorithm {
 //
 //
 //		// TODO: Remove
-//		if(engineBoard.white_kings == 0 || engineBoard.black_kings == 0) {
-//			throw new RuntimeException("No kings :(");
-//		}
+		if(!engineBoard.hasBothKings()) {
+			throw new RuntimeException("No kings :(");
+		}
 
 		final PriorityQueue<AbstractEngineBoard> sortedSuccessorBoards = sortedSuccessorTakeBoards(engineBoard);
 		while(!sortedSuccessorBoards.isEmpty()) {

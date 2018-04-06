@@ -412,6 +412,6 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 
 	@Override
 	public boolean hasBothKings() {
-		return white_kings == 0 || black_kings == 0;
+		return white_kings > 0 || black_kings > 0;
 	}
 }
