@@ -15,7 +15,7 @@ import org.junit.Test;
 
 public class NotPlayTest {
 	private static final AceScoreComparator scoreComparator = new AceScoreComparator();
-	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator(), scoreComparator);
+	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
 
 	@Ignore
 	@Test

@@ -13,7 +13,7 @@ import nl.arthurvlug.chess.utils.game.Move;
 @Slf4j
 public class ACE extends CustomEngine {
 	private static final AceScoreComparator scoreComparator = new AceScoreComparator();
-	private static final AlphaBetaPruningAlgorithm searchAlgorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator(), scoreComparator);
+	private static final AlphaBetaPruningAlgorithm searchAlgorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
 	int depth = 4;
 
 	@Override

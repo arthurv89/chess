@@ -1,9 +1,10 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
 import com.google.common.base.Preconditions;
-import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
+import java.util.Optional;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
@@ -12,8 +13,10 @@ import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 import nl.arthurvlug.chess.utils.game.Move;
 
+import static java.util.Collections.swap;
+
 @Slf4j
-public class AlphaBetaPruningAlgorithm {
+public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	private static final int CURRENT_PLAYER_WINS = 1000000000;
 	private static final int OTHER_PLAYER_WINS = -CURRENT_PLAYER_WINS;
 	
@@ -23,38 +26,40 @@ public class AlphaBetaPruningAlgorithm {
 	private int cutoffs;
 
 	private final BoardEvaluator evaluator;
-	private final Comparator<AbstractEngineBoard> scoreComparator;
 //	private final TranspositionTable transpositionTable = new ;
 
-
-	public AlphaBetaPruningAlgorithm(final BoardEvaluator evaluator,
-									 final Comparator<AbstractEngineBoard> scoreComparator) {
+	public AlphaBetaPruningAlgorithm(final BoardEvaluator evaluator) {
 		this.evaluator = evaluator;
-		this.scoreComparator = scoreComparator;
 	}
 
-	public Move think(final AbstractEngineBoard engineBoard, final int depth) {
+	public Move think(final T engineBoard, final int depth) {
 		Preconditions.checkArgument(depth > 0);
 		
 		nodesEvaluated = 0;
 
-		return alphaBetaRoot(engineBoard, depth);
+		Optional<Move> priorityMove = Optional.empty();
+		for (int depthNow = 0; depthNow < depth; depthNow++) {
+			final Move bestMove = alphaBetaRoot(engineBoard, depth, priorityMove);
+			if(bestMove == null) {
+				return null;
+			}
+			priorityMove = Optional.of(bestMove);
+		}
+		return priorityMove.get();
 	}
 
-	private Move alphaBetaRoot(final AbstractEngineBoard engineBoard, final int depth) {
+	private Move alphaBetaRoot(final T engineBoard, final int depth, final Optional<Move> priorityMove) {
 		int bestScore = OTHER_PLAYER_WINS;
 
-		List<Move> generatedMoves = engineBoard.generateMoves();
-		final PriorityQueue<AbstractEngineBoard> sortedSuccessorBoards = sortedSuccessorBoards(engineBoard, generatedMoves);
+		final List<Move> generatedMoves = engineBoard.generateMoves();
+		reorder(generatedMoves, priorityMove);
+		final List<T> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
 
 		// TODO: Remove
-		Preconditions.checkState(sortedSuccessorBoards.size() > 0);
-		// Also check for mate in 1 moves
+		Preconditions.checkState(successorBoards.size() > 0);
 
 		Move bestMove = null;
-		while(!sortedSuccessorBoards.isEmpty()) {
-			final AbstractEngineBoard successorBoard = sortedSuccessorBoards.poll();
-
+		for(T successorBoard : successorBoards) {
 			final int score = -alphaBeta(successorBoard, OTHER_PLAYER_WINS, CURRENT_PLAYER_WINS, depth-1);
 			if (score > bestScore) {
 				bestScore = score;
@@ -65,7 +70,24 @@ public class AlphaBetaPruningAlgorithm {
 		return bestMove;
 	}
 
-	private int alphaBeta(final AbstractEngineBoard engineBoard, int alpha, final int beta, final int depth) {
+	private void reorder(final List<Move> moves, final Optional<Move> priorityMove) {
+		priorityMove.flatMap(prioMove -> {
+			Stream<Integer> range = IntStream.range(0, moves.size()).boxed();
+			return range
+				.flatMap((Integer i) -> findPrioPosition(moves, prioMove, i))
+				.findFirst();
+		})
+		.ifPresent(pos -> swap(moves, 0, pos));
+	}
+
+	private Stream<Integer> findPrioPosition(final List<Move> generatedMoves, final Move prioMove, final Integer i) {
+		if (generatedMoves.get(i).equals(prioMove)) {
+			return Stream.of(i);
+		}
+		return Stream.empty();
+	}
+
+	private int alphaBeta(final T engineBoard, int alpha, final int beta, final int depth) {
 		if (engineBoard.getFiftyMove() >= 50 || engineBoard.getRepeatedMove() >= 3) {
 			return 0;
 		}
@@ -87,10 +109,8 @@ public class AlphaBetaPruningAlgorithm {
 			return CURRENT_PLAYER_WINS;
 		}
 
-		final PriorityQueue<AbstractEngineBoard> sortedSuccessorBoards = sortedSuccessorBoards(engineBoard, generatedMoves);
-		while(!sortedSuccessorBoards.isEmpty()) {
-			final AbstractEngineBoard successorBoard = sortedSuccessorBoards.poll();
-
+		final List<T> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
+		for(T successorBoard : successorBoards) {
 			if (bestScore >= beta) {
 				cutoffs++;
 				break;
@@ -116,7 +136,8 @@ public class AlphaBetaPruningAlgorithm {
 		return bestScore;
 	}
 
-	private int quiesceSearch(final AbstractEngineBoard engineBoard, int alpha, final int beta) {
+	private int quiesceSearch(final T engineBoard, int alpha, final int beta) {
+		setSideDependentScore(engineBoard);
 		int stand_pat = engineBoard.getSideBasedEvaluation();
 		if (stand_pat >= beta) {
 			return beta;
@@ -135,10 +156,8 @@ public class AlphaBetaPruningAlgorithm {
 			return OTHER_PLAYER_WINS;
 		}
 
-		final PriorityQueue<AbstractEngineBoard> sortedSuccessorBoards = sortedSuccessorTakeBoards(engineBoard);
-		while(!sortedSuccessorBoards.isEmpty()) {
-			final AbstractEngineBoard successorBoard = sortedSuccessorBoards.poll();
-
+		final List<T> successorBoards = engineBoard.generateSuccessorTakeBoards();
+		for(T successorBoard : successorBoards) {
 			final int value = -quiesceSearch(successorBoard, -beta, -alpha);
 //			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
 
@@ -154,34 +173,8 @@ public class AlphaBetaPruningAlgorithm {
 		return alpha;
 	}
 
-	private <T extends AbstractEngineBoard> PriorityQueue<T> sortedSuccessorBoards(final T engineBoard, final List<Move> generatedMoves) {
-		return priorityQueue(engineBoard.generateSuccessorBoards(generatedMoves));
-	}
-
-	private <T extends AbstractEngineBoard> PriorityQueue<T> sortedSuccessorTakeBoards(final T engineBoard) {
-		return priorityQueue(engineBoard.generateSuccessorTakeBoards());
-	}
-
-	private <T extends AbstractEngineBoard> PriorityQueue<T> priorityQueue(final List<T> successorBoards) {
-		evaluateBoards(successorBoards);
-		
-		final PriorityQueue<T> sortedSuccessorBoards = new PriorityQueue<>(scoreComparator);
-		sortedSuccessorBoards.addAll(successorBoards);
-		return sortedSuccessorBoards;
-	}
-
-	private void evaluateBoards(final List<? extends AbstractEngineBoard> boards) {
-		boards.forEach(b -> evaluateBoard(b));
-	}
-
-	private Integer evaluateBoard(final AbstractEngineBoard board) {
-		setSideDependentScore(board, evaluator);
+	private void setSideDependentScore(final T board) {
 		nodesEvaluated++;
-		return board.getSideBasedEvaluation();
-	}
-
-	private static void setSideDependentScore(final AbstractEngineBoard board, final BoardEvaluator evaluator) {
-		// TODO: Implement checkmate
 		NormalScore score = (NormalScore) evaluator.evaluate(board);
 
 		int sideDependentScore;

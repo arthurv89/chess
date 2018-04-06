@@ -312,43 +312,33 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 
 	@Override
 	public List<ACEBoard> generateSuccessorBoards(final List<Move> generatedMoves) {
-		return generatedMoves.stream().map(move -> {
-			ACEBoard successorBoard = new ACEBoard(this);
-			successorBoard.finalizeBitboards();
-			successorBoard.apply(move);
-			return successorBoard;
-		}).collect(Collectors.toList());
+		return generatedMoves.stream()
+							 .map(move -> createBoardAfterMove(move))
+							 .collect(Collectors.toList());
 	}
 
 	@Override
 	public List<ACEBoard> generateSuccessorTakeBoards() {
-//		ACEBoard opponentMoveBoard = new ACEBoard(this);
-//		opponentMoveBoard.toMove = ColorUtils.otherToMove(this.toMove);
-//		opponentMoveBoard.finalizeBitboards();
-//		AceMoveGenerator.generateMoves(opponentMoveBoard, false);
-//		for(ACEBoard board : opponentMoveBoard.successorBoards) {
-//			if(board.noKings()) {
-//				currentPlayerInCheck = true;
-//				break;
-//			}
-//		}
-		
 		List<Move> moves = AceMoveGenerator.generateMoves(this);
-		
+
 		List<ACEBoard> successorBoards = new ArrayList<>(30);
 		for (Move move : moves) {
 			int idx = BitboardUtils.fieldIdx(move.getTo());
 			if(pieceAt(idx) == null) {
 				continue;
 			}
-			
-			ACEBoard successorBoard = new ACEBoard(this);
-			successorBoard.finalizeBitboards();
-			successorBoard.apply(move);
 
+			final ACEBoard successorBoard = createBoardAfterMove(move);
 			successorBoards.add(successorBoard);
 		}
 		return successorBoards;
+	}
+
+	private ACEBoard createBoardAfterMove(final Move move) {
+		ACEBoard successorBoard = new ACEBoard(this);
+		successorBoard.finalizeBitboards();
+		successorBoard.apply(move);
+		return successorBoard;
 	}
 
 	// TODO: Remove variable

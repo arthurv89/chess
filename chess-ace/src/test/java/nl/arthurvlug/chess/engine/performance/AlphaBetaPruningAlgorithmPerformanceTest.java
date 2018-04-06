@@ -23,7 +23,7 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 		log.debug("Starting performance test for depth {}", depth);
 		final InitialEngineBoard board = new InitialEngineBoard();
 		board.finalizeBitboards();
-		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator(), scoreComparator);
+		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
 		
 		final DateTime start = DateTime.now();
 		algorithm.think(board, depth);
