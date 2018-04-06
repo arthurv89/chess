@@ -34,12 +34,9 @@ public class Main_Chess {
 
 	private void addShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(
-			new NamedThread(new Runnable() {
-				@Override
-				public void run() {
-					log.info("Shutting down...");
-					eventBus.post(new ShutdownEvent());
-				}
+			new NamedThread(() -> {
+				log.info("Shutting down...");
+				eventBus.post(new ShutdownEvent());
 			}, "Shutdown hook")
 		);
 	}

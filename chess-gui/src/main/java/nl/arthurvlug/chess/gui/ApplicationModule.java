@@ -20,7 +20,7 @@ public class ApplicationModule extends AbstractModule {
 
 //		WhitePlayer whitePlayer = new WhitePlayer(new RybkaEngine());
 		WhitePlayer whitePlayer = new WhitePlayer(new ACE());
-		BlackPlayer blackPlayer = new BlackPlayer(new FruitEngine());
+		BlackPlayer blackPlayer = new BlackPlayer(new ACE());
 		Game game = new Game.GameBuilder()
 			.whitePlayer(whitePlayer)
 			.blackPlayer(blackPlayer)
