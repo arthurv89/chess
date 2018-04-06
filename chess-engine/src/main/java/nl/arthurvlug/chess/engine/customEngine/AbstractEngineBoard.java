@@ -24,5 +24,5 @@ public abstract class AbstractEngineBoard<T extends AbstractEngineBoard<T>> {
 
 	public abstract void setSideBasedEvaluation(final int sideDependentScore);
 
-	public abstract boolean hasBothKings();
+	public abstract boolean hasNoKing();
 }

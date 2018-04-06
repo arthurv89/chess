@@ -76,7 +76,7 @@ public class AlphaBetaPruningAlgorithm {
 		}
 		
 		// TODO: Remove
-		if(!engineBoard.hasBothKings()) {
+		if(engineBoard.hasNoKing()) {
 			throw new RuntimeException("No kings :(");
 		}
 
@@ -131,9 +131,8 @@ public class AlphaBetaPruningAlgorithm {
 //
 //
 //
-//		// TODO: Remove
-		if(!engineBoard.hasBothKings()) {
-			throw new RuntimeException("No kings :(");
+		if(engineBoard.hasNoKing()) {
+			return OTHER_PLAYER_WINS;
 		}
 
 		final PriorityQueue<AbstractEngineBoard> sortedSuccessorBoards = sortedSuccessorTakeBoards(engineBoard);

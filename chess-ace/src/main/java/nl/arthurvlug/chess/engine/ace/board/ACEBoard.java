@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
+import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.EngineUtils;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
@@ -241,7 +241,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 			default:
 				throw new RuntimeException("Undefined piece");
 		}
-		this.toMove = EngineUtils.otherToMove(this.toMove);
+		this.toMove = ColorUtils.otherToMove(this.toMove);
 		finalizeBitboards();
 	}
 
@@ -323,7 +323,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	@Override
 	public List<ACEBoard> generateSuccessorTakeBoards() {
 //		ACEBoard opponentMoveBoard = new ACEBoard(this);
-//		opponentMoveBoard.toMove = EngineUtils.otherToMove(this.toMove);
+//		opponentMoveBoard.toMove = ColorUtils.otherToMove(this.toMove);
 //		opponentMoveBoard.finalizeBitboards();
 //		AceMoveGenerator.generateMoves(opponentMoveBoard, false);
 //		for(ACEBoard board : opponentMoveBoard.successorBoards) {
@@ -351,8 +351,11 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		return successorBoards;
 	}
 
+	// TODO: Remove variable
+	String s;
 	@Override
 	public String toString() {
+		if(s != null) return s;
 		Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
 		Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
 		Preconditions.checkArgument((whiteOccupiedSquares & blackOccupiedSquares) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toBitboardString((whiteOccupiedSquares & blackOccupiedSquares)));
@@ -377,7 +380,8 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		// Reverse rows
 		List<String> l = Lists.newArrayList(Splitter.on('\n').split(reversedBoard));
 		Collections.reverse(l);
-		return Joiner.on('\n').join(l);
+		s = Joiner.on('\n').join(l);
+		return s;
 	}
 
 	@Override
@@ -411,7 +415,11 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	}
 
 	@Override
-	public boolean hasBothKings() {
-		return white_kings > 0 || black_kings > 0;
+	public boolean hasNoKing() {
+		if(ColorUtils.isWhite(toMove)) {
+			return white_kings == 0;
+		} else {
+			return black_kings == 0;
+		}
 	}
 }
