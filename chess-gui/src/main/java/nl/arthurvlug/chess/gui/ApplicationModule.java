@@ -16,7 +16,7 @@ public class ApplicationModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		Clock whiteClock = new Clock(5, 0);
-		Clock blackClock = new Clock(1, 0);
+		Clock blackClock = new Clock(5, 0);
 
 //		WhitePlayer whitePlayer = new WhitePlayer(new RybkaEngine());
 		WhitePlayer whitePlayer = new WhitePlayer(new ACE());

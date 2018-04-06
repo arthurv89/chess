@@ -1,7 +1,6 @@
 package nl.arthurvlug.chess.engine.ace;
 
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
@@ -13,7 +12,8 @@ import nl.arthurvlug.chess.utils.game.Move;
 
 @Slf4j
 public class ACE extends CustomEngine {
-	private static final AlphaBetaPruningAlgorithm searchAlgorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator());
+	private static final AceScoreComparator scoreComparator = new AceScoreComparator();
+	private static final AlphaBetaPruningAlgorithm searchAlgorithm = new AlphaBetaPruningAlgorithm(new AceEvaluator(), scoreComparator);
 	int depth = 4;
 
 	@Override

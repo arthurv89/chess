@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
+import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
@@ -27,7 +27,7 @@ public class AceEvaluator implements BoardEvaluator {
 	private int blackBishopCount;
 
 	public int calculate(final ACEBoard engineBoard) {
-		final List<Move> moves = MoveGenerator.generateMoves(engineBoard);
+		final List<Move> moves = AceMoveGenerator.generateMoves(engineBoard);
 		LinkedHashMultimap<Integer, Move> byFromPositionMap = byFromPosition(moves);
 		int score = 0;
 

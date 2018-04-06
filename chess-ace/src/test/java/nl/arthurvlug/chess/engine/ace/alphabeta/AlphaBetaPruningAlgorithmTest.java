@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
+import nl.arthurvlug.chess.engine.ace.AceScoreComparator;
 import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
@@ -18,8 +19,9 @@ public class AlphaBetaPruningAlgorithmTest {
 	// Moves in initial position
 	private static final int M = 20;
 //	private static final int M = 4;
-	
-	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator());
+
+	private static final AceScoreComparator scoreComparator = new AceScoreComparator();
+	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new SimplePieceEvaluator(), scoreComparator);
 	
 	@Test
 	public void testNodesSearched1() {

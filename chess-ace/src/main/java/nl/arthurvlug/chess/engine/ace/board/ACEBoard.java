@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.EngineUtils;
-import nl.arthurvlug.chess.engine.ace.movegeneration.MoveGenerator;
+import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
 
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KING;
 
-public class ACEBoard extends AbstractEngineBoard {
+public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	public int toMove;
 	
 	public long black_kings;
@@ -309,7 +309,8 @@ public class ACEBoard extends AbstractEngineBoard {
 		// TODO: Add for a while so we can check for performance issues
 //		Preconditions.checkState(successorBoards == null);
 	}
-	
+
+	@Override
 	public List<ACEBoard> generateSuccessorBoards(final List<Move> generatedMoves) {
 		return generatedMoves.stream().map(move -> {
 			ACEBoard successorBoard = new ACEBoard(this);
@@ -319,11 +320,12 @@ public class ACEBoard extends AbstractEngineBoard {
 		}).collect(Collectors.toList());
 	}
 
+	@Override
 	public List<ACEBoard> generateSuccessorTakeBoards() {
 //		ACEBoard opponentMoveBoard = new ACEBoard(this);
 //		opponentMoveBoard.toMove = EngineUtils.otherToMove(this.toMove);
 //		opponentMoveBoard.finalizeBitboards();
-//		MoveGenerator.generateMoves(opponentMoveBoard, false);
+//		AceMoveGenerator.generateMoves(opponentMoveBoard, false);
 //		for(ACEBoard board : opponentMoveBoard.successorBoards) {
 //			if(board.noKings()) {
 //				currentPlayerInCheck = true;
@@ -331,7 +333,7 @@ public class ACEBoard extends AbstractEngineBoard {
 //			}
 //		}
 		
-		List<Move> moves = MoveGenerator.generateMoves(this);
+		List<Move> moves = AceMoveGenerator.generateMoves(this);
 		
 		List<ACEBoard> successorBoards = new ArrayList<>(30);
 		for (Move move : moves) {
@@ -347,10 +349,6 @@ public class ACEBoard extends AbstractEngineBoard {
 			successorBoards.add(successorBoard);
 		}
 		return successorBoards;
-	}
-
-	private boolean noKings() {
-		return white_kings == 0L || black_kings == 0L;
 	}
 
 	@Override
@@ -380,5 +378,40 @@ public class ACEBoard extends AbstractEngineBoard {
 		List<String> l = Lists.newArrayList(Splitter.on('\n').split(reversedBoard));
 		Collections.reverse(l);
 		return Joiner.on('\n').join(l);
+	}
+
+	@Override
+	public List<Move> generateMoves() {
+		return AceMoveGenerator.generateMoves(this);
+	}
+
+	@Override
+	public Move getLastMove() {
+		return lastMove;
+	}
+
+	@Override
+	public int getRepeatedMove() {
+		return repeatedMove;
+	}
+
+	@Override
+	public int getFiftyMove() {
+		return fiftyMove;
+	}
+
+	@Override
+	public boolean opponentIsInCheck(final List<Move> generatedMoves) {
+		return AceMoveGenerator.opponentIsInCheck(this, generatedMoves);
+	}
+
+	@Override
+	public int getToMove() {
+		return toMove;
+	}
+
+	@Override
+	public boolean hasBothKings() {
+		return white_kings == 0 || black_kings == 0;
 	}
 }

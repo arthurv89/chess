@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import nl.arthurvlug.chess.utils.game.Move;
 
-public class MoveGenerator {
+public class AceMoveGenerator {
 	public static boolean opponentIsInCheck(final ACEBoard engineBoard, final List<Move> generatedMoves) {
 		for(Move move : generatedMoves) {
 			final ColoredPiece takePiece = engineBoard.pieceAt(move.getTo());
