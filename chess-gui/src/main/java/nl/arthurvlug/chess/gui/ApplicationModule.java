@@ -1,26 +1,26 @@
 package nl.arthurvlug.chess.gui;
 
 import nl.arthurvlug.chess.engine.ace.ACE;
-import nl.arthurvlug.chess.engine.binary.FruitEngine;
 import nl.arthurvlug.chess.engine.game.Clock;
 import nl.arthurvlug.chess.gui.components.board.ClockPane;
+import nl.arthurvlug.chess.gui.game.player.ComputerPlayer;
 import nl.arthurvlug.chess.gui.components.board.MovesPane;
 import nl.arthurvlug.chess.gui.game.Game;
-import nl.arthurvlug.chess.gui.game.player.BlackPlayer;
-import nl.arthurvlug.chess.gui.game.player.WhitePlayer;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;
+import nl.arthurvlug.chess.gui.game.player.HumanPlayer;
+import nl.arthurvlug.chess.gui.game.player.Player;
 
 public class ApplicationModule extends AbstractModule {
 	@Override
 	protected void configure() {
-		Clock whiteClock = new Clock(5, 0);
-		Clock blackClock = new Clock(5, 0);
+		Clock whiteClock = new Clock(150, 0);
+		Clock blackClock = new Clock(150, 0);
 
-//		WhitePlayer whitePlayer = new WhitePlayer(new RybkaEngine());
-		WhitePlayer whitePlayer = new WhitePlayer(new ACE());
-		BlackPlayer blackPlayer = new BlackPlayer(new ACE());
+		Player whitePlayer = new ComputerPlayer(new ACE());
+//		Player whitePlayer = new HumanPlayer();
+		Player blackPlayer = new ComputerPlayer(new ACE());
 		Game game = new Game.GameBuilder()
 			.whitePlayer(whitePlayer)
 			.blackPlayer(blackPlayer)

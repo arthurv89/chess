@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess.utils.game;
 
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import nl.arthurvlug.chess.utils.MoveUtils;
@@ -11,9 +12,10 @@ import com.atlassian.fugue.Option;
 @AllArgsConstructor
 @Getter
 public class Move {
+	// TODO: Change from, to and promotionPiece into byte, byte and @Nullable PieceType
 	private Coordinates from;
 	private Coordinates to;
-	private Option<PieceType> promotionPiece;
+	private Optional<PieceType> promotionPiece;
 	
 	@Override
 	public String toString() {

@@ -16,8 +16,16 @@ public abstract class AbstractEngineBoard<T extends AbstractEngineBoard<T>> {
 
 	public abstract int getSideBasedEvaluation();
 
+	/**
+	 * @deprecated Use createMoves instead (in combination with apply/unapply)
+	 */
+	@Deprecated
 	public abstract List<T> generateSuccessorBoards(final List<Move> generatedMoves);
 
+	/**
+	 * @deprecated Use createMoves instead (in combination with apply/unapply)
+	 */
+	@Deprecated
 	public abstract List<T> generateSuccessorTakeBoards();
 
 	public abstract int getToMove();

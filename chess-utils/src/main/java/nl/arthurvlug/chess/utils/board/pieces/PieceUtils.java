@@ -1,6 +1,6 @@
 package nl.arthurvlug.chess.utils.board.pieces;
 
-import com.atlassian.fugue.Option;
+import java.util.Optional;
 
 public class PieceUtils {
 	public static final PieceCharacterConverter pieceToCharacterConverter = new PieceCharacterConverter();
@@ -18,9 +18,9 @@ public class PieceUtils {
 		return converter.convert(pieceType, color);
 	}
 
-	public static Option<PieceType> fromChar(final char character, final PieceConverter<?> converter) {
-		Option<PieceType> type = converter.fromChar(character);
-		if(type.isEmpty()) {
+	public static Optional<PieceType> fromChar(final char character, final PieceConverter<?> converter) {
+		Optional<PieceType> type = converter.fromChar(character);
+		if(type.isPresent()) {
 			throw new IllegalArgumentException("Could not find piece with char " + character);
 		}
 		return type;

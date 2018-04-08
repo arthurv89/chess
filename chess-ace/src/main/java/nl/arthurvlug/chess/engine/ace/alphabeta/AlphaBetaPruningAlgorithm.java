@@ -3,12 +3,20 @@ package nl.arthurvlug.chess.engine.ace.alphabeta;
 import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.ChessEngineConfiguration;
+import nl.arthurvlug.chess.engine.ace.TranspositionTable;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
@@ -29,7 +37,10 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	private final BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
 	private final int depth;
-//	private final TranspositionTable transpositionTable = new ;
+	private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+			60L, TimeUnit.SECONDS,
+			new SynchronousQueue<>());
+	private final TranspositionTable transpositionTable = new TranspositionTable();
 
 	public AlphaBetaPruningAlgorithm(final ChessEngineConfiguration configuration) {
 		this.evaluator = configuration.getEvaluator();
@@ -55,8 +66,6 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	}
 
 	private Move alphaBetaRoot(final T engineBoard, final int depth, final Optional<Move> priorityMove) {
-		int bestScore = OTHER_PLAYER_WINS;
-
 		final List<Move> generatedMoves = engineBoard.generateMoves();
 		reorder(generatedMoves, priorityMove);
 		final List<T> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
@@ -64,15 +73,38 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		// TODO: Remove
 		Preconditions.checkState(successorBoards.size() > 0);
 
+		final List<Future<Object[]>> futures = successorBoards
+				.stream()
+				.map(successorBoard -> threadPoolExecutor.submit(() -> {
+					final int score = -alphaBeta(successorBoard, OTHER_PLAYER_WINS, CURRENT_PLAYER_WINS, depth - 1);
+					return new Object[]{
+							score,
+							successorBoard.getLastMove()
+					};
+				}))
+				.collect(Collectors.toList());
+
+		final List<Object[]> results = futures.stream()
+				.map(f -> {
+					try {
+						return f.get();
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw new RuntimeException(e);
+					}
+				})
+				.collect(Collectors.toList());
+
+		int bestScore = OTHER_PLAYER_WINS;
 		Move bestMove = null;
-		for(T successorBoard : successorBoards) {
-			final int score = -alphaBeta(successorBoard, OTHER_PLAYER_WINS, CURRENT_PLAYER_WINS, depth-1);
+		for(Object[] result : results) {
+			final int score = (int) result[0];
+			final Move move = (Move) result[1];
 			if (score > bestScore) {
 				bestScore = score;
-				bestMove = successorBoard.getLastMove();
+				bestMove = move;
 			}
 		}
-		
 		return bestMove;
 	}
 
@@ -150,6 +182,10 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	private int quiesceSearch(final T engineBoard, int alpha, final int beta, final int depth) {
 		setSideDependentScore(engineBoard);
 		int stand_pat = engineBoard.getSideBasedEvaluation();
+		if(depth == 0) {
+			return stand_pat;
+		}
+
 		if (stand_pat >= beta) {
 			return beta;
 		}
@@ -157,10 +193,6 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 			alpha = stand_pat;
 
 //		// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
-//		if(!engineBoard.lastMoveWasTakeMove) {
-//			return stand_pat;
-//		}
-//
 //
 //
 		if(engineBoard.hasNoKing()) {
@@ -169,7 +201,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 
 		final List<T> successorBoards = engineBoard.generateSuccessorTakeBoards();
 		for(T successorBoard : successorBoards) {
-			final int value = -quiesceSearch(successorBoard, -beta, -alpha, depth);
+			final int value = -quiesceSearch(successorBoard, -beta, -alpha, depth-1);
 //			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
 
 			if (value >= beta) {

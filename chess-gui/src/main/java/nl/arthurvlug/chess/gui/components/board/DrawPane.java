@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import java.util.Optional;
 import javax.swing.JPanel;
 
 import nl.arthurvlug.chess.gui.game.Game;
@@ -36,8 +37,8 @@ public class DrawPane extends JPanel {
 	}
 
 	private void drawPiece(Graphics2D g, int x, int y) {
-		Option<ColoredPiece> coloredPieceOption = game.getBoard().getPiece(x, y);
-		if (coloredPieceOption.isDefined()) {
+		Optional<ColoredPiece> coloredPieceOption = game.getBoard().getPiece(x, y);
+		if (coloredPieceOption.isPresent()) {
 			String pieceString = coloredPieceOption.get().getCharacterString();
 
 			// Determine font and position of the string

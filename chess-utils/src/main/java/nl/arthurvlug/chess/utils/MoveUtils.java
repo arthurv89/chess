@@ -1,32 +1,24 @@
 package nl.arthurvlug.chess.utils;
 
+import com.google.common.base.Joiner;
 import java.util.List;
-
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.board.pieces.PieceUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 
-import com.atlassian.fugue.Option;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-
 public class MoveUtils {
-	private static final Function<Move, String> TO_ENGINE_MOVES = new Function<Move, String>() {
-		public String apply(Move move) {
-			return toEngineMove(move);
-		}
-	};
-	private static final Function<PieceType, String> TO_CHARACTER = new Function<PieceType, String>() {
-		public String apply(PieceType pieceType) {
-			return PieceUtils.toCharacterString(pieceType, Color.BLACK, PieceUtils.pieceToCharacterConverter); // Lowercase
-		}
+	private static final Function<Move, String> TO_ENGINE_MOVES = move -> toEngineMove(move);
+	private static final Function<PieceType, String> TO_CHARACTER = pieceType -> {
+		return PieceUtils.toCharacterString(pieceType, Color.BLACK, PieceUtils.pieceToCharacterConverter); // Lowercase
 	};
 	
 	public static String toEngineMoves(List<Move> moves) {
-		return Joiner.on(' ').join(Lists.transform(moves, TO_ENGINE_MOVES));
+		return Joiner.on(' ').join(moves.stream().map(TO_ENGINE_MOVES).collect(Collectors.toList()));
 	}
 	
 	public static String toEngineMove(Move move) {
@@ -36,8 +28,8 @@ public class MoveUtils {
 		return from + to + piece;
 	}
 
-	public static String promotionToString(Option<PieceType> promotionPiece) {
-		return promotionPiece.map(TO_CHARACTER).getOrElse("");
+	public static String promotionToString(Optional<PieceType> promotionPiece) {
+		return promotionPiece.map(TO_CHARACTER).orElse("");
 	}
 
 	private static String toReadableField(Coordinates from) {
@@ -52,9 +44,9 @@ public class MoveUtils {
 	public static Move toMove(String sMove) {
 		Coordinates from = toField(sMove.substring(0, 2));
 		Coordinates to = toField(sMove.substring(2, 4));
-		Option<PieceType> promotionPiece = sMove.length() == 5
+		Optional<PieceType> promotionPiece = sMove.length() == 5
 				? PieceUtils.fromChar(sMove.charAt(4), PieceUtils.pieceToCharacterConverter)
-				: Option.<PieceType> none();
+				: Optional.<PieceType> empty();
 		return new Move(from, to, promotionPiece);
 	}
 	

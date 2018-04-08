@@ -1,16 +1,15 @@
 package nl.arthurvlug.chess.utils.game;
 
+import java.util.Optional;
 import lombok.Getter;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
-
-import com.atlassian.fugue.Option;
 
 public class GameFinished extends Move {
 	@Getter
 	private Move move;
 
 	public GameFinished(Move move) {
-		super(null, null, Option.<PieceType> none());
+		super(null, null, Optional.empty());
 		this.move = move;
 	}
 

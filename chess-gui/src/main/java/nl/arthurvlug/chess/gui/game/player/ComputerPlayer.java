@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.gui.components.board;
+package nl.arthurvlug.chess.gui.game.player;
 
 import lombok.AllArgsConstructor;
 import nl.arthurvlug.chess.engine.UCIEngine;
@@ -10,10 +10,11 @@ import rx.Observable;
 import com.google.common.collect.ImmutableList;
 
 @AllArgsConstructor
-public abstract class ComputerPlayer implements Player {
+public class ComputerPlayer extends Player {
 	private final UCIEngine engine;
 
-	public Observable<Void> startEngine(Clock whiteClock, Clock blackClock) {
+	@Override
+	public Observable<Void> initialize(Clock whiteClock, Clock blackClock) {
 		return engine.startEngine(whiteClock, blackClock);
 	}
 

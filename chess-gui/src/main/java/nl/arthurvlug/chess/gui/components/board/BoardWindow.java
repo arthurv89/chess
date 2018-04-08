@@ -1,11 +1,12 @@
 package nl.arthurvlug.chess.gui.components.board;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+import com.google.inject.Inject;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.io.IOException;
-
 import javax.swing.JOptionPane;
-
 import nl.arthurvlug.chess.gui.components.Window;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.gui.events.EventHandler;
@@ -13,10 +14,6 @@ import nl.arthurvlug.chess.gui.events.GameFinishedEvent;
 import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.game.Game;
-
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
-import com.google.inject.Inject;
 
 @SuppressWarnings("serial")
 @EventHandler
@@ -28,14 +25,15 @@ public class BoardWindow extends Window {
 	@Inject private ClockPane clockPane;
 
 	@Inject private MovesPane movesPane;
+	private BoardPanel boardPanel;
 
 	@Override
 	public void open() throws FontFormatException, IOException {
 		setLayout(null);
 		
-		BoardPane boardPane = new BoardPane(game);
-		boardPane.setBounds(50, 50, 420, 820);
-		add(boardPane);
+		boardPanel = new BoardPanel(game);
+		boardPanel.setBounds(50, 50, 420, 820);
+		add(boardPanel);
 		
 		clockPane.setBounds(550, 50, 200, 420);
 		add(clockPane);
@@ -58,22 +56,14 @@ public class BoardWindow extends Window {
 		
 		open();
 
-		listenToEngine(game.getWhitePlayer());
-		listenToEngine(game.getBlackPlayer());
 		eventBus.post(new BoardWindowInitializedEvent());
 	}
 
-	private void listenToEngine(ComputerPlayer player) {
-//		final Observable<String> engineOutput = player.getEngineOutput();
-//		engineOutput.subscribe(new MyEmptyObserver<String>() {
-//			public void onNext(final String line) {
-//			}
-//		});
-	}
-	 
 	@Subscribe
 	public void on(MoveAppliedEvent event) {
 //		System.out.println(game.getBoard().toString() + "\n");
+
+		boardPanel.setBoard(game.getBoard());
 		repaint();
 	}
 	

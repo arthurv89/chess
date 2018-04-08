@@ -21,7 +21,6 @@ import nl.arthurvlug.chess.utils.game.Move;
 import org.apache.commons.io.IOUtils;
 
 import rx.Observable;
-import rx.Observable.OnSubscribe;
 import rx.Subscriber;
 
 import com.google.common.base.Preconditions;
@@ -43,7 +42,7 @@ public abstract class UCIEngine implements Engine {
 	// Game
 	private Clock whiteClock;
 	private Clock blackClock;
-	private volatile ImmutableList<Move> gameMoves = ImmutableList.<Move> of();
+	private volatile ImmutableList<Move> gameMoves = ImmutableList.of();
 	
 	private OutputStream commandStream;
 	private InputStream errorStream;
@@ -58,23 +57,20 @@ public abstract class UCIEngine implements Engine {
 		}
 		started = true;
 
-		return Observable.create(new OnSubscribe<Void>() {
-			@Override
-			public void call(Subscriber<? super Void> subscriber) {
-				try {
-					engineStartedSubscriber = subscriber;
-					initializeEngine();
+		return Observable.create(subscriber -> {
+			try {
+				engineStartedSubscriber = subscriber;
+				initializeEngine();
 
-					initializeStreams();
-					runOutputThread(getOutputStream(), "output", System.out);
-					runOutputThread(getErrorStream(), "error", System.err);
-					
-					sendCommand("uci");
-				} catch (IOException e) {
-					e.printStackTrace();
-					log.error(Markers.ENGINE, getName() + " -    Unknown error", e);
-					throw new RuntimeException(e);
-				}
+				initializeStreams();
+				runOutputThread(getOutputStream(), "output", System.out);
+				runOutputThread(getErrorStream(), "error", System.err);
+
+				sendCommand("uci");
+			} catch (IOException e) {
+				e.printStackTrace();
+				log.error(Markers.ENGINE, getName() + " -    Unknown error", e);
+				throw new RuntimeException(e);
 			}
 		});
 	}
@@ -85,28 +81,31 @@ public abstract class UCIEngine implements Engine {
 		tokenizer.nextToken(); // Skip "bestmove"
 		final String sMove = tokenizer.nextToken();
 		final Move move = MoveUtils.toMove(sMove);
+		move(move);
+	}
 
-//		if(tokenizer.hasMoreTokens()) {
-			if(!shouldIgnoreNextMove) {
+	private void move(final Move move) {
+		//		if(tokenizer.hasMoreTokens()) {
+		if(!shouldIgnoreNextMove) {
 //				tokenizer.nextToken(); // Skip "ponder"
-	
-				// Think with position after the bestMove and the ponderMove
+
+			// Think with position after the bestMove and the ponderMove
 //				String ponderMove = tokenizer.nextToken();
 //				ponder(move, ponderMove);
-	
-				for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
-					log.debug(Markers.ENGINE, getName() + " -    Notifying listener for move " + move);
-					moveSubscriber.onNext(move);
-				}
+
+			for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
+				log.debug(Markers.ENGINE, getName() + " -    Notifying listener for move " + move);
+				moveSubscriber.onNext(move);
 			}
+		}
 //		} else {
-			// How handle GameFinished?
+		// How handle GameFinished?
 //			for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
 //				log.debug(Markers.ENGINE, getName() + " -    Game finished!");
 //				moveSubscriber.onNext(new GameFinished(move));
 //			}
 //		}
-		
+
 		for (Subscriber<? super Void> engineStopSubscriber : engineStopSubscribers) {
 			engineStopSubscriber.onCompleted();
 		}
@@ -181,33 +180,24 @@ public abstract class UCIEngine implements Engine {
 	}
 
 	private Observable<Void> stopEngine() {
-		return Observable.create(new OnSubscribe<Void>() {
-			@Override
-			public void call(Subscriber<? super Void> engineStopSubscriber) {
-				shouldIgnoreNextMove = true;
-				engineStopSubscribers.add(engineStopSubscriber);
-				sendCommand("stop");
-			}
+		return Observable.create(engineStopSubscriber -> {
+			shouldIgnoreNextMove = true;
+			engineStopSubscribers.add(engineStopSubscriber);
+			sendCommand("stop");
 		});
 	}
 
 	
 
 	public Observable<Move> registerMoveSubscriber() {
-		return Observable.create(new OnSubscribe<Move>() {
-			@Override
-			public void call(Subscriber<? super Move> subscriber) {
-				moveSubscribers.add(subscriber);
-			}
+		return Observable.create(subscriber -> {
+			moveSubscribers.add(subscriber);
 		});
 	};
 
 	public Observable<String> subscribeEngineOutput() {
-		return Observable.create(new OnSubscribe<String>() {
-			@Override
-			public void call(Subscriber<? super String> subscriber) {
-				engineOutputSubscribers.add(subscriber);
-			}
+		return Observable.create(subscriber -> {
+			engineOutputSubscribers.add(subscriber);
 		});
 	};
 	
@@ -218,22 +208,20 @@ public abstract class UCIEngine implements Engine {
 
 	private void runOutputThread(final InputStream inputStream, String streamName, final PrintStream printStream) {
 		
-		new NamedThread(new Runnable() {
-			public void run() {
-				try {
-					final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-					String line;
-					while ((line = reader.readLine()) != null) {
-						parseEngineOutputLine(line, printStream);
-					}
-				} catch (IOException e) {
-					log.error(Markers.ENGINE, getName() + " -    " + e.getMessage());
+		new NamedThread(() -> {
+			try {
+				final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+				String line;
+				while ((line = reader.readLine()) != null) {
+					parseEngineOutputLine(line);
 				}
+			} catch (IOException e) {
+				log.error(Markers.ENGINE, getName() + " -    " + e.getMessage());
 			}
 		}, "Engine " + getName() + " - " + streamName).start();
 	}
 
-	private void parseEngineOutputLine(final String line, final PrintStream printStream) {
+	private void parseEngineOutputLine(final String line) {
 		log.debug(Markers.ENGINE_RAW, getName() + " -             " + line);
 //		System.out.println(getName() + " -             " + line);
 		

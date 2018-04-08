@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
+import nl.arthurvlug.chess.engine.ace.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.SimpleChessEngineConfiguration;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
@@ -20,7 +21,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	private static final int M = 20;
 //	private static final int M = 4;
 
-	private AlphaBetaPruningAlgorithm<ACEBoard> algorithm = new AlphaBetaPruningAlgorithm<>(new SimpleChessEngineConfiguration());
+	private AlphaBetaPruningAlgorithm<ACEBoard> algorithm = new AlphaBetaPruningAlgorithm<>(new AceConfiguration());
 
 	@Ignore
 	@Test

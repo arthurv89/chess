@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import java.util.Optional;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
@@ -226,7 +227,7 @@ public class AceMoveGenerator {
 		while(bitboard != 0) {
 			int onePos = Long.numberOfTrailingZeros(bitboard);
 			Coordinates toCoordinate = BitboardUtils.coordinates(onePos);
-			Move move = new Move(fromCoordinate, toCoordinate, Option.none());
+			Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
 			moves.add(move);
 			
 			bitboard -= 1L << onePos;

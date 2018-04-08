@@ -3,6 +3,8 @@ package nl.arthurvlug.chess.engine.ace.board;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Optional;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
@@ -163,7 +165,7 @@ public class ACEBoardTest {
 		Move move = new Move(
 				BitboardUtils.coordinates(from), 
 				BitboardUtils.coordinates(to),
-				Option.none());
+				Optional.empty());
 		ACEBoard copiedBoard = new ACEBoard(board);
 		copiedBoard.finalizeBitboards();
 		copiedBoard.apply(move);

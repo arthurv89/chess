@@ -2,14 +2,18 @@ package nl.arthurvlug.chess.utils.board.pieces;
 
 import java.util.Map;
 
-import com.atlassian.fugue.Option;
+import java.util.Optional;
 
 public abstract class PieceConverter<T> {
-	Option<PieceType> fromChar(final char character) {
-		return com.atlassian.fugue.Iterables.findFirst(getMap().keySet(), k -> {
-			final T symbol = getMap().get(k);
-			return isPiece(symbol, character);
-		});
+	Optional<PieceType> fromChar(final char character) {
+		return getMap()
+				.keySet()
+				.stream()
+				.filter(k -> {
+					final T symbol = getMap().get(k);
+					return isPiece(symbol, character);
+				})
+				.findFirst();
 	}
 	
 	public char convert(final PieceType pieceType, final Color color) {

@@ -1,10 +1,10 @@
 package nl.arthurvlug.chess.utils.board;
 
+import java.util.Optional;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
-import com.atlassian.fugue.Option;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
@@ -19,7 +19,7 @@ public class InitializedBoard extends Board {
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
 				Coordinates coordinates = new Coordinates(x, y);
-				Option<ColoredPiece> coloredPiece = Option.<ColoredPiece> option(occupiedFields.get(coordinates));
+				Optional<ColoredPiece> coloredPiece = Optional.ofNullable(occupiedFields.get(coordinates));
 				boardFieldsBuilder.add(new Field(coloredPiece));
 			}
 		}

@@ -6,6 +6,7 @@ import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.net.URL;
 
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
@@ -27,5 +28,5 @@ public abstract class AbstractChessFont {
 		return font;
 	}
 
-	public abstract String pieceString(Option<ColoredPiece> coloredPieceOption);
+	public abstract String pieceString(Optional<ColoredPiece> coloredPieceOption);
 }

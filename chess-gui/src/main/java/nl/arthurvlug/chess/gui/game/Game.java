@@ -15,9 +15,7 @@ import nl.arthurvlug.chess.gui.events.GameFinishedEvent;
 import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.events.StartupEvent;
-import nl.arthurvlug.chess.gui.game.player.BlackPlayer;
 import nl.arthurvlug.chess.gui.game.player.Player;
-import nl.arthurvlug.chess.gui.game.player.WhitePlayer;
 import nl.arthurvlug.chess.utils.Markers;
 import nl.arthurvlug.chess.utils.MyEmptyObserver;
 import nl.arthurvlug.chess.utils.NamedThread;
@@ -39,8 +37,8 @@ public class Game {
 
 	@Getter private final Board board;
 	
-	@Getter private final WhitePlayer whitePlayer;
-	@Getter private final BlackPlayer blackPlayer;
+	@Getter private final Player whitePlayer;
+	@Getter private final Player blackPlayer;
 
 	@Getter private final Clock whiteClock;
 	@Getter private final Clock blackClock;
@@ -70,8 +68,8 @@ public class Game {
 
 	@Subscribe
 	public void on(BoardWindowInitializedEvent event) throws InterruptedException {
-		Observable<Void> whitePlayingEngineObservable = whitePlayer.startEngine(whiteClock, blackClock);
-		Observable<Void> blackPlayingEngineObservable = blackPlayer.startEngine(whiteClock, blackClock);
+		Observable<Void> whitePlayingEngineObservable = whitePlayer.initialize(whiteClock, blackClock);
+		Observable<Void> blackPlayingEngineObservable = blackPlayer.initialize(whiteClock, blackClock);
 
 		subscribeToMove(whitePlayer);
 		subscribeToMove(blackPlayer);
@@ -161,19 +159,19 @@ public class Game {
 	}
 	
 	public static class GameBuilder {
-		private WhitePlayer whitePlayer;
-		private BlackPlayer blackPlayer;
+		private Player whitePlayer;
+		private Player blackPlayer;
 		private Player toMove;
 		private Board initialBoard = new InitialBoard();
 		private Clock whiteClock;
 		private Clock blackClock;
 
-		public GameBuilder whitePlayer(WhitePlayer whitePlayer) {
+		public GameBuilder whitePlayer(Player whitePlayer) {
 			this.whitePlayer = whitePlayer;
 			return this;
 		}
 
-		public GameBuilder blackPlayer(BlackPlayer blackPlayer) {
+		public GameBuilder blackPlayer(Player blackPlayer) {
 			this.blackPlayer = blackPlayer;
 			return this;
 		}
