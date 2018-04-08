@@ -11,19 +11,33 @@ public class XRayTest {
 	public void testKingXRay() {
 		long[] xray = Xray.king_xray;
 		assertEquals(64, xray.length);
-		
+
 		long a1 = bitboard("b1 a2 b2");
 		assertEquals(a1, xRayBitboard(xray, "a1"));
 		assertEquals(0x302L, xRayBitboard(xray, "a1"));
-		
+
 		long b1 = bitboard("a1 c1 a2 b2 c2");
 		assertEquals(b1, xRayBitboard(xray, "b1"));
-		
+
 		long b2 = bitboard("a1 b1 c1 a2 c2 a3 b3 c3");
 		assertEquals(b2, xRayBitboard(xray, "b2"));
-		
+
 		long h8 = bitboard("g7 h7 g8");
 		assertEquals(h8, xRayBitboard(xray, "h8"));
+	}
+
+	@Test
+	public void testCastlingXRay() {
+		long[][] xray = Xray.castling_xray;
+		assertEquals(2, xray.length);
+
+		assertEquals(2, xray[0].length);
+		assertEquals(bitboard("d1 c1"), xray[0][0]);
+		assertEquals(bitboard("f1 g1"), xray[0][1]);
+
+		assertEquals(2, xray[1].length);
+		assertEquals(bitboard("d8 c8"), xray[1][0]);
+		assertEquals(bitboard("f8 g8"), xray[1][1]);
 	}
 
 	@Test

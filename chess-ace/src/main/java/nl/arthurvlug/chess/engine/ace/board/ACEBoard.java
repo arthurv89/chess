@@ -27,8 +27,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KING;
-
 public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	public int toMove;
 	
@@ -45,30 +43,46 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	public long white_pawns;
 	public long black_pawns;
 
-	public final long fullBoard = -1;
-	public long whiteOccupiedSquares;
-	public long blackOccupiedSquares;
-	public long empty_board;
+	long whiteOccupiedSquares;
+	long blackOccupiedSquares;
 	public long enemy_board;
+	public long unoccupied_board;
 	public long occupied_board;
 	public long enemy_and_empty_board;
 
-	public Move lastMove;
-	public boolean lastMoveWasTakeMove;
+	// For castling
+	public boolean white_king_or_rook_queen_side_moved;
+	public boolean white_king_or_rook_king_side_moved;
+	public boolean black_king_or_rook_queen_side_moved;
+	public boolean black_king_or_rook_king_side_moved;
+
+	// TODO: Remove
+	private Move lastMove;
+	// TODO: remove
+	boolean lastMoveWasTakeMove;
 
 	// TODO: Implement
-	public int fiftyMove = 0;
+	private int fiftyMove = 0;
 
 	// TODO: Implement
-	public int repeatedMove = 0;
+	private int repeatedMove = 0;
 
 	@Getter
 	@Setter
 	private int sideBasedEvaluation;
 
-	public List<ACEBoard> successorBoards;
 
-
+	public ACEBoard(int toMove, final boolean castlingEnabled) {
+		this();
+		this.toMove = toMove;
+		this.sideBasedEvaluation = Integer.MIN_VALUE;
+		if(!castlingEnabled) {
+			white_king_or_rook_queen_side_moved = true;
+			white_king_or_rook_king_side_moved = true;
+			black_king_or_rook_queen_side_moved = true;
+			black_king_or_rook_king_side_moved = true;
+		}
+	}
 
 	public ACEBoard(int toMove) {
 		this();
@@ -76,10 +90,16 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		this.sideBasedEvaluation = Integer.MIN_VALUE;
 	}
 
-	public ACEBoard(ACEBoard board, int toMove) {
+	public ACEBoard(ACEBoard board, int toMove, final boolean castlingEnabled) {
 		this(board);
 		this.toMove = toMove;
 		finalizeBitboards();
+		if(!castlingEnabled) {
+			white_king_or_rook_queen_side_moved = true;
+			white_king_or_rook_king_side_moved = true;
+			black_king_or_rook_queen_side_moved = true;
+			black_king_or_rook_king_side_moved = true;
+		}
 	}
 	
 	public ACEBoard(ACEBoard board) {
@@ -87,7 +107,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		toMove = board.toMove;
 		lastMove = board.lastMove;
 		lastMoveWasTakeMove = board.lastMoveWasTakeMove;
-		
+
 		black_kings = board.black_kings;
 		white_kings = board.white_kings;
 		black_queens = board.black_queens;
@@ -100,6 +120,11 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		black_knights = board.black_knights;
 		white_pawns = board.white_pawns;
 		black_pawns = board.black_pawns;
+
+		white_king_or_rook_queen_side_moved = board.white_king_or_rook_queen_side_moved;
+		white_king_or_rook_king_side_moved = board.white_king_or_rook_king_side_moved;
+		black_king_or_rook_queen_side_moved = board.black_king_or_rook_queen_side_moved;
+		black_king_or_rook_king_side_moved = board.black_king_or_rook_king_side_moved;
 	}
 
 	private ACEBoard() {
@@ -134,18 +159,22 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		return pieceAt(BitboardUtils.fieldIdx(from));
 	}
 
+	public ColoredPiece pieceAt(String fieldName) {
+		return pieceAt(BitboardUtils.toIndex(fieldName));
+	}
+
 	public ColoredPiece pieceAt(long fieldIdx) {
 		long bitboard = 1L << fieldIdx;
 
 		if((white_bishops & bitboard) != 0) return new ColoredPiece(PieceType.BISHOP, Color.WHITE);
-		if((white_kings & bitboard) != 0)   return new ColoredPiece(KING,   Color.WHITE);
+		if((white_kings & bitboard) != 0)   return new ColoredPiece(PieceType.KING,   Color.WHITE);
 		if((white_knights & bitboard) != 0) return new ColoredPiece(PieceType.KNIGHT, Color.WHITE);
 		if((white_pawns & bitboard) != 0)   return new ColoredPiece(PieceType.PAWN,   Color.WHITE);
 		if((white_queens & bitboard) != 0)  return new ColoredPiece(PieceType.QUEEN,  Color.WHITE);
 		if((white_rooks & bitboard) != 0)   return new ColoredPiece(PieceType.ROOK,   Color.WHITE);
 		
 		if((black_bishops & bitboard) != 0) return new ColoredPiece(PieceType.BISHOP, Color.BLACK);
-		if((black_kings & bitboard) != 0)   return new ColoredPiece(KING,   Color.BLACK);
+		if((black_kings & bitboard) != 0)   return new ColoredPiece(PieceType.KING,   Color.BLACK);
 		if((black_knights & bitboard) != 0) return new ColoredPiece(PieceType.KNIGHT, Color.BLACK);
 		if((black_pawns & bitboard) != 0)   return new ColoredPiece(PieceType.PAWN,   Color.BLACK);
 		if((black_queens & bitboard) != 0)  return new ColoredPiece(PieceType.QUEEN,  Color.BLACK);
@@ -155,8 +184,6 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	}
 
 	public void apply(Move move) {
-		lastMove = move;
-		
 		int toIdx = BitboardUtils.fieldIdx(move.getTo());
 		long toBitboard = 1L << toIdx;
 		
@@ -182,6 +209,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		long fromBitboard = 1L << fromIdx;
 		long removeFromBoard = ~fromBitboard;
 
+		Preconditions.checkNotNull(pieceAt(fromIdx), String.format("Can't apply move %s: the from field is empty:\n%s", move, this.toString()));
 		PieceType movingPiece = pieceAt(fromIdx).getPieceType();
 		switch (movingPiece) {
 			case PAWN:
@@ -213,9 +241,21 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 				break;
 			case ROOK:
 				if(toMove == EngineConstants.WHITE) {
+					if(fromIdx == 0) {
+						white_king_or_rook_queen_side_moved = true;
+					}
+					else if(fromIdx == 7) {
+						white_king_or_rook_king_side_moved = true;
+					}
 					white_rooks &= removeFromBoard;
 					white_rooks |= toBitboard;
 				} else {
+					if(fromIdx == 56) {
+						black_king_or_rook_queen_side_moved = true;
+					}
+					else if(fromIdx == 63) {
+						black_king_or_rook_king_side_moved = true;
+					}
 					black_rooks &= removeFromBoard;
 					black_rooks |= toBitboard;
 				}
@@ -231,22 +271,41 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 				break;
 			case KING:
 				if(toMove == EngineConstants.WHITE) {
+					white_king_or_rook_queen_side_moved = true;
+					white_king_or_rook_king_side_moved = true;
 					white_kings &= removeFromBoard;
 					white_kings |= toBitboard;
+					if(fromIdx == 4 && toIdx == 2) {
+						white_rooks &= ~1L;
+						white_rooks |= 1L << 3;
+					} else if(fromIdx == 4 && toIdx == 6) {
+						white_rooks &= ~(1L << 7);
+						white_rooks |= 1L << 5;
+					}
 				} else {
+					black_king_or_rook_queen_side_moved = true;
+					black_king_or_rook_king_side_moved = true;
 					black_kings &= removeFromBoard;
 					black_kings |= toBitboard;
+					if(fromIdx == 60 && toIdx == 58) {
+						black_rooks &= ~(1L << 56);
+						black_rooks |= 1L << 59;
+					} else if(fromIdx == 60 && toIdx == 62) {
+						black_rooks &= ~(1L << 63);
+						black_rooks |= 1L << 61;
+					}
 				}
 				break;
 			default:
 				throw new RuntimeException("Undefined piece");
 		}
 		this.toMove = ColorUtils.otherToMove(this.toMove);
+		this.lastMove = move;
 		finalizeBitboards();
 	}
 
 	public void addPiece(int engineColor, PieceType pieceType, int fieldIndex) {
-		if(KING == pieceType) {
+		if(PieceType.KING == pieceType) {
 			if(engineColor == EngineConstants.WHITE) {
 				white_kings |= 1L << fieldIndex;
 			} else {
@@ -303,8 +362,8 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 				? blackOccupiedSquares
 				: whiteOccupiedSquares;
 		occupied_board = whiteOccupiedSquares | blackOccupiedSquares;
-		empty_board = ~occupied_board;
-		enemy_and_empty_board = enemy_board | empty_board;
+		unoccupied_board = ~occupied_board;
+		enemy_and_empty_board = enemy_board | unoccupied_board;
 
 		// TODO: Add for a while so we can check for performance issues
 //		Preconditions.checkState(successorBoards == null);
@@ -341,11 +400,8 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		return successorBoard;
 	}
 
-	// TODO: Remove variable
-	String s;
 	@Override
 	public String toString() {
-		if(s != null) return s;
 		Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
 		Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
 		Preconditions.checkArgument((whiteOccupiedSquares & blackOccupiedSquares) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toBitboardString((whiteOccupiedSquares & blackOccupiedSquares)));
@@ -370,7 +426,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		// Reverse rows
 		List<String> l = Lists.newArrayList(Splitter.on('\n').split(reversedBoard));
 		Collections.reverse(l);
-		s = Joiner.on('\n').join(l);
+		final String s = Joiner.on('\n').join(l);
 		return s;
 	}
 

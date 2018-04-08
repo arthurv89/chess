@@ -1,7 +1,12 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
+import com.google.common.primitives.Longs;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 
@@ -226,7 +231,19 @@ public class Xray {
 	private static Function<Coordinates, Long> pawnXRayBlackOneFieldMove = coordinates -> coordinates.getY()%7 == 0 ? 0 : board(locate(coordinates, 0, -1));
 	private static Function<Coordinates, Long> pawnXRayBlackTwoFieldsMove = coordinates -> coordinates.getY() == 6 ? board(locate(coordinates, 0, -2)) : 0;
 	private static Function<Coordinates, Long> pawnXRayBlackTakeMove = coordinates -> board(locate(coordinates, 1, -1)) | board(locate(coordinates, -1, -1));
-	
+
+//	private static Function<Coordinates, long[]> castlingArray = coordinates -> {
+//		if((coordinates.getY() == 0 || coordinates.getY() == 7) && coordinates.getX() == 4) {
+//			return new long[][] {
+//					new long[] { board(locate(coordinates, 0, 0)), board(locate(coordinates, 1, 0)), board(locate(coordinates, 2, 0)) },
+//					new long[] { board(locate(coordinates, 0, 0)), board(locate(coordinates, -1, 0)), board(locate(coordinates, -2, 0)) }
+//			};
+//		}
+//		return new long[] {
+//				0L, 0L, 0L
+//		};
+//	};
+
 
 	final static long[] left_board = xRay(leftBoardFunction);
 	final static long[] right_board = xRay(rightBoardFunction);
@@ -258,8 +275,7 @@ public class Xray {
 	final static long[] pawn_xray_black_one_field_move = xRay(pawnXRayBlackOneFieldMove);
 	final static long[] pawn_xray_black_two_field_move = xRay(pawnXRayBlackTwoFieldsMove);
 	final static long[] pawn_xray_black_take_field_move = xRay(pawnXRayBlackTakeMove);
-	
-	
+	final static long[][] castling_xray = castleXRay();
 
 
 	private static long[] xRay(Function<Coordinates, Long> function) {
@@ -268,6 +284,15 @@ public class Xray {
 			xray[i] = function.apply(BitboardUtils.coordinates(i));
 		}
 		return xray;
+	}
+
+	private static long[][] castleXRay() {
+		final long[][] bitboards = new long[2][2];
+		bitboards[0][0] = BitboardUtils.bitboardFromString("c1") | BitboardUtils.bitboardFromString("d1");
+		bitboards[0][1] = BitboardUtils.bitboardFromString("f1") | BitboardUtils.bitboardFromString("g1");
+		bitboards[1][0] = BitboardUtils.bitboardFromString("c8") | BitboardUtils.bitboardFromString("d8");
+		bitboards[1][1] = BitboardUtils.bitboardFromString("f8") | BitboardUtils.bitboardFromString("g8");
+		return bitboards;
 	}
 
 	private static long board(Option<Coordinates> coordinate) {

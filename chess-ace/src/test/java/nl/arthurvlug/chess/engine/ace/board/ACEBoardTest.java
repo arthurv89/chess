@@ -10,15 +10,12 @@ import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
-import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Test;
-
-import com.atlassian.fugue.Option;
 
 public class ACEBoardTest {
 	@Test
 	public void testBitboardMoveAll() throws Exception {
-		ACEBoard startPositionBoard = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard startPositionBoard = new ACEBoard(EngineConstants.WHITE, false);
 		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, BitboardUtils.toIndex("a1"));
 		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, BitboardUtils.toIndex("b1"));
 		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.BISHOP, BitboardUtils.toIndex("c1"));
@@ -86,7 +83,7 @@ public class ACEBoardTest {
 		copyBoard = apply("f8", "f7", copyBoard);
 		assertTrue(copyBoard.lastMoveWasTakeMove);
 
-		copyBoard = new ACEBoard(copyBoard, EngineConstants.BLACK);
+		copyBoard = new ACEBoard(copyBoard, EngineConstants.BLACK, false);
 		long expectedBlackEnemyAndEmptyBoard = ~(
 				BitboardUtils.bitboardFromString("a7") |
 				BitboardUtils.bitboardFromString("b7") |

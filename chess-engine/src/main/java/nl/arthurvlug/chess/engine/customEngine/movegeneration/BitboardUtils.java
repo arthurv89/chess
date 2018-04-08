@@ -1,5 +1,7 @@
 package nl.arthurvlug.chess.engine.customEngine.movegeneration;
 
+import java.util.Optional;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.game.Move;
@@ -20,7 +22,7 @@ public class BitboardUtils {
 		String from = move.substring(0, 2);
 		String to = move.substring(2);
 		// TODO: Implement promotion
-		return new Move(coordinates(from), coordinates(to), Option.<PieceType> none());
+		return new Move(coordinates(from), coordinates(to), Optional.empty());
 	}
 
 	public static Coordinates coordinates(String field) {
@@ -55,7 +57,7 @@ public class BitboardUtils {
 		return fieldIdx(coordinates(fieldName));
 	}
 
-	public static long bitboardFromString(String move) {
-		return 1L << toIndex(move);
+	public static long bitboardFromString(String fieldName) {
+		return 1L << toIndex(fieldName);
 	}
 }

@@ -3,7 +3,6 @@ package nl.arthurvlug.chess.gui.game.player;
 import com.google.common.collect.ImmutableList;
 import java.util.HashSet;
 import java.util.Set;
-import jdk.internal.instrumentation.InstrumentationTarget;
 import lombok.Getter;
 import nl.arthurvlug.chess.engine.game.Clock;
 import nl.arthurvlug.chess.utils.game.Move;

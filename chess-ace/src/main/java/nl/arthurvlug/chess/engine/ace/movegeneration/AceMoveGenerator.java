@@ -19,18 +19,21 @@ import java.util.Collections;
 import java.util.List;
 
 import java.util.Optional;
+import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
-import com.atlassian.fugue.Option;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import nl.arthurvlug.chess.utils.game.Move;
 
 public class AceMoveGenerator {
+	private static final int CASTLE_QUEEN_SIZE = 0;
+	private static final int CASTLE_KING_SIZE = 1;
+
 	public static boolean opponentIsInCheck(final ACEBoard engineBoard, final List<Move> generatedMoves) {
 		for(Move move : generatedMoves) {
 			final ColoredPiece takePiece = engineBoard.pieceAt(move.getTo());
@@ -56,34 +59,17 @@ public class AceMoveGenerator {
 			.addAll(bishopMoves(engineBoard))
 			.addAll(queenMoves(engineBoard))
 			.addAll(kingMoves(engineBoard))
+			.addAll(castlingMoves(engineBoard))
 			// TODO: Implement castling, en passent
 			.build();
 		
 		List<Move> validMoves = new ArrayList<>();
-		engineBoard.successorBoards = new ArrayList<>();
 		for (Move validOrInvalidMove : validAndInvalidMoves) {
 			ACEBoard successorBoard = new ACEBoard(engineBoard);
 			successorBoard.finalizeBitboards();
 			successorBoard.apply(validOrInvalidMove);
-			
-//			boolean isValid = true;
-//			if(validateMoves) {
-//				generateMoves(successorBoard, false);
-//				for(ACEBoard successorSuccessorBoard : successorBoard.successorBoards) {
-//					successorSuccessorBoard.finalizeBitboards();
-//					if(successorSuccessorBoard.white_kings == 0L && engineBoard.toMove == EngineConstants.WHITE
-//							|| successorSuccessorBoard.black_kings == 0L && engineBoard.toMove == EngineConstants.BLACK) {
-//						isValid = false;
-//					}
-//				}
-//			}
-//
-//			if(isValid) {
-				validMoves.add(validOrInvalidMove);
-//				engineBoard.successorBoards.add(successorBoard);
-//			} else {
-////				log.debug("Not valid position (current user will become checked): {}", validOrInvalidMove);
-//			}
+
+			validMoves.add(validOrInvalidMove);
 		}
 		return validMoves;
 	}
@@ -99,11 +85,11 @@ public class AceMoveGenerator {
 			int sq = Long.numberOfTrailingZeros(pawns);
 			pawns -= 1L << sq;
 			
-			long oneFieldMove = pawnXrayOneFieldMove[sq] & engineBoard.empty_board;
+			long oneFieldMove = pawnXrayOneFieldMove[sq] & engineBoard.unoccupied_board;
 			moves.addAll(moves(sq, oneFieldMove));
 			
 			if(oneFieldMove != 0) {
-				long twoFieldMove = pawnXrayTwoFieldMove[sq] & engineBoard.empty_board;
+				long twoFieldMove = pawnXrayTwoFieldMove[sq] & engineBoard.unoccupied_board;
 				moves.addAll(moves(sq, twoFieldMove));
 			}
 			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.enemy_board;
@@ -215,9 +201,52 @@ public class AceMoveGenerator {
 		if(sq == 64) {
 			return Collections.emptyList();
 		}
-		
+
 		long destinationBitboard = Xray.king_xray[sq] & engineBoard.enemy_and_empty_board;
 		return moves(sq, destinationBitboard);
+	}
+
+	static List<Move> castlingMoves(final ACEBoard engineBoard) {
+		final List<Move> moves = new ArrayList<>();
+		if(ColorUtils.isWhite(engineBoard.toMove)) {
+			Coordinates fromCoordinate = BitboardUtils.coordinates(4);
+			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.white_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
+			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.white_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
+			if(canCastleQueenSide) {
+				Coordinates toCoordinate = BitboardUtils.coordinates(2);
+				Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
+				moves.add(move);
+			}
+			if(canCastleKingSide) {
+				Coordinates toCoordinate = BitboardUtils.coordinates(6);
+				Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
+				moves.add(move);
+			}
+		} else {
+			Coordinates fromCoordinate = BitboardUtils.coordinates(60);
+			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.black_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
+			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.black_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
+			if(canCastleQueenSide) {
+				Coordinates toCoordinate = BitboardUtils.coordinates(58);
+				Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
+				moves.add(move);
+			}
+			if(canCastleKingSide) {
+				Coordinates toCoordinate = BitboardUtils.coordinates(62);
+				Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
+				moves.add(move);
+			}
+		}
+		return ImmutableList.copyOf(moves);
+	}
+
+	/**
+	 * Warning: Doesn't check whether the pieces are on the right place. If we do games that don't start with the starting
+	 * position, we need to set the castle moved booleans in the ACEBoard class
+	 */
+	private static boolean canCastle(final ACEBoard engineBoard, final boolean piecesMoved, final long xRay) {
+		return !piecesMoved
+				&& (xRay & engineBoard.occupied_board) == 0L;
 	}
 
 	private static List<Move> moves(int index, long bitboard) {

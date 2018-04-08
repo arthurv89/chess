@@ -20,7 +20,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testEqual() {
-		ACEBoard board = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard board = new ACEBoard(EngineConstants.WHITE, false);
 		board.addPiece(EngineConstants.WHITE, PieceType.KING, idx("a1"));
 		board.addPiece(EngineConstants.BLACK, PieceType.KING, idx("a8"));
 		board.finalizeBitboards();
@@ -35,7 +35,7 @@ public class SimplePieceEvaluatorTest {
 
 	@Test
 	public void testPlusPawn() {
-		ACEBoard board = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard board = new ACEBoard(EngineConstants.WHITE, false);
 		board.addPiece(EngineConstants.WHITE, PieceType.KING, idx("a1"));
 		board.addPiece(EngineConstants.WHITE, PieceType.PAWN, idx("a2"));
 		board.addPiece(EngineConstants.BLACK, PieceType.KING, idx("a8"));
@@ -47,7 +47,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testMinusPawn() {
-		ACEBoard board = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard board = new ACEBoard(EngineConstants.WHITE, false);
 		board.addPiece(EngineConstants.WHITE, PieceType.KING, idx("a1"));
 		board.addPiece(EngineConstants.BLACK, PieceType.PAWN, idx("a2"));
 		board.addPiece(EngineConstants.BLACK, PieceType.KING, idx("a8"));
@@ -59,7 +59,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testPlusKnight() {
-		ACEBoard board = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard board = new ACEBoard(EngineConstants.WHITE, false);
 		board.addPiece(EngineConstants.WHITE, PieceType.KING, idx("a1"));
 		board.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, idx("a2"));
 		board.addPiece(EngineConstants.BLACK, PieceType.KING, idx("a8"));
@@ -71,7 +71,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testPlusBishop() {
-		ACEBoard board = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard board = new ACEBoard(EngineConstants.WHITE, false);
 		board.addPiece(EngineConstants.WHITE, PieceType.KING, idx("a1"));
 		board.addPiece(EngineConstants.WHITE, PieceType.BISHOP, idx("a2"));
 		board.addPiece(EngineConstants.BLACK, PieceType.KING, idx("a8"));
@@ -83,7 +83,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testPlusRook() {
-		ACEBoard board = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard board = new ACEBoard(EngineConstants.WHITE, false);
 		board.addPiece(EngineConstants.WHITE, PieceType.KING, idx("a1"));
 		board.addPiece(EngineConstants.WHITE, PieceType.ROOK, idx("a2"));
 		board.addPiece(EngineConstants.BLACK, PieceType.KING, idx("a8"));
@@ -95,7 +95,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testPlusQueen() {
-		ACEBoard board = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard board = new ACEBoard(EngineConstants.WHITE, false);
 		board.addPiece(EngineConstants.WHITE, PieceType.KING, idx("a1"));
 		board.addPiece(EngineConstants.WHITE, PieceType.QUEEN, idx("a2"));
 		board.addPiece(EngineConstants.BLACK, PieceType.KING, idx("a8"));

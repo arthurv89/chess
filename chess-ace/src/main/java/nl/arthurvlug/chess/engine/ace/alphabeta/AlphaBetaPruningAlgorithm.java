@@ -36,7 +36,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 
 	private final BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
-	private final int depth;
+	private int depth;
 	private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
 			60L, TimeUnit.SECONDS,
 			new SynchronousQueue<>());
@@ -76,11 +76,16 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		final List<Future<Object[]>> futures = successorBoards
 				.stream()
 				.map(successorBoard -> threadPoolExecutor.submit(() -> {
-					final int score = -alphaBeta(successorBoard, OTHER_PLAYER_WINS, CURRENT_PLAYER_WINS, depth - 1);
-					return new Object[]{
-							score,
-							successorBoard.getLastMove()
-					};
+					try {
+						final int score = -alphaBeta(successorBoard, OTHER_PLAYER_WINS, CURRENT_PLAYER_WINS, depth - 1);
+						return new Object[]{
+								score,
+								successorBoard.getLastMove()
+						};
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw e;
+					}
 				}))
 				.collect(Collectors.toList());
 
@@ -228,5 +233,9 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 			sideDependentScore = score.getValue();
 		}
 		board.setSideBasedEvaluation(sideDependentScore);
+	}
+
+	public void setDepth(final int depth) {
+		this.depth = depth;
 	}
 }
