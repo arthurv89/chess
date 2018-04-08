@@ -9,5 +9,5 @@ import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 public class AceConfiguration implements ChessEngineConfiguration {
 	private AceEvaluator evaluator = new AceEvaluator();
 	private int searchDepth = 2;
-	private int quiesceMaxDepth = 4;
+	private int quiesceMaxDepth = 6;
 }

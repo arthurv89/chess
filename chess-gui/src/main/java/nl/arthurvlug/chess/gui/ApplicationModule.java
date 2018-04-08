@@ -18,8 +18,10 @@ public class ApplicationModule extends AbstractModule {
 		Clock whiteClock = new Clock(150, 0);
 		Clock blackClock = new Clock(150, 0);
 
-		Player whitePlayer = new ComputerPlayer(new ACE(2));
+//		Player whitePlayer = new ComputerPlayer(new ACE(2));
+		Player whitePlayer = new ComputerPlayer(new ACE(3));
 //		Player whitePlayer = new HumanPlayer();
+//		Player blackPlayer = new ComputerPlayer(new ACE(2));
 		Player blackPlayer = new ComputerPlayer(new ACE(3));
 		Game game = new Game.GameBuilder()
 			.whitePlayer(whitePlayer)

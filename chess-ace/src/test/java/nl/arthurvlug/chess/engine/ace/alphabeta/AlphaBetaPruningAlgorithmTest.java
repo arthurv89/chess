@@ -3,6 +3,7 @@ package nl.arthurvlug.chess.engine.ace.alphabeta;
 import nl.arthurvlug.chess.engine.ace.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
+import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.game.Move;
@@ -29,24 +30,41 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm = new AlphaBetaPruningAlgorithm<>(new AceConfiguration());
 	}
 
-	@Ignore
+//	@Ignore
 	@Test
 	public void testNodesSearched1() {
+		algorithm.setDepth(1);
+		algorithm.setEvaluator(new SimplePieceEvaluator());
+		algorithm.setQuiesceEnabled(false);
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.finalizeBitboards();
 		algorithm.think(engineBoard);
 		assertEquals(0, algorithm.getCutoffs());
 		assertEquals(M, algorithm.getNodesEvaluated());
 	}
-
-	@Ignore
 	@Test
 	public void testNodesSearched2() {
+		algorithm.setDepth(2);
+		algorithm.setEvaluator(new SimplePieceEvaluator());
+		algorithm.setQuiesceEnabled(false);
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.finalizeBitboards();
 		algorithm.think(engineBoard);
-		assertEquals(4, algorithm.getCutoffs());
-		assertEquals(M, algorithm.getNodesEvaluated());
+		assertEquals(0, algorithm.getCutoffs());
+		assertEquals(M + M*M, algorithm.getNodesEvaluated());
+	}
+
+//	@Ignore
+	@Test
+	public void testNodesSearched3() {
+		algorithm.setDepth(3);
+		algorithm.setEvaluator(new SimplePieceEvaluator());
+		algorithm.setQuiesceEnabled(false);
+		ACEBoard engineBoard = new InitialEngineBoard();
+		engineBoard.finalizeBitboards();
+		algorithm.think(engineBoard);
+		assertEquals(M*M-1, algorithm.getCutoffs());
+		assertEquals(839, algorithm.getNodesEvaluated());
 	}
 
 	@Test

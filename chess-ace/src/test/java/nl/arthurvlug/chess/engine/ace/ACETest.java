@@ -43,8 +43,13 @@ public class ACETest {
 	public void testShouldMoveKnight_white() {
 		checkMove("g1f3 e7e5 b2b3 e5e4", movesPiece("f3"), 2);
 	}
-	
-	
+
+	// TODO: Enable this
+//	@Test
+//	public void testShouldPlayWinningMove() {
+//		checkMove("d2d4 b8c6 b1c3 g8f6 g1f3 d7d5 e2e3 c8f5 c1d2 e7e6 f1d3 f5d3 c2d3 f8d6 d1b3 a8b8 e3e4 d5e4 d3e4 e6e5 d4e5 c6e5 b3a4 e5c6 d2e3 a7a5 e4e5 b7b5 c3b5 d6b4 e1c1 f6d7 b5c3 c6e7",
+//				movesPiece("e5"), 6);
+//	}
 	
 	
 

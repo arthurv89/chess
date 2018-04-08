@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.ChessEngineConfiguration;
 import nl.arthurvlug.chess.engine.ace.TranspositionTable;
+import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
@@ -34,13 +35,11 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	@Getter
 	private int cutoffs;
 
-	private final BoardEvaluator evaluator;
+	private BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
 	private int depth;
-	private final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-			60L, TimeUnit.SECONDS,
-			new SynchronousQueue<>());
 	private final TranspositionTable transpositionTable = new TranspositionTable();
+	private boolean quiesceEnabled = true;
 
 	public AlphaBetaPruningAlgorithm(final ChessEngineConfiguration configuration) {
 		this.evaluator = configuration.getEvaluator();
@@ -73,38 +72,12 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		// TODO: Remove
 		Preconditions.checkState(successorBoards.size() > 0);
 
-		final List<Future<Object[]>> futures = successorBoards
-				.stream()
-				.map(successorBoard -> threadPoolExecutor.submit(() -> {
-					try {
-						final int score = -alphaBeta(successorBoard, OTHER_PLAYER_WINS, CURRENT_PLAYER_WINS, depth - 1);
-						return new Object[]{
-								score,
-								successorBoard.getLastMove()
-						};
-					} catch (Exception e) {
-						e.printStackTrace();
-						throw e;
-					}
-				}))
-				.collect(Collectors.toList());
-
-		final List<Object[]> results = futures.stream()
-				.map(f -> {
-					try {
-						return f.get();
-					} catch (Exception e) {
-						e.printStackTrace();
-						throw new RuntimeException(e);
-					}
-				})
-				.collect(Collectors.toList());
 
 		int bestScore = OTHER_PLAYER_WINS;
 		Move bestMove = null;
-		for(Object[] result : results) {
-			final int score = (int) result[0];
-			final Move move = (Move) result[1];
+		for(T successorBoard : successorBoards) {
+			final int score = -alphaBeta(successorBoard, bestScore, CURRENT_PLAYER_WINS, depth - 1);
+			final Move move = successorBoard.getLastMove();
 			if (score > bestScore) {
 				bestScore = score;
 				bestMove = move;
@@ -187,7 +160,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	private int quiesceSearch(final T engineBoard, int alpha, final int beta, final int depth) {
 		setSideDependentScore(engineBoard);
 		int stand_pat = engineBoard.getSideBasedEvaluation();
-		if(depth == 0) {
+		if(depth == 0 || !quiesceEnabled) {
 			return stand_pat;
 		}
 
@@ -237,5 +210,13 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 
 	public void setDepth(final int depth) {
 		this.depth = depth;
+	}
+
+	public void setQuiesceEnabled(final boolean quiesceEnabled) {
+		this.quiesceEnabled = quiesceEnabled;
+	}
+
+	public void setEvaluator(final SimplePieceEvaluator evaluator) {
+		this.evaluator = evaluator;
 	}
 }
