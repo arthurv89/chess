@@ -74,13 +74,20 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 
 
 		int bestScore = OTHER_PLAYER_WINS;
+		int beta = OTHER_PLAYER_WINS;
+		int alpha = CURRENT_PLAYER_WINS;
 		Move bestMove = null;
 		for(T successorBoard : successorBoards) {
-			final int score = -alphaBeta(successorBoard, bestScore, CURRENT_PLAYER_WINS, depth - 1);
+			final int score = -alphaBeta(successorBoard, bestScore, alpha, depth - 1);
 			final Move move = successorBoard.getLastMove();
-			if (score > bestScore) {
-				bestScore = score;
+			if( score >= beta ) {
+				return bestMove;  // fail-soft beta-cutoff
+			}
+			if( score > bestScore ) {
 				bestMove = move;
+				bestScore = score;
+				if( score > alpha )
+					alpha = score;
 			}
 		}
 		return bestMove;

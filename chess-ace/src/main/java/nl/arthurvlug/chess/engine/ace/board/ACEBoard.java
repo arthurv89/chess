@@ -1,14 +1,16 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import nl.arthurvlug.chess.engine.ColorUtils;
-import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
@@ -17,20 +19,10 @@ import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
-import nl.arthurvlug.chess.utils.board.pieces.PieceConverter;
-import nl.arthurvlug.chess.utils.board.pieces.PieceSymbol;
-import nl.arthurvlug.chess.utils.board.pieces.PieceToChessSymbolConverter;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.board.pieces.PieceUtils;
 import nl.arthurvlug.chess.utils.game.Move;
-
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import sun.reflect.misc.FieldUtil;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.isWhite;
 import static nl.arthurvlug.chess.engine.EngineConstants.WHITE;

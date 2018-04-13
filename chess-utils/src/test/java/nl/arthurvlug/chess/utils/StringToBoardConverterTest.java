@@ -1,6 +1,5 @@
 package nl.arthurvlug.chess.utils;
 
-import nl.arthurvlug.chess.utils.StringToBoardConverter;
 import nl.arthurvlug.chess.utils.board.Board;
 import nl.arthurvlug.chess.utils.board.InitialBoard;
 import nl.arthurvlug.chess.utils.board.InitializedBoard;
