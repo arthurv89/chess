@@ -51,11 +51,10 @@ public class AlphaBetaPruningAlgorithmTest {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.finalizeBitboards();
 		algorithm.think(engineBoard);
-		assertEquals(0, algorithm.getCutoffs());
-		assertEquals(M + M*M, algorithm.getNodesEvaluated());
+		assertEquals(19, algorithm.getCutoffs());
+		assertEquals(59, algorithm.getNodesEvaluated());
 	}
 
-//	@Ignore
 	@Test
 	public void testNodesSearched3() {
 		algorithm.setDepth(3);
@@ -64,8 +63,8 @@ public class AlphaBetaPruningAlgorithmTest {
 		ACEBoard engineBoard = new InitialEngineBoard();
 		engineBoard.finalizeBitboards();
 		algorithm.think(engineBoard);
-		assertEquals(M*M-1, algorithm.getCutoffs());
-		assertEquals(839, algorithm.getNodesEvaluated());
+		assertEquals(57, algorithm.getCutoffs());
+		assertEquals(583, algorithm.getNodesEvaluated());
 	}
 
 	@Test

@@ -8,6 +8,7 @@ import java.util.function.Function;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.utils.game.Move;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Splitter;
@@ -44,6 +45,7 @@ public class ACETest {
 		checkMove("g1f3 e7e5 b2b3 e5e4", movesPiece("f3"), 2);
 	}
 
+	@Ignore
 	@Test
 	public void testShouldPlayWinningMove() {
 //		.♜.♛♚..♜

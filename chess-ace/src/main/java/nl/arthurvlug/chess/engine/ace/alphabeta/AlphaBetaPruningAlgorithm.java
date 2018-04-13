@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.ChessEngineConfiguration;
 import nl.arthurvlug.chess.engine.ace.TranspositionTable;
@@ -21,6 +22,7 @@ import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
+import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.game.Move;
 
 import static java.util.Collections.swap;
@@ -72,22 +74,21 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		// TODO: Remove
 		Preconditions.checkState(successorBoards.size() > 0);
 
-
-		int bestScore = OTHER_PLAYER_WINS;
-		int beta = OTHER_PLAYER_WINS;
-		int alpha = CURRENT_PLAYER_WINS;
+		int alpha = OTHER_PLAYER_WINS;
+		int beta = CURRENT_PLAYER_WINS;
 		Move bestMove = null;
 		for(T successorBoard : successorBoards) {
-			final int score = -alphaBeta(successorBoard, bestScore, alpha, depth - 1);
-			final Move move = successorBoard.getLastMove();
-			if( score >= beta ) {
-				return bestMove;  // fail-soft beta-cutoff
+			// Do a recursive search
+			final int score = -alphaBeta(successorBoard, -beta, -alpha, depth - 1);
+
+			final Move lastMove = successorBoard.getLastMove();
+			if (score >= beta) {
+				cutoffs++;
+				return lastMove;
 			}
-			if( score > bestScore ) {
-				bestMove = move;
-				bestScore = score;
-				if( score > alpha )
-					alpha = score;
+			if (score > alpha) {
+				alpha = score;
+				bestMove = lastMove;
 			}
 		}
 		return bestMove;
@@ -125,8 +126,6 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 			throw new RuntimeException("No kings :(");
 		}
 
-		int bestScore = OTHER_PLAYER_WINS;
-
 		List<Move> generatedMoves = engineBoard.generateMoves();
 		if (engineBoard.opponentIsInCheck(generatedMoves)) {
 			return CURRENT_PLAYER_WINS;
@@ -134,30 +133,18 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 
 		final List<T> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
 		for(T successorBoard : successorBoards) {
-			if (bestScore >= beta) {
-				cutoffs++;
-				debug();
-				break;
-			}
-			if (bestScore > alpha) {
-				alpha = bestScore;
-			}
-
-//			final Move move = successorBoard.lastMove;
-//			if (move.is_captured_piece_a_king())
-//			{
-//				return 900 + level; // Opponent's king can be captured. That means he is check-mated.
-//			}
-
 			// Do a recursive search
 			int score = -alphaBeta(successorBoard, -beta, -alpha, depth-1);
 
-			if (score > bestScore) {
-				// Store the best value so far.
-				bestScore = score;
+			if (score >= beta) {
+				cutoffs++;
+				return beta;
+			}
+			if (score > alpha) {
+				alpha = score;
 			}
 		}
-		return bestScore;
+		return alpha;
 	}
 
 	private void debug() {
