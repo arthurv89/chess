@@ -1,16 +1,12 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
-import com.google.common.primitives.Longs;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 
 import com.atlassian.fugue.Option;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 
 public class Xray {
 	private static Function<Coordinates, Long> kingXrayFunc = new Function<Coordinates, Long>() {
@@ -31,7 +27,7 @@ public class Xray {
 	private static Function<Coordinates, Long> queenXRayFunc = new Function<Coordinates, Long>() {
 		@Override
 		public Long apply(Coordinates coordinates) {
-			int i = BitboardUtils.fieldIdx(coordinates);
+			int i = FieldUtils.fieldIdx(coordinates);
 			return 0L
 				| rook_xray[i]
 				| bishop_xray[i];
@@ -281,17 +277,17 @@ public class Xray {
 	private static long[] xRay(Function<Coordinates, Long> function) {
 		long[] xray = new long[64];
 		for (int i = 0; i < 64; i++) {
-			xray[i] = function.apply(BitboardUtils.coordinates(i));
+			xray[i] = function.apply(FieldUtils.coordinates(i));
 		}
 		return xray;
 	}
 
 	private static long[][] castleXRay() {
 		final long[][] bitboards = new long[2][2];
-		bitboards[0][0] = BitboardUtils.bitboardFromString("c1") | BitboardUtils.bitboardFromString("d1");
-		bitboards[0][1] = BitboardUtils.bitboardFromString("f1") | BitboardUtils.bitboardFromString("g1");
-		bitboards[1][0] = BitboardUtils.bitboardFromString("c8") | BitboardUtils.bitboardFromString("d8");
-		bitboards[1][1] = BitboardUtils.bitboardFromString("f8") | BitboardUtils.bitboardFromString("g8");
+		bitboards[0][0] = BitboardUtils.bitboardFromFieldName("c1") | BitboardUtils.bitboardFromFieldName("d1");
+		bitboards[0][1] = BitboardUtils.bitboardFromFieldName("f1") | BitboardUtils.bitboardFromFieldName("g1");
+		bitboards[1][0] = BitboardUtils.bitboardFromFieldName("c8") | BitboardUtils.bitboardFromFieldName("d8");
+		bitboards[1][1] = BitboardUtils.bitboardFromFieldName("f8") | BitboardUtils.bitboardFromFieldName("g8");
 		return bitboards;
 	}
 
@@ -299,7 +295,7 @@ public class Xray {
 		if(coordinate.isEmpty()) {
 			return 0;
 		} else {
-			return 1L << BitboardUtils.fieldIdx(coordinate.get());
+			return 1L << FieldUtils.fieldIdx(coordinate.get());
 		}
 	}
 

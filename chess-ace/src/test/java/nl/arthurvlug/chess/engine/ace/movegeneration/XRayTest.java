@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import org.junit.Test;
 
 public class XRayTest {
@@ -358,7 +359,7 @@ public class XRayTest {
 	
 
 	private long xRayBitboard(long[] xray, String fieldName) {
-		int sq = BitboardUtils.fieldIdx(BitboardUtils.coordinates(fieldName));
+		int sq = FieldUtils.fieldIdx(FieldUtils.coordinates(fieldName));
 		return xray[sq];
 	}
 
@@ -369,8 +370,8 @@ public class XRayTest {
 		String[] splittedFields = fields.split(" ");
 		long bitboard = 0L;
 		for(String splittedField : splittedFields) {
-			Coordinates coordinates = BitboardUtils.coordinates(splittedField);
-			int fieldIndex = BitboardUtils.fieldIdx(coordinates);
+			Coordinates coordinates = FieldUtils.coordinates(splittedField);
+			int fieldIndex = FieldUtils.fieldIdx(coordinates);
 			bitboard |= 1L << fieldIndex;
 		}
 		return bitboard;

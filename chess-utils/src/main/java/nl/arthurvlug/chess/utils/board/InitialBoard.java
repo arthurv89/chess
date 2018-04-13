@@ -1,22 +1,17 @@
-package nl.arthurvlug.chess.gui.board;
-
-import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
-import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.BISHOP;
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KING;
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KNIGHT;
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.PAWN;
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.QUEEN;
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.ROOK;
-import nl.arthurvlug.chess.utils.board.Coordinates;
-import nl.arthurvlug.chess.utils.board.InitializedBoard;
-import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+package nl.arthurvlug.chess.utils.board;
 
 import com.google.common.collect.ImmutableMap;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
-public class InitialBoard extends InitializedBoard {
-	public InitialBoard() {
-		super(piecesMap());
+import static nl.arthurvlug.chess.utils.board.InitializedBoard.c;
+import static nl.arthurvlug.chess.utils.board.InitializedBoard.p;
+import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
+import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
+
+public class InitialBoard {
+	private InitialBoard() {
+		throw new IllegalStateException("Please use static methods");
 	}
 
 	private static ImmutableMap<Coordinates, ColoredPiece> piecesMap() {
@@ -55,5 +50,9 @@ public class InitialBoard extends InitializedBoard {
 				.put(c(6, 7), p(KNIGHT, BLACK))
 				.put(c(7, 7), p(ROOK, BLACK))
 				.build();
+	}
+
+	public static InitializedBoard create() {
+		return new InitializedBoard(piecesMap());
 	}
 }

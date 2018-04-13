@@ -3,6 +3,7 @@ package nl.arthurvlug.chess.utils.board.pieces;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Optional;
 
 public class PieceToChessSymbolConverter extends PieceConverter<PieceSymbol> {
 	private static final Map<PieceType, PieceSymbol> map = ImmutableMap.<PieceType, PieceSymbol> builder()
@@ -20,7 +21,7 @@ public class PieceToChessSymbolConverter extends PieceConverter<PieceSymbol> {
 	}
 
 	@Override
-	Map<PieceType, PieceSymbol> getMap() {
+	public Map<PieceType, PieceSymbol> getMap() {
 		return map;
 	}
 

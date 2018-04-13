@@ -3,6 +3,7 @@ package nl.arthurvlug.chess.engine.ace.evaluation;
 import com.google.common.collect.LinkedHashMultimap;
 import java.util.List;
 import java.util.Set;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
@@ -39,7 +40,7 @@ public class AceEvaluator implements BoardEvaluator {
 
 			final ColoredPiece coloredPiece = engineBoard.pieceAt(fieldIdx);
 			score += pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx));
-//			System.out.println(BitboardUtils.coordinates(fieldIdx) + " -> " + pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx)));
+//			System.out.println(FieldUtils.coordinates(fieldIdx) + " -> " + pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx)));
 			occupiedBoard ^= 1L << fieldIdx;
 		}
 		return score;
@@ -50,7 +51,7 @@ public class AceEvaluator implements BoardEvaluator {
 		final LinkedHashMultimap<Integer, Move> multiMap = LinkedHashMultimap.create();
 		for (final Move move : moves) {
 			final Coordinates from = move.getFrom();
-			final Integer fromIdx = BitboardUtils.fieldIdx(from);
+			final Integer fromIdx = FieldUtils.fieldIdx(from);
 			multiMap.put(fromIdx, move);
 		}
 		return multiMap;

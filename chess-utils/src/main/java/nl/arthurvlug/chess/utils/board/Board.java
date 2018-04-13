@@ -18,7 +18,7 @@ public class Board {
 	@Getter
 	private ImmutableList<Field> fields;
 
-	protected Board(ImmutableList<Field> fields) {
+	public Board(ImmutableList<Field> fields) {
 		this.fields = fields;
 	}
 
@@ -117,7 +117,7 @@ public class Board {
 		for (int i = 0; i < fields.size(); i++) {
 			sb.append(fields.get(i).getPiece().map(PIECE_TO_STRING).orElse(" "));
 			
-			if((i+1)%8 == 0) {
+			if((i+1)%8 == 0 && i < 62) {
 				sb.append("\n");
 			}
 		}

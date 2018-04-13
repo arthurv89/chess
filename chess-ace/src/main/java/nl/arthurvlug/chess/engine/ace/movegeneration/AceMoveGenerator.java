@@ -24,6 +24,7 @@ import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
 import com.google.common.base.Preconditions;
@@ -209,30 +210,30 @@ public class AceMoveGenerator {
 	static List<Move> castlingMoves(final ACEBoard engineBoard) {
 		final List<Move> moves = new ArrayList<>();
 		if(ColorUtils.isWhite(engineBoard.toMove)) {
-			Coordinates fromCoordinate = BitboardUtils.coordinates(4);
+			Coordinates fromCoordinate = FieldUtils.coordinates(4);
 			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.white_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
 			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.white_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
 			if(canCastleQueenSide) {
-				Coordinates toCoordinate = BitboardUtils.coordinates(2);
+				Coordinates toCoordinate = FieldUtils.coordinates(2);
 				Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
 				moves.add(move);
 			}
 			if(canCastleKingSide) {
-				Coordinates toCoordinate = BitboardUtils.coordinates(6);
+				Coordinates toCoordinate = FieldUtils.coordinates(6);
 				Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
 				moves.add(move);
 			}
 		} else {
-			Coordinates fromCoordinate = BitboardUtils.coordinates(60);
+			Coordinates fromCoordinate = FieldUtils.coordinates(60);
 			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.black_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
 			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.black_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
 			if(canCastleQueenSide) {
-				Coordinates toCoordinate = BitboardUtils.coordinates(58);
+				Coordinates toCoordinate = FieldUtils.coordinates(58);
 				Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
 				moves.add(move);
 			}
 			if(canCastleKingSide) {
-				Coordinates toCoordinate = BitboardUtils.coordinates(62);
+				Coordinates toCoordinate = FieldUtils.coordinates(62);
 				Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
 				moves.add(move);
 			}
@@ -251,11 +252,11 @@ public class AceMoveGenerator {
 
 	private static List<Move> moves(int index, long bitboard) {
 		List<Move> moves = new ArrayList<>();
-		Coordinates fromCoordinate = BitboardUtils.coordinates(index);
+		Coordinates fromCoordinate = FieldUtils.coordinates(index);
 		
 		while(bitboard != 0) {
 			int onePos = Long.numberOfTrailingZeros(bitboard);
-			Coordinates toCoordinate = BitboardUtils.coordinates(onePos);
+			Coordinates toCoordinate = FieldUtils.coordinates(onePos);
 			Move move = new Move(fromCoordinate, toCoordinate, Optional.empty());
 			moves.add(move);
 			

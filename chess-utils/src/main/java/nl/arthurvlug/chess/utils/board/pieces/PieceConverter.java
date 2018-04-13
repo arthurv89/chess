@@ -15,7 +15,7 @@ public abstract class PieceConverter<T> {
 				})
 				.findFirst();
 	}
-	
+
 	public char convert(final PieceType pieceType, final Color color) {
 		T t = getMap().get(pieceType);
 		if(color == Color.WHITE) {

@@ -1,44 +1,40 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
+import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
+import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Optional;
 import nl.arthurvlug.chess.engine.EngineConstants;
+import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.game.Move;
-import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
-import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import org.junit.Test;
 
 public class ACEBoardTest {
 	@Test
 	public void testBitboardMoveAll() throws Exception {
-		ACEBoard startPositionBoard = new ACEBoard(EngineConstants.WHITE, false);
-		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, BitboardUtils.toIndex("a1"));
-		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, BitboardUtils.toIndex("b1"));
-		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.BISHOP, BitboardUtils.toIndex("c1"));
-		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, BitboardUtils.toIndex("d1"));
-		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.QUEEN, BitboardUtils.toIndex("e1"));
-		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.KING, BitboardUtils.toIndex("f1"));
-		startPositionBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, BitboardUtils.toIndex("a8"));
-		startPositionBoard.addPiece(EngineConstants.BLACK, PieceType.KNIGHT, BitboardUtils.toIndex("b8"));
-		startPositionBoard.addPiece(EngineConstants.BLACK, PieceType.BISHOP, BitboardUtils.toIndex("c8"));
-		startPositionBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, BitboardUtils.toIndex("d8"));
-		startPositionBoard.addPiece(EngineConstants.BLACK, PieceType.QUEEN, BitboardUtils.toIndex("e8"));
-		startPositionBoard.addPiece(EngineConstants.BLACK, PieceType.KING, BitboardUtils.toIndex("f8"));
-		startPositionBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, BitboardUtils.toIndex("f7")); // Black king takes this pawn
-		startPositionBoard.finalizeBitboards();
+		final ACEBoard startPositionBoard = ACEBoardUtils.initializedBoard(WHITE, "" +
+				"♟♞♝♜♛♚..\n" +
+				".....♙..\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"♙♘♗♖♕♔..\n");
 		
 		long expectedWhiteEnemyAndEmptyBoard = ~(
-				BitboardUtils.bitboardFromString("a1") |
-				BitboardUtils.bitboardFromString("b1") |
-				BitboardUtils.bitboardFromString("c1") |
-				BitboardUtils.bitboardFromString("d1") |
-				BitboardUtils.bitboardFromString("e1") |
-				BitboardUtils.bitboardFromString("f1") |
-				BitboardUtils.bitboardFromString("f7")
+				bitboardFromFieldName("a1") |
+				bitboardFromFieldName("b1") |
+				bitboardFromFieldName("c1") |
+				bitboardFromFieldName("d1") |
+				bitboardFromFieldName("e1") |
+				bitboardFromFieldName("f1") |
+				bitboardFromFieldName("f7")
 		);
 		assertEquals(expectedWhiteEnemyAndEmptyBoard, startPositionBoard.enemy_and_empty_board);
 		
@@ -64,7 +60,7 @@ public class ACEBoardTest {
 		copyBoard = apply("c8", "c7", copyBoard);
 		assertFalse(copyBoard.lastMoveWasTakeMove);
 
-		
+
 		copyBoard = apply("d1", "d2", copyBoard);
 		assertFalse(copyBoard.lastMoveWasTakeMove);
 
@@ -85,83 +81,83 @@ public class ACEBoardTest {
 
 		copyBoard = new ACEBoard(copyBoard, EngineConstants.BLACK, false);
 		long expectedBlackEnemyAndEmptyBoard = ~(
-				BitboardUtils.bitboardFromString("a7") |
-				BitboardUtils.bitboardFromString("b7") |
-				BitboardUtils.bitboardFromString("c7") |
-				BitboardUtils.bitboardFromString("d7") |
-				BitboardUtils.bitboardFromString("e7") |
-				BitboardUtils.bitboardFromString("f7")
-		);
+				bitboardFromFieldName("a7") |
+				bitboardFromFieldName("b7") |
+				bitboardFromFieldName("c7") |
+				bitboardFromFieldName("d7") |
+				bitboardFromFieldName("e7") |
+				bitboardFromFieldName("f7")
+		); // TODO: Use bitboardFromBoard(...)
 		assertEquals(expectedBlackEnemyAndEmptyBoard, copyBoard.enemy_and_empty_board);
 		
 		
 		
-		assertEquals(startPositionBoard.white_pawns, BitboardUtils.bitboardFromString("a1") | BitboardUtils.bitboardFromString("f7"));
-		assertEquals(startPositionBoard.white_knights, BitboardUtils.bitboardFromString("b1"));
-		assertEquals(startPositionBoard.white_bishops, BitboardUtils.bitboardFromString("c1"));
-		assertEquals(startPositionBoard.white_rooks, BitboardUtils.bitboardFromString("d1"));
-		assertEquals(startPositionBoard.white_queens, BitboardUtils.bitboardFromString("e1"));
-		assertEquals(startPositionBoard.white_kings, BitboardUtils.bitboardFromString("f1"));
+		assertEquals(startPositionBoard.white_pawns, bitboardFromFieldName("a1") | bitboardFromFieldName("f7"));
+		assertEquals(startPositionBoard.white_knights, bitboardFromFieldName("b1"));
+		assertEquals(startPositionBoard.white_bishops, bitboardFromFieldName("c1"));
+		assertEquals(startPositionBoard.white_rooks, bitboardFromFieldName("d1"));
+		assertEquals(startPositionBoard.white_queens, bitboardFromFieldName("e1"));
+		assertEquals(startPositionBoard.white_kings, bitboardFromFieldName("f1"));
 		
-		assertEquals(copyBoard.white_pawns, BitboardUtils.bitboardFromString("a2"));
-		assertEquals(copyBoard.white_knights, BitboardUtils.bitboardFromString("b2"));
-		assertEquals(copyBoard.white_bishops, BitboardUtils.bitboardFromString("c2"));
-		assertEquals(copyBoard.white_rooks, BitboardUtils.bitboardFromString("d2"));
-		assertEquals(copyBoard.white_queens, BitboardUtils.bitboardFromString("e2"));
-		assertEquals(copyBoard.white_kings, BitboardUtils.bitboardFromString("f2"));
+		assertEquals(copyBoard.white_pawns, bitboardFromFieldName("a2"));
+		assertEquals(copyBoard.white_knights, bitboardFromFieldName("b2"));
+		assertEquals(copyBoard.white_bishops, bitboardFromFieldName("c2"));
+		assertEquals(copyBoard.white_rooks, bitboardFromFieldName("d2"));
+		assertEquals(copyBoard.white_queens, bitboardFromFieldName("e2"));
+		assertEquals(copyBoard.white_kings, bitboardFromFieldName("f2"));
 		
-		assertEquals(startPositionBoard.black_pawns, BitboardUtils.bitboardFromString("a8"));
-		assertEquals(startPositionBoard.black_knights, BitboardUtils.bitboardFromString("b8"));
-		assertEquals(startPositionBoard.black_bishops, BitboardUtils.bitboardFromString("c8"));
-		assertEquals(startPositionBoard.black_rooks, BitboardUtils.bitboardFromString("d8"));
-		assertEquals(startPositionBoard.black_queens, BitboardUtils.bitboardFromString("e8"));
-		assertEquals(startPositionBoard.black_kings, BitboardUtils.bitboardFromString("f8"));
+		assertEquals(startPositionBoard.black_pawns, bitboardFromFieldName("a8"));
+		assertEquals(startPositionBoard.black_knights, bitboardFromFieldName("b8"));
+		assertEquals(startPositionBoard.black_bishops, bitboardFromFieldName("c8"));
+		assertEquals(startPositionBoard.black_rooks, bitboardFromFieldName("d8"));
+		assertEquals(startPositionBoard.black_queens, bitboardFromFieldName("e8"));
+		assertEquals(startPositionBoard.black_kings, bitboardFromFieldName("f8"));
 		
-		assertEquals(copyBoard.black_pawns, BitboardUtils.bitboardFromString("a7"));
-		assertEquals(copyBoard.black_knights, BitboardUtils.bitboardFromString("b7"));
-		assertEquals(copyBoard.black_bishops, BitboardUtils.bitboardFromString("c7"));
-		assertEquals(copyBoard.black_rooks, BitboardUtils.bitboardFromString("d7"));
-		assertEquals(copyBoard.black_queens, BitboardUtils.bitboardFromString("e7"));
-		assertEquals(copyBoard.black_kings, BitboardUtils.bitboardFromString("f7"));
+		assertEquals(copyBoard.black_pawns, bitboardFromFieldName("a7"));
+		assertEquals(copyBoard.black_knights, bitboardFromFieldName("b7"));
+		assertEquals(copyBoard.black_bishops, bitboardFromFieldName("c7"));
+		assertEquals(copyBoard.black_rooks, bitboardFromFieldName("d7"));
+		assertEquals(copyBoard.black_queens, bitboardFromFieldName("e7"));
+		assertEquals(copyBoard.black_kings, bitboardFromFieldName("f7"));
 
 		assertEquals(startPositionBoard.whiteOccupiedSquares,
-				BitboardUtils.bitboardFromString("a1") |
-				BitboardUtils.bitboardFromString("b1") |
-				BitboardUtils.bitboardFromString("c1") |
-				BitboardUtils.bitboardFromString("d1") |
-				BitboardUtils.bitboardFromString("e1") |
-				BitboardUtils.bitboardFromString("f1") |
-				BitboardUtils.bitboardFromString("f7"));
+				bitboardFromFieldName("a1") |
+				bitboardFromFieldName("b1") |
+				bitboardFromFieldName("c1") |
+				bitboardFromFieldName("d1") |
+				bitboardFromFieldName("e1") |
+				bitboardFromFieldName("f1") |
+				bitboardFromFieldName("f7"));
 		assertEquals(startPositionBoard.blackOccupiedSquares,
-				BitboardUtils.bitboardFromString("a8") |
-				BitboardUtils.bitboardFromString("b8") |
-				BitboardUtils.bitboardFromString("c8") |
-				BitboardUtils.bitboardFromString("d8") |
-				BitboardUtils.bitboardFromString("e8") |
-				BitboardUtils.bitboardFromString("f8"));
+				bitboardFromFieldName("a8") |
+				bitboardFromFieldName("b8") |
+				bitboardFromFieldName("c8") |
+				bitboardFromFieldName("d8") |
+				bitboardFromFieldName("e8") |
+				bitboardFromFieldName("f8"));
 
 		assertEquals(copyBoard.whiteOccupiedSquares, 
-				BitboardUtils.bitboardFromString("a2") |
-				BitboardUtils.bitboardFromString("b2") |
-				BitboardUtils.bitboardFromString("c2") |
-				BitboardUtils.bitboardFromString("d2") |
-				BitboardUtils.bitboardFromString("e2") |
-				BitboardUtils.bitboardFromString("f2"));
+				bitboardFromFieldName("a2") |
+				bitboardFromFieldName("b2") |
+				bitboardFromFieldName("c2") |
+				bitboardFromFieldName("d2") |
+				bitboardFromFieldName("e2") |
+				bitboardFromFieldName("f2"));
 		assertEquals(copyBoard.blackOccupiedSquares, 
-				BitboardUtils.bitboardFromString("a7") |
-				BitboardUtils.bitboardFromString("b7") |
-				BitboardUtils.bitboardFromString("c7") |
-				BitboardUtils.bitboardFromString("d7") |
-				BitboardUtils.bitboardFromString("e7") |
-				BitboardUtils.bitboardFromString("f7"));
+				bitboardFromFieldName("a7") |
+				bitboardFromFieldName("b7") |
+				bitboardFromFieldName("c7") |
+				bitboardFromFieldName("d7") |
+				bitboardFromFieldName("e7") |
+				bitboardFromFieldName("f7"));
 		
 		assertTrue(copyBoard.lastMoveWasTakeMove);
 	}
 
 	private ACEBoard apply(String from, String to, ACEBoard board) {
 		Move move = new Move(
-				BitboardUtils.coordinates(from), 
-				BitboardUtils.coordinates(to),
+				FieldUtils.coordinates(from),
+				FieldUtils.coordinates(to),
 				Optional.empty());
 		ACEBoard copiedBoard = new ACEBoard(board);
 		copiedBoard.finalizeBitboards();

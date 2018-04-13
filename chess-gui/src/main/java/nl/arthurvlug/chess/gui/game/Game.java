@@ -8,7 +8,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.game.Clock;
-import nl.arthurvlug.chess.gui.board.InitialBoard;
+import nl.arthurvlug.chess.utils.board.InitialBoard;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.gui.events.EventHandler;
 import nl.arthurvlug.chess.gui.events.GameFinishedEvent;
@@ -162,7 +162,7 @@ public class Game {
 		private Player whitePlayer;
 		private Player blackPlayer;
 		private Player toMove;
-		private Board initialBoard = new InitialBoard();
+		private Board initialBoard = InitialBoard.create();
 		private Clock whiteClock;
 		private Clock blackClock;
 
