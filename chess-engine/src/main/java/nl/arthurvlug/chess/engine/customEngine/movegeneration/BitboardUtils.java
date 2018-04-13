@@ -1,7 +1,6 @@
 package nl.arthurvlug.chess.engine.customEngine.movegeneration;
 
 import java.util.Optional;
-import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 
@@ -19,12 +18,12 @@ public class BitboardUtils {
 	}
 
 	public static String toBitboardString(long bitboard) {
-		String paddedBinaryString = "";
+		StringBuilder paddedBinaryString = new StringBuilder();
 		String binaryString = Long.toBinaryString(bitboard);
 		for (int i = 0; i < 64 - binaryString.length(); i++) {
-			paddedBinaryString += "0";
+			paddedBinaryString.append("0");
 		}
-		paddedBinaryString += binaryString;
+		paddedBinaryString.append(binaryString);
 		
 		StringBuilder resultingString = new StringBuilder();
 		for (int i = 0; i < 8; i++) {
@@ -37,21 +36,26 @@ public class BitboardUtils {
 			rowBuilder.append('\n');
 			resultingString.append(rowBuilder);
 		}
-		return resultingString.toString().replace("0", ".").replace("1", "X");
+		return resultingString.toString().replace("0", ".").replace("1", "♟");
 	}
 
 	public static int toIndex(String fieldName) {
 		return fieldIdx(coordinates(fieldName));
 	}
 
-	public static long bitboardFromFieldName(String fieldName) {
-		return 1L << toIndex(fieldName);
+	public static long bitboardFromFieldName(String fieldNames) {
+		final String[] fieldNameArray = fieldNames.split(" ");
+		long bitboard = 0L;
+		for(final String fieldName : fieldNameArray) {
+			bitboard |= 1L << toIndex(fieldName);
+		}
+		return bitboard;
 	}
 
 	public static long bitboardFromBoard(final String board) {
 		final long[] bitboard = {0L};
 		conv(board, ((coordinates, coloredPiece) -> {
-			bitboard[0] |= FieldUtils.fieldIdx(coordinates);
+			bitboard[0] |= 1L << FieldUtils.fieldIdx(coordinates);
 			return null;
 		}));
 		return bitboard[0];
