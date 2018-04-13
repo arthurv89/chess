@@ -11,6 +11,6 @@ public class Coordinates {
 	private final int y;
 	
 	public String toString() {
-		return MoveUtils.fieldToString(this);
+		return FieldUtils.fieldToString(this);
 	}
 }

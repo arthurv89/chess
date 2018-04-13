@@ -163,11 +163,11 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	}
 
 	public ColoredPiece pieceAt(Coordinates from) {
-		return pieceAt(MoveUtils.fieldToString(from));
+		return pieceAt(FieldUtils.fieldToString(from));
 	}
 
 	public ColoredPiece pieceAt(String fieldName) {
-		return pieceAt(BitboardUtils.toIndex(fieldName));
+		return pieceAt(FieldUtils.toIndex(fieldName));
 	}
 
 	public ColoredPiece pieceAt(long fieldIdx) {

@@ -2,6 +2,7 @@ package nl.arthurvlug.chess.engine.ace.movegeneration;
 
 import static nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator.*;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.*;
+import static nl.arthurvlug.chess.utils.board.FieldUtils.toIndex;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;

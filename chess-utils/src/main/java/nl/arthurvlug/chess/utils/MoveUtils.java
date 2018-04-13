@@ -11,6 +11,8 @@ import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.board.pieces.PieceUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 
+import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldToString;
+
 public class MoveUtils {
 	private static final Function<Move, String> TO_ENGINE_MOVES = move -> toEngineMove(move);
 	private static final Function<PieceType, String> TO_CHARACTER = pieceType -> {
@@ -32,21 +34,12 @@ public class MoveUtils {
 		return promotionPiece.map(TO_CHARACTER).orElse("");
 	}
 
-	private static String toReadableField(Coordinates from) {
-		return Character.toString((char) (from.getX() + 'a'))
-				+ Integer.toString(from.getY() + 1);
-	}
-
-	public static String fieldToString(Coordinates coordinates) {
-		return toReadableField(coordinates);
-	}
-
 	public static Move toMove(String sMove) {
 		Coordinates from = toField(sMove.substring(0, 2));
 		Coordinates to = toField(sMove.substring(2, 4));
 		Optional<PieceType> promotionPiece = sMove.length() == 5
 				? PieceUtils.fromChar(sMove.charAt(4), PieceUtils.pieceToCharacterConverter)
-				: Optional.<PieceType> empty();
+				: Optional.empty();
 		return new Move(from, to, promotionPiece);
 	}
 	

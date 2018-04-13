@@ -6,6 +6,7 @@ import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -70,14 +71,14 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testSelfCheckmate() {
 		ACEBoard engineBoard = new ACEBoard(BLACK, false);
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(WHITE, PAWN, BitboardUtils.toIndex("a2"));
-		engineBoard.addPiece(WHITE, PAWN, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(WHITE, ROOK, BitboardUtils.toIndex("b1"));
-		engineBoard.addPiece(WHITE, ROOK, BitboardUtils.toIndex("b8"));
-		engineBoard.addPiece(WHITE, ROOK, BitboardUtils.toIndex("b7"));
-		engineBoard.addPiece(BLACK, KNIGHT, BitboardUtils.toIndex("b4"));
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("a8"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("a1"));
+		engineBoard.addPiece(WHITE, PAWN, FieldUtils.toIndex("a2"));
+		engineBoard.addPiece(WHITE, PAWN, FieldUtils.toIndex("b2"));
+		engineBoard.addPiece(WHITE, ROOK, FieldUtils.toIndex("b1"));
+		engineBoard.addPiece(WHITE, ROOK, FieldUtils.toIndex("b8"));
+		engineBoard.addPiece(WHITE, ROOK, FieldUtils.toIndex("b7"));
+		engineBoard.addPiece(BLACK, KNIGHT, FieldUtils.toIndex("b4"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("a8"));
 		engineBoard.finalizeBitboards();
 
 		/*  ♚♖......
@@ -95,12 +96,12 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testExpectToMate() {
 		ACEBoard engineBoard = new ACEBoard(BLACK, false);
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(WHITE, PAWN, BitboardUtils.toIndex("a2"));
-		engineBoard.addPiece(WHITE, PAWN, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(WHITE, ROOK, BitboardUtils.toIndex("b1"));
-		engineBoard.addPiece(BLACK, KNIGHT, BitboardUtils.toIndex("b4"));
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("a8"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("a1"));
+		engineBoard.addPiece(WHITE, PAWN, FieldUtils.toIndex("a2"));
+		engineBoard.addPiece(WHITE, PAWN, FieldUtils.toIndex("b2"));
+		engineBoard.addPiece(WHITE, ROOK, FieldUtils.toIndex("b1"));
+		engineBoard.addPiece(BLACK, KNIGHT, FieldUtils.toIndex("b4"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("a8"));
 		engineBoard.finalizeBitboards();
 
 		/*  ♚.......
@@ -118,10 +119,10 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testWillLose() {
 		ACEBoard engineBoard = new ACEBoard(BLACK, false);
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(WHITE, ROOK, BitboardUtils.toIndex("g7"));
-		engineBoard.addPiece(WHITE, ROOK, BitboardUtils.toIndex("h7"));
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("a8"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("a1"));
+		engineBoard.addPiece(WHITE, ROOK, FieldUtils.toIndex("g7"));
+		engineBoard.addPiece(WHITE, ROOK, FieldUtils.toIndex("h7"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("a8"));
 		engineBoard.finalizeBitboards();
 
 		/*  ♚.......
@@ -140,16 +141,16 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testMateIn2() {
 		ACEBoard engineBoard = new ACEBoard(WHITE, false);
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("a8"));
-		engineBoard.addPiece(BLACK, ROOK, BitboardUtils.toIndex("b8"));
-		engineBoard.addPiece(BLACK, PAWN, BitboardUtils.toIndex("d7"));
-		engineBoard.addPiece(BLACK, PAWN, BitboardUtils.toIndex("c6"));
-		engineBoard.addPiece(BLACK, PAWN, BitboardUtils.toIndex("a6"));
-		engineBoard.addPiece(BLACK, PAWN, BitboardUtils.toIndex("b7"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("a8"));
+		engineBoard.addPiece(BLACK, ROOK, FieldUtils.toIndex("b8"));
+		engineBoard.addPiece(BLACK, PAWN, FieldUtils.toIndex("d7"));
+		engineBoard.addPiece(BLACK, PAWN, FieldUtils.toIndex("c6"));
+		engineBoard.addPiece(BLACK, PAWN, FieldUtils.toIndex("a6"));
+		engineBoard.addPiece(BLACK, PAWN, FieldUtils.toIndex("b7"));
 
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(WHITE, ROOK, BitboardUtils.toIndex("a5"));
-		engineBoard.addPiece(WHITE, QUEEN, BitboardUtils.toIndex("b5"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("a1"));
+		engineBoard.addPiece(WHITE, ROOK, FieldUtils.toIndex("a5"));
+		engineBoard.addPiece(WHITE, QUEEN, FieldUtils.toIndex("b5"));
 
 		engineBoard.finalizeBitboards();
 
@@ -171,9 +172,9 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testTakePieceWhite() {
 		ACEBoard engineBoard = new ACEBoard(WHITE, false);
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(BLACK, BISHOP, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("h8"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("a1"));
+		engineBoard.addPiece(BLACK, BISHOP, FieldUtils.toIndex("b2"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("h8"));
 		engineBoard.finalizeBitboards();
 		
 		Move bestMove = algorithm.think(engineBoard);
@@ -183,9 +184,9 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testTakePieceBlack() {
 		ACEBoard engineBoard = new ACEBoard(BLACK, false);
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(WHITE, KNIGHT, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("h8"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("a1"));
+		engineBoard.addPiece(WHITE, KNIGHT, FieldUtils.toIndex("b2"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("h8"));
 		engineBoard.finalizeBitboards();
 		
 		Move bestMove = algorithm.think(engineBoard);
@@ -195,9 +196,9 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testPieceProtected() {
 		ACEBoard engineBoard = new ACEBoard(WHITE, false);
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(BLACK, PAWN, BitboardUtils.toIndex("c3"));
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("d4"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("b2"));
+		engineBoard.addPiece(BLACK, PAWN, FieldUtils.toIndex("c3"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("d4"));
 		engineBoard.finalizeBitboards();
 		
 		/*	........
@@ -216,13 +217,13 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testCantTakePieceBecauseOfPin() {
 		ACEBoard engineBoard = new ACEBoard(WHITE, false);
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("a2"));
-		engineBoard.addPiece(WHITE, KNIGHT, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(WHITE, PAWN, BitboardUtils.toIndex("c1"));
-		engineBoard.addPiece(BLACK, PAWN, BitboardUtils.toIndex("c3"));
-		engineBoard.addPiece(BLACK, KNIGHT, BitboardUtils.toIndex("c4"));
-		engineBoard.addPiece(BLACK, ROOK, BitboardUtils.toIndex("c2"));
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("h8"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("a2"));
+		engineBoard.addPiece(WHITE, KNIGHT, FieldUtils.toIndex("b2"));
+		engineBoard.addPiece(WHITE, PAWN, FieldUtils.toIndex("c1"));
+		engineBoard.addPiece(BLACK, PAWN, FieldUtils.toIndex("c3"));
+		engineBoard.addPiece(BLACK, KNIGHT, FieldUtils.toIndex("c4"));
+		engineBoard.addPiece(BLACK, ROOK, FieldUtils.toIndex("c2"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("h8"));
 		engineBoard.finalizeBitboards();
 
 		/*	.......♚
@@ -241,13 +242,13 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testCanTakePieceBecauseNoPin() {
 		ACEBoard engineBoard = new ACEBoard(WHITE, false);
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("a1"));
-		engineBoard.addPiece(WHITE, KNIGHT, BitboardUtils.toIndex("b2"));
-		engineBoard.addPiece(WHITE, PAWN, BitboardUtils.toIndex("c1"));
-		engineBoard.addPiece(BLACK, PAWN, BitboardUtils.toIndex("c3"));
-		engineBoard.addPiece(BLACK, KNIGHT, BitboardUtils.toIndex("c4"));
-		engineBoard.addPiece(BLACK, ROOK, BitboardUtils.toIndex("c2"));
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("h8"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("a1"));
+		engineBoard.addPiece(WHITE, KNIGHT, FieldUtils.toIndex("b2"));
+		engineBoard.addPiece(WHITE, PAWN, FieldUtils.toIndex("c1"));
+		engineBoard.addPiece(BLACK, PAWN, FieldUtils.toIndex("c3"));
+		engineBoard.addPiece(BLACK, KNIGHT, FieldUtils.toIndex("c4"));
+		engineBoard.addPiece(BLACK, ROOK, FieldUtils.toIndex("c2"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("h8"));
 		engineBoard.finalizeBitboards();
 
 		/*	.......♚
@@ -275,12 +276,12 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testQueenTakeMove() {
 		ACEBoard engineBoard = new ACEBoard(BLACK, false);
-		engineBoard.addPiece(WHITE, KING, BitboardUtils.toIndex("f1"));
-		engineBoard.addPiece(WHITE, QUEEN, BitboardUtils.toIndex("d2"));
-		engineBoard.addPiece(WHITE, BISHOP, BitboardUtils.toIndex("d1"));
+		engineBoard.addPiece(WHITE, KING, FieldUtils.toIndex("f1"));
+		engineBoard.addPiece(WHITE, QUEEN, FieldUtils.toIndex("d2"));
+		engineBoard.addPiece(WHITE, BISHOP, FieldUtils.toIndex("d1"));
 
-		engineBoard.addPiece(BLACK, KING, BitboardUtils.toIndex("c7"));
-		engineBoard.addPiece(BLACK, QUEEN, BitboardUtils.toIndex("d8"));
+		engineBoard.addPiece(BLACK, KING, FieldUtils.toIndex("c7"));
+		engineBoard.addPiece(BLACK, QUEEN, FieldUtils.toIndex("d8"));
 		engineBoard.finalizeBitboards();
 
 		/*

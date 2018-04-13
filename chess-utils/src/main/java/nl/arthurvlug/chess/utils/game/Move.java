@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import com.atlassian.fugue.Option;
@@ -19,7 +20,7 @@ public class Move {
 	
 	@Override
 	public String toString() {
-		return MoveUtils.fieldToString(from) + MoveUtils.fieldToString(to) + MoveUtils.promotionToString(promotionPiece);
+		return FieldUtils.fieldToString(from) + FieldUtils.fieldToString(to) + MoveUtils.promotionToString(promotionPiece);
 	}
 	
 	@Override

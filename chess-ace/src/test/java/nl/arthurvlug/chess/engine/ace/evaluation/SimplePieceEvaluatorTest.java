@@ -5,6 +5,7 @@ import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import org.junit.Before;
@@ -25,12 +26,12 @@ public class SimplePieceEvaluatorTest {
 		board.addPiece(EngineConstants.BLACK, PieceType.KING, idx("a8"));
 		board.finalizeBitboards();
 		
-		NormalScore score = (NormalScore) evaluator.evaluate(new ACEBoard(board));
+		NormalScore score = evaluator.evaluate(new ACEBoard(board));
 		assertEquals(0, score.getValue().intValue());
 	}
 	
 	private int idx(String fieldName) {
-		return BitboardUtils.toIndex(fieldName);
+		return FieldUtils.toIndex(fieldName);
 	}
 
 	@Test

@@ -9,9 +9,22 @@ public class FieldUtils {
 		return coordinates.getX() + coordinates.getY()*8;
 	}
 
+	public static int toIndex(String fieldName) {
+		return fieldIdx(coordinates(fieldName));
+	}
+
 	public static Coordinates coordinates(String field) {
 		int x = field.charAt(0) - 'a';
 		int y = field.charAt(1) - '1';
 		return new Coordinates(x, y);
+	}
+
+	private static String toReadableField(Coordinates from) {
+		return Character.toString((char) (from.getX() + 'a'))
+				+ Integer.toString(from.getY() + 1);
+	}
+
+	public static String fieldToString(Coordinates coordinates) {
+		return toReadableField(coordinates);
 	}
 }
