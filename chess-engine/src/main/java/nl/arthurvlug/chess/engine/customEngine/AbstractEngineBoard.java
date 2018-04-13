@@ -14,8 +14,6 @@ public abstract class AbstractEngineBoard<T extends AbstractEngineBoard<T>> {
 
 	public abstract boolean opponentIsInCheck(final List<Move> generatedMoves);
 
-	public abstract int getSideBasedEvaluation();
-
 	/**
 	 * @deprecated Use createMoves instead (in combination with apply/unapply)
 	 */
@@ -29,8 +27,6 @@ public abstract class AbstractEngineBoard<T extends AbstractEngineBoard<T>> {
 	public abstract List<T> generateSuccessorTakeBoards();
 
 	public abstract int getToMove();
-
-	public abstract void setSideBasedEvaluation(final int sideDependentScore);
 
 	public abstract boolean hasNoKing();
 }

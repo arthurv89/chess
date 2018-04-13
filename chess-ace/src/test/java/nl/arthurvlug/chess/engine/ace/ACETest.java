@@ -47,7 +47,7 @@ public class ACETest {
 
 	@Ignore
 	@Test
-	public void testShouldPlayWinningMove() {
+	public void testShouldPlayWinningMove() { // e6 fxe6 Ne5 Bxc3 bxc3 [...] Nxd7
 //		.♜.♛♚..♜
 //		..♟♞♞♟♟♟
 //		........

@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.Getter;
-import lombok.Setter;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
@@ -67,15 +65,9 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	// TODO: Implement
 	private int repeatedMove = 0;
 
-	@Getter
-	@Setter
-	private int sideBasedEvaluation;
-
-
 	public ACEBoard(int toMove, final boolean castlingEnabled) {
 		this();
 		this.toMove = toMove;
-		this.sideBasedEvaluation = Integer.MIN_VALUE;
 		if(!castlingEnabled) {
 			white_king_or_rook_queen_side_moved = true;
 			white_king_or_rook_king_side_moved = true;
@@ -87,7 +79,6 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	public ACEBoard(int toMove) {
 		this();
 		this.toMove = toMove;
-		this.sideBasedEvaluation = Integer.MIN_VALUE;
 	}
 
 	public ACEBoard(ACEBoard board, int toMove, final boolean castlingEnabled) {

@@ -3,18 +3,10 @@ package nl.arthurvlug.chess.engine.ace.alphabeta;
 import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.ChessEngineConfiguration;
 import nl.arthurvlug.chess.engine.ace.TranspositionTable;
@@ -22,7 +14,6 @@ import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.NormalScore;
-import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.game.Move;
 
 import static java.util.Collections.swap;
@@ -152,8 +143,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	}
 
 	private int quiesceSearch(final T engineBoard, int alpha, final int beta, final int depth) {
-		setSideDependentScore(engineBoard);
-		int stand_pat = engineBoard.getSideBasedEvaluation();
+		int stand_pat = calculateScore(engineBoard);
 		if(depth == 0 || !quiesceEnabled) {
 			return stand_pat;
 		}
@@ -173,23 +163,23 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 
 		final List<T> successorBoards = engineBoard.generateSuccessorTakeBoards();
 		for(T successorBoard : successorBoards) {
-			final int value = -quiesceSearch(successorBoard, -beta, -alpha, depth-1);
+			final int score = -quiesceSearch(successorBoard, -beta, -alpha, depth-1);
 //			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
 
-			if (value >= beta) {
+			if (score >= beta) {
 				// Beta cut-off
 				cutoffs++;
 				debug();
 //				log.debug("Beta cut-off");
 				return beta;
-			} else if (value > alpha) {
-				alpha = value;
+			} else if (score > alpha) {
+				alpha = score;
 			}
 		}
 		return alpha;
 	}
 
-	private void setSideDependentScore(final T board) {
+	private int calculateScore(final T board) {
 		nodesEvaluated++;
 		NormalScore score = (NormalScore) evaluator.evaluate(board);
 
@@ -199,7 +189,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		} else {
 			sideDependentScore = score.getValue();
 		}
-		board.setSideBasedEvaluation(sideDependentScore);
+		return sideDependentScore;
 	}
 
 	public void setDepth(final int depth) {
