@@ -11,7 +11,7 @@ public class InitialEngineBoard extends ACEBoard {
 	}
 
 	private static ACEBoard initialEngineBoard() {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE);
+		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
 		
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, FieldUtils.toIndex("a1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, FieldUtils.toIndex("b1"));

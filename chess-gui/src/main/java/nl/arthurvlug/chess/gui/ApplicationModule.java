@@ -9,7 +9,6 @@ import nl.arthurvlug.chess.gui.game.Game;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;
-import nl.arthurvlug.chess.gui.game.player.HumanPlayer;
 import nl.arthurvlug.chess.gui.game.player.Player;
 
 public class ApplicationModule extends AbstractModule {

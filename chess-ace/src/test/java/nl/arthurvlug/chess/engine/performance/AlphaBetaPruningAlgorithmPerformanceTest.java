@@ -1,7 +1,7 @@
 package nl.arthurvlug.chess.engine.performance;
 
 import lombok.extern.slf4j.Slf4j;
-import nl.arthurvlug.chess.engine.ace.AceConfiguration;
+import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 

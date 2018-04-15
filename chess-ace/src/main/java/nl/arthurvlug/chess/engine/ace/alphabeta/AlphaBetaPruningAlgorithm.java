@@ -8,8 +8,9 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.ace.ChessEngineConfiguration;
-import nl.arthurvlug.chess.engine.ace.TranspositionTable;
+import nl.arthurvlug.chess.engine.ace.configuration.ChessEngineConfiguration;
+import nl.arthurvlug.chess.engine.ace.transpositiontable.HashElement;
+import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
@@ -17,6 +18,7 @@ import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 import nl.arthurvlug.chess.utils.game.Move;
 
 import static java.util.Collections.swap;
+import static nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable.*;
 
 @Slf4j
 public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
@@ -27,11 +29,17 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	private int nodesEvaluated;
 	@Getter
 	private int cutoffs;
+	@Getter
+	private int hashHits = 0;
 
 	private BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
 	private int depth;
-	private final TranspositionTable transpositionTable = new TranspositionTable();
+//	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
+	private static final int HASH_TABLE_LENGTH = 1048576; // Must be a power or 2
+
+
+	private static final TranspositionTable transpositionTable = new TranspositionTable(HASH_TABLE_LENGTH);
 	private boolean quiesceEnabled = true;
 
 	public AlphaBetaPruningAlgorithm(final ChessEngineConfiguration configuration) {
@@ -107,34 +115,50 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 			return 0;
 		}
 
+		int hashf = hashfALPHA;
+		int zobristHash = engineBoard.getZobristHash();
+		final HashElement hashElement = transpositionTable.get(zobristHash);
+		if (hashElement != null) {
+			hashHits++;
+			if (hashElement.depth >= depth) {
+				if (hashElement.flags == hashfEXACT)
+					return hashElement.val;
+				if ((hashElement.flags == hashfALPHA) && (hashElement.val <= alpha))
+					return alpha;
+				if ((hashElement.flags == hashfBETA) && (hashElement.val >= beta))
+					return beta;
+			}
+		}
+
 		if (depth == 0) {
 			// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
 			return quiesceSearch(engineBoard, alpha, beta, quiesceMaxDepth);
 		}
 		
-		// TODO: Remove
-		if(engineBoard.hasNoKing()) {
-			throw new RuntimeException("No kings :(");
-		}
-
 		List<Move> generatedMoves = engineBoard.generateMoves();
 		if (engineBoard.opponentIsInCheck(generatedMoves)) {
 			return CURRENT_PLAYER_WINS;
 		}
 
 		final List<T> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
+		Move bestMove = null;
 		for(T successorBoard : successorBoards) {
 			// Do a recursive search
 			int score = -alphaBeta(successorBoard, -beta, -alpha, depth-1);
 
-			if (score >= beta) {
-				cutoffs++;
-				return beta;
-			}
 			if (score > alpha) {
+				if (score >= beta) {
+					cutoffs++;
+					transpositionTable.set(depth, score, hashfBETA, successorBoard.getLastMove(), successorBoard.getZobristHash());
+					return beta;
+				}
+				bestMove = successorBoard.getLastMove();
 				alpha = score;
+				hashf = TranspositionTable.hashfEXACT;
 			}
 		}
+
+		transpositionTable.set(depth, alpha, hashf, bestMove, zobristHash);
 		return alpha;
 	}
 

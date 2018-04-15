@@ -1,15 +1,13 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
-import nl.arthurvlug.chess.engine.ace.AceConfiguration;
+import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
-import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static nl.arthurvlug.chess.engine.EngineConstants.BLACK;
@@ -43,6 +41,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		assertEquals(0, algorithm.getCutoffs());
 		assertEquals(M, algorithm.getNodesEvaluated());
 	}
+
 	@Test
 	public void testNodesSearched2() {
 		algorithm.setDepth(2);

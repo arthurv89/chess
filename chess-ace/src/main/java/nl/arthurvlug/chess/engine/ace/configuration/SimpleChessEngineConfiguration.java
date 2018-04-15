@@ -1,7 +1,6 @@
-package nl.arthurvlug.chess.engine.ace;
+package nl.arthurvlug.chess.engine.ace.configuration;
 
 import lombok.Getter;
-import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 
 @Getter

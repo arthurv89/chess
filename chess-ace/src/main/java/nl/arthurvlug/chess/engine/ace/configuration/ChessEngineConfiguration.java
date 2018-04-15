@@ -1,4 +1,4 @@
-package nl.arthurvlug.chess.engine.ace;
+package nl.arthurvlug.chess.engine.ace.configuration;
 
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 

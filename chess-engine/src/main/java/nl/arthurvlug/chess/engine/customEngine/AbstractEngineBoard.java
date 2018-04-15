@@ -29,4 +29,6 @@ public abstract class AbstractEngineBoard<T extends AbstractEngineBoard<T>> {
 	public abstract int getToMove();
 
 	public abstract boolean hasNoKing();
+
+	public abstract int getZobristHash();
 }

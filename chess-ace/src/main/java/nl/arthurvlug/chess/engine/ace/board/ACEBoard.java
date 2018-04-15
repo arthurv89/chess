@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -7,6 +8,7 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
@@ -65,8 +67,23 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	// TODO: Implement
 	private int repeatedMove = 0;
 
+	private int zobristHash;
+	private static int[][][] zobristRandomTable = new int[64][6][2];
+	static {
+		final Random random = new Random(1);
+		for (int fieldIndex = 0; fieldIndex<64; fieldIndex++) {
+			for (int piece = 0; piece<PieceType.values().length; piece++) {
+				for (int color = 0; color<2; color++) {
+					zobristRandomTable[fieldIndex][piece][color] = random.nextInt();
+				}
+			}
+		}
+	}
+
+	// Used for testing and creating an initial position
 	public ACEBoard(int toMove, final boolean castlingEnabled) {
 		this();
+		zobristHash = 0;
 		this.toMove = toMove;
 		if(!castlingEnabled) {
 			white_king_or_rook_queen_side_moved = true;
@@ -76,11 +93,8 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		}
 	}
 
-	public ACEBoard(int toMove) {
-		this();
-		this.toMove = toMove;
-	}
-
+	@Deprecated // Switch board in another way
+	@VisibleForTesting
 	public ACEBoard(ACEBoard board, int toMove, final boolean castlingEnabled) {
 		this(board);
 		this.toMove = toMove;
@@ -92,7 +106,8 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 			black_king_or_rook_king_side_moved = true;
 		}
 	}
-	
+
+	@Deprecated // Implement move/unmove instead
 	public ACEBoard(ACEBoard board) {
 		this();
 		toMove = board.toMove;
@@ -111,6 +126,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		black_knights = board.black_knights;
 		white_pawns = board.white_pawns;
 		black_pawns = board.black_pawns;
+		zobristHash = 0;
 
 		white_king_or_rook_queen_side_moved = board.white_king_or_rook_queen_side_moved;
 		white_king_or_rook_king_side_moved = board.white_king_or_rook_king_side_moved;
@@ -118,8 +134,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		black_king_or_rook_king_side_moved = board.black_king_or_rook_king_side_moved;
 	}
 
-	private ACEBoard() {
-	}
+	private ACEBoard() { }
 
 	public void apply(List<String> moveList) {
 		if(moveList.isEmpty()) {
@@ -413,8 +428,27 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		unoccupied_board = ~occupied_board;
 		enemy_and_empty_board = enemy_board | unoccupied_board;
 
+		zobristHash = computeZobristHash();
 		// TODO: Add for a while so we can check for performance issues
 //		Preconditions.checkState(successorBoards == null);
+	}
+
+	// Only to be calculated once. After that, it should recalculate the hash using incremental updates
+	private int computeZobristHash() {
+		int zobristHash = 1659068882;
+		for (int fieldIdx = 0; fieldIdx<64; fieldIdx++) {
+			final ColoredPiece coloredPiece = pieceAt(fieldIdx);
+			if (coloredPiece != null) {
+				zobristHash ^= zobristPieceHash(fieldIdx, coloredPiece);
+			}
+		}
+		return zobristHash;
+	}
+
+	private int zobristPieceHash(final int fieldIdx, final ColoredPiece coloredPiece) {
+		int piece = coloredPiece.getPieceType().ordinal();
+		int color = coloredPiece.getColor().ordinal();
+		return zobristRandomTable[fieldIdx][piece][color];
 	}
 
 	@Override
@@ -515,5 +549,10 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		} else {
 			return black_kings == 0;
 		}
+	}
+
+	@Override
+	public int getZobristHash() {
+		return zobristHash;
 	}
 }
