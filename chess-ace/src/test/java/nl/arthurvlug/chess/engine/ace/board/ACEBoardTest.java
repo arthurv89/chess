@@ -1,18 +1,16 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Optional;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
-import nl.arthurvlug.chess.utils.board.FieldUtils;
 import org.junit.Test;
 
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromBoard;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ACEBoardTest {
 	private static final ACEBoard startPositionBoard = ACEBoardUtils.initializedBoard(WHITE, "" +
@@ -168,15 +166,4 @@ public class ACEBoardTest {
 		verifyStartPositionBoard(startPositionBoard);
 	}
 
-	private ACEBoard apply(String from, String to, ACEBoard board) {
-		UnapplyableMove move = new UnapplyableMove(
-				FieldUtils.coordinates(from),
-				FieldUtils.coordinates(to),
-				Optional.empty(),
-				board.pieceAt(to));
-		ACEBoard copiedBoard = board.cloneBoard();
-		copiedBoard.finalizeBitboards();
-		copiedBoard.apply(move);
-		return copiedBoard;
-	}
 }

@@ -43,6 +43,7 @@ public class InitialACEBoard extends ACEBoard {
 		addPiece(BLACK, PAWN, fieldIdx("f7"));
 		addPiece(BLACK, PAWN, fieldIdx("g7"));
 		addPiece(BLACK, PAWN, fieldIdx("h7"));
+		finalizeBitboards();
 	}
 
 	public static InitialACEBoard createInitialACEBoard() {

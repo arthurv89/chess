@@ -160,11 +160,10 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		PieceType movingPiece = pieceAt(fromIdx).getPieceType();
 
 		xorMove(toBitboard, fromBitboard, movingPiece);
-
 		xorTakePiece(move, toBitboard);
 
 		this.toMove = ColorUtils.otherToMove(this.toMove);
-		finalizeBitboards();
+		finalizeBitboardsAfterApply();
 	}
 
 	@Override
@@ -183,7 +182,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 
 		xorTakePiece(move, toBitboard);
 
-		finalizeBitboards();
+		finalizeBitboardsAfterApply();
 	}
 
 	private void xorMove(final long toBitboard, final long fromBitboard, final PieceType movingPiece) {
@@ -196,6 +195,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 				case QUEEN:  moveWhiteQueen (fromBitboard, toBitboard); break;
 				case KING:   moveWhiteKing  (fromBitboard, toBitboard); break;
 			}
+			recalculateWhiteOccupiedSquares();
 		} else {
 			switch (movingPiece) {
 				case PAWN:   moveBlackPawn  (fromBitboard, toBitboard); break;
@@ -205,7 +205,16 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 				case QUEEN:  moveBlackQueen (fromBitboard, toBitboard); break;
 				case KING:   moveBlackKing  (fromBitboard, toBitboard); break;
 			}
+			recalculateBlackOccupiedSquares();
 		}
+	}
+
+	private void recalculateBlackOccupiedSquares() {
+		blackOccupiedSquares = black_pawns | black_knights | black_bishops | black_rooks | black_queens | black_kings;
+	}
+
+	private void recalculateWhiteOccupiedSquares() {
+		whiteOccupiedSquares = white_pawns | white_knights | white_bishops | white_rooks | white_queens | white_kings;
 	}
 
 	private void xorTakePiece(final UnapplyableMove move, final long toBitboard) {
@@ -219,6 +228,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 					case QUEEN:  black_queens  ^= toBitboard; break;
 					case KING:   black_kings   ^= toBitboard; break;
 				}
+				recalculateBlackOccupiedSquares();
 			} else {
 				switch (move.getTakePiece().getPieceType()) {
 					case PAWN:   white_pawns   ^= toBitboard; break;
@@ -228,6 +238,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 					case QUEEN:  white_queens  ^= toBitboard; break;
 					case KING:   white_kings   ^= toBitboard; break;
 				}
+				recalculateWhiteOccupiedSquares();
 			}
 		}
 	}
@@ -327,11 +338,10 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		}
 	}
 
-	@Deprecated // We should do incremental updates to this
 	public void finalizeBitboards() {
 		whiteOccupiedSquares = white_pawns | white_knights | white_bishops | white_rooks | white_queens | white_kings;
 		blackOccupiedSquares = black_pawns | black_knights | black_bishops | black_rooks | black_queens | black_kings;
-		
+
 		enemy_board = isWhite(toMove)
 				? blackOccupiedSquares
 				: whiteOccupiedSquares;
@@ -340,8 +350,20 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		enemy_and_empty_board = enemy_board | unoccupied_board;
 
 		zobristHash = computeZobristHash();
-		// TODO: Add for a while so we can check for performance issues
-//		Preconditions.checkState(successorBoards == null);
+	}
+
+	private void finalizeBitboardsAfterApply() {
+		// TODO: Put in array
+		enemy_board = isWhite(toMove)
+				? blackOccupiedSquares
+				: whiteOccupiedSquares;
+
+		occupied_board = whiteOccupiedSquares | blackOccupiedSquares;
+		unoccupied_board = ~occupied_board;
+		enemy_and_empty_board = enemy_board | unoccupied_board;
+
+		// TODO: Do this differently
+		zobristHash = computeZobristHash();
 	}
 
 	// Only to be calculated once. After that, it should recalculate the hash using incremental updates
