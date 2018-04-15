@@ -59,6 +59,14 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 
 	// TODO: Implement
 	private int repeatedMove = 0;
+	private static final long a8Bitboard = 1L << 56;
+	private static final long d8Bitboard = 1L << 59;
+	private static final long f8Bitboard = 1L << 61;
+	private static final long h8Bitboard = 1L << 63;
+	private static final long a1Bitboard = 1L;
+	private static final long d1Bitboard = 1L << 3;
+	private static final long f1Bitboard = 1L << 5;
+	private static final long h1Bitboard = 1L << 7;
 
 	private int zobristHash;
 	private static int[][][] zobristRandomTable = new int[64][6][2];
@@ -135,72 +143,51 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		int fromIdx = FieldUtils.fieldIdx(move.getFrom());
 		long fromBitboard = 1L << fromIdx;
 
-		// Remove pieces from destination field
-		long removeToBoard = ~toBitboard;
-		black_kings &= removeToBoard;
-		white_kings &= removeToBoard;
-		black_queens &= removeToBoard;
-		white_queens &= removeToBoard;
-		white_rooks &= removeToBoard;
-		black_rooks &= removeToBoard;
-		white_bishops &= removeToBoard;
-		black_bishops &= removeToBoard;
-		white_knights &= removeToBoard;
-		black_knights &= removeToBoard;
-		white_pawns &= removeToBoard;
-		black_pawns &= removeToBoard;
-
-		// toBitboard
-		long removeFromBoard = ~fromBitboard;
-
 		Preconditions.checkNotNull(pieceAt(fromIdx), String.format("Can't apply move %s: the from field is empty:\n%s", move, this.toString()));
 		PieceType movingPiece = pieceAt(fromIdx).getPieceType();
-		switch (movingPiece) {
-			case PAWN:
-				if(isWhite(toMove)) {
-					moveWhitePawn(toBitboard, removeFromBoard);
-				} else {
-					moveBlackPawn(toBitboard, removeFromBoard);
-				}
-				break;
-			case BISHOP:
-				if(isWhite(toMove)) {
-					moveWhiteBishop(toBitboard, removeFromBoard);
-				} else {
-					moveBlackBishop(toBitboard, removeFromBoard);
-				}
-				break;
-			case KNIGHT:
-				if(isWhite(toMove)) {
-					moveWhiteKnight(toBitboard, removeFromBoard);
-				} else {
-					moveBlackKnight(toBitboard, removeFromBoard);
-				}
-				break;
-			case ROOK:
-				if(isWhite(toMove)) {
-					moveWhiteRook(toBitboard, fromIdx, removeFromBoard);
-				} else {
-					moveBlackRook(toBitboard, fromIdx, removeFromBoard);
-				}
-				break;
-			case QUEEN:
-				if(isWhite(toMove)) {
-					moveWhiteQueen(toBitboard, removeFromBoard);
-				} else {
-					moveBlackQueen(toBitboard, removeFromBoard);
-				}
-				break;
-			case KING:
-				if(isWhite(toMove)) {
-					moveWhiteKing(toIdx, toBitboard, fromIdx, removeFromBoard);
-				} else {
-					moveBlackKing(toIdx, toBitboard, fromIdx, removeFromBoard);
-				}
-				break;
-			default:
-				throw new RuntimeException("Undefined piece");
+
+		if(isWhite(toMove)) {
+			switch (movingPiece) {
+				case PAWN:   moveWhitePawn   (toBitboard, fromBitboard); break;
+				case BISHOP: moveWhiteBishop (toBitboard, fromBitboard); break;
+				case KNIGHT: moveWhiteKnight (toBitboard, fromBitboard); break;
+				case ROOK:   moveWhiteRook   (toBitboard, fromBitboard, fromIdx); break;
+				case QUEEN:  moveWhiteQueen  (toBitboard, fromBitboard); break;
+				case KING:   moveWhiteKing   (toBitboard, fromBitboard, fromIdx, toIdx); break;
+			}
+		} else {
+			switch (movingPiece) {
+				case PAWN:   moveBlackPawn  (toBitboard, fromBitboard); break;
+				case BISHOP: moveBlackBishop(toBitboard, fromBitboard); break;
+				case KNIGHT: moveBlackKnight(toBitboard, fromBitboard); break;
+				case ROOK:   moveBlackRook  (toBitboard, fromBitboard, fromIdx); break;
+				case QUEEN:  moveBlackQueen (toBitboard, fromBitboard); break;
+				case KING:   moveBlackKing  (toBitboard, fromBitboard, fromIdx, toIdx); break;
+			}
 		}
+
+		if(move.getTakePiece() != null) {
+			if(isWhite(toMove)) {
+				switch (move.getTakePiece().getPieceType()) {
+					case PAWN:   black_pawns   ^= toBitboard; break;
+					case BISHOP: black_bishops ^= toBitboard; break;
+					case KNIGHT: black_knights ^= toBitboard; break;
+					case ROOK:   black_rooks   ^= toBitboard; break;
+					case QUEEN:  black_queens  ^= toBitboard; break;
+					case KING:   black_kings   ^= toBitboard; break;
+				}
+			} else {
+				switch (move.getTakePiece().getPieceType()) {
+					case PAWN:   white_pawns   ^= toBitboard; break;
+					case BISHOP: white_bishops ^= toBitboard; break;
+					case KNIGHT: white_knights ^= toBitboard; break;
+					case ROOK:   white_rooks   ^= toBitboard; break;
+					case QUEEN:  white_queens  ^= toBitboard; break;
+					case KING:   white_kings   ^= toBitboard; break;
+				}
+			}
+		}
+
 		this.toMove = ColorUtils.otherToMove(this.toMove);
 		finalizeBitboards();
 	}
@@ -216,65 +203,47 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		int fromIdx = FieldUtils.fieldIdx(move.getFrom());
 		long fromBitboard = 1L << fromIdx;
 
-		// Remove pieces from destination field
-		long removeFromBoard = ~fromBitboard;
-		black_kings &= removeFromBoard;
-		white_kings &= removeFromBoard;
-		black_queens &= removeFromBoard;
-		white_queens &= removeFromBoard;
-		white_rooks &= removeFromBoard;
-		black_rooks &= removeFromBoard;
-		white_bishops &= removeFromBoard;
-		black_bishops &= removeFromBoard;
-		white_knights &= removeFromBoard;
-		black_knights &= removeFromBoard;
-		white_pawns &= removeFromBoard;
-		black_pawns &= removeFromBoard;
-
-		// toBitboard
-		long removeToBoard = ~toBitboard;
-
 		switch (movingPiece) {
 			case PAWN:
 				if(isWhite(toMove)) {
-					moveWhitePawn(fromBitboard, removeToBoard);
+					moveWhitePawn(fromBitboard, toBitboard);
 				} else {
-					moveBlackPawn(fromBitboard, removeToBoard);
+					moveBlackPawn(fromBitboard, toBitboard);
 				}
 				break;
 			case BISHOP:
 				if(isWhite(toMove)) {
-					moveWhiteBishop(fromBitboard, removeToBoard);
+					moveWhiteBishop(fromBitboard, toBitboard);
 				} else {
-					moveBlackBishop(fromBitboard, removeToBoard);
+					moveBlackBishop(fromBitboard, toBitboard);
 				}
 				break;
 			case KNIGHT:
 				if(isWhite(toMove)) {
-					moveWhiteKnight(fromBitboard, removeToBoard);
+					moveWhiteKnight(fromBitboard, toBitboard);
 				} else {
-					moveBlackKnight(fromBitboard, removeToBoard);
+					moveBlackKnight(fromBitboard, toBitboard);
 				}
 				break;
 			case ROOK:
 				if(isWhite(toMove)) {
-					moveWhiteRook(fromBitboard, fromIdx, removeToBoard);
+					moveWhiteRook(fromBitboard, toBitboard, fromIdx);
 				} else {
-					moveBlackRook(fromBitboard, fromIdx, removeToBoard);
+					moveBlackRook(fromBitboard, toBitboard, fromIdx);
 				}
 				break;
 			case QUEEN:
 				if(isWhite(toMove)) {
-					moveWhiteQueen(fromBitboard, removeToBoard);
+					moveWhiteQueen(fromBitboard, toBitboard);
 				} else {
-					moveBlackQueen(fromBitboard, removeToBoard);
+					moveBlackQueen(fromBitboard, toBitboard);
 				}
 				break;
 			case KING:
 				if(isWhite(toMove)) {
-					moveWhiteKing(toIdx, fromBitboard, fromIdx, removeToBoard);
+					moveWhiteKing(fromBitboard, toBitboard, fromIdx, toIdx);
 				} else {
-					moveBlackKing(toIdx, fromBitboard, fromIdx, removeToBoard);
+					moveBlackKing(fromBitboard, toBitboard, fromIdx, toIdx);
 				}
 				break;
 			default:
@@ -285,44 +254,44 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 			switch (move.getTakePiece().getPieceType()) {
 				case PAWN:
 					if (isWhite(toMove)) {
-						black_pawns |= toBitboard;
+						black_pawns ^= toBitboard;
 					} else {
-						white_pawns |= toBitboard;
+						white_pawns ^= toBitboard;
 					}
 					break;
 				case BISHOP:
 					if (isWhite(toMove)) {
-						black_bishops |= toBitboard;
+						black_bishops ^= toBitboard;
 					} else {
-						white_bishops |= toBitboard;
+						white_bishops ^= toBitboard;
 					}
 					break;
 				case KNIGHT:
 					if (isWhite(toMove)) {
-						black_knights |= toBitboard;
+						black_knights ^= toBitboard;
 					} else {
-						white_knights |= toBitboard;
+						white_knights ^= toBitboard;
 					}
 					break;
 				case ROOK:
 					if (isWhite(toMove)) {
-						black_rooks |= toBitboard;
+						black_rooks ^= toBitboard;
 					} else {
-						white_rooks |= toBitboard;
+						white_rooks ^= toBitboard;
 					}
 					break;
 				case QUEEN:
 					if (isWhite(toMove)) {
-						black_queens |= toBitboard;
+						black_queens ^= toBitboard;
 					} else {
-						white_queens |= toBitboard;
+						white_queens ^= toBitboard;
 					}
 					break;
 				case KING:
 					if (isWhite(toMove)) {
-						black_kings |= toBitboard;
+						black_kings ^= toBitboard;
 					} else {
-						white_kings |= toBitboard;
+						white_kings ^= toBitboard;
 					}
 					break;
 			}
@@ -331,93 +300,93 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		finalizeBitboards();
 	}
 
-	private void moveWhitePawn(final long toBitboard, final long removeFromBoard) {
-		white_pawns &= removeFromBoard;
-		white_pawns |= toBitboard;
+	private void moveWhitePawn(final long toBitboard, final long fromBitboard) {
+		white_pawns ^= fromBitboard;
+		white_pawns ^= toBitboard;
 	}
 
-	private void moveBlackPawn(final long toBitboard, final long removeFromBoard) {
-		black_pawns &= removeFromBoard;
-		black_pawns |= toBitboard;
+	private void moveBlackPawn(final long toBitboard, final long fromBitboard) {
+		black_pawns ^= fromBitboard;
+		black_pawns ^= toBitboard;
 	}
 
-	private void moveWhiteBishop(final long toBitboard, final long removeFromBoard) {
-		white_bishops &= removeFromBoard;
-		white_bishops |= toBitboard;
+	private void moveWhiteBishop(final long toBitboard, final long fromBitboard) {
+		white_bishops ^= fromBitboard;
+		white_bishops ^= toBitboard;
 	}
 
-	private void moveBlackBishop(final long toBitboard, final long removeFromBoard) {
-		black_bishops &= removeFromBoard;
-		black_bishops |= toBitboard;
+	private void moveBlackBishop(final long toBitboard, final long fromBitboard) {
+		black_bishops ^= fromBitboard;
+		black_bishops ^= toBitboard;
 	}
 
-	private void moveBlackKnight(final long toBitboard, final long removeFromBoard) {
-		black_knights &= removeFromBoard;
-		black_knights |= toBitboard;
+	private void moveBlackKnight(final long toBitboard, final long fromBitboard) {
+		black_knights ^= fromBitboard;
+		black_knights ^= toBitboard;
 	}
 
-	private void moveWhiteKnight(final long toBitboard, final long removeFromBoard) {
-		white_knights &= removeFromBoard;
-		white_knights |= toBitboard;
+	private void moveWhiteKnight(final long toBitboard, final long fromBitboard) {
+		white_knights ^= fromBitboard;
+		white_knights ^= toBitboard;
 	}
 
-	private void moveWhiteRook(final long toBitboard, final int fromIdx, final long removeFromBoard) {
+	private void moveWhiteRook(final long toBitboard, final long fromBitboard, final int fromIdx) {
 		if(fromIdx == 0) {
 			white_king_or_rook_queen_side_moved = true;
 		}
 		else if(fromIdx == 7) {
 			white_king_or_rook_king_side_moved = true;
 		}
-		white_rooks &= removeFromBoard;
-		white_rooks |= toBitboard;
+		white_rooks ^= fromBitboard;
+		white_rooks ^= toBitboard;
 	}
 
-	private void moveBlackRook(final long toBitboard, final int fromIdx, final long removeFromBoard) {
+	private void moveBlackRook(final long toBitboard, final long fromBitboard, final int fromIdx) {
 		if(fromIdx == 56) {
 			black_king_or_rook_queen_side_moved = true;
 		}
 		else if(fromIdx == 63) {
 			black_king_or_rook_king_side_moved = true;
 		}
-		black_rooks &= removeFromBoard;
-		black_rooks |= toBitboard;
+		black_rooks ^= fromBitboard;
+		black_rooks ^= toBitboard;
 	}
 
-	private void moveBlackQueen(final long toBitboard, final long removeFromBoard) {
-		black_queens &= removeFromBoard;
-		black_queens |= toBitboard;
+	private void moveBlackQueen(final long toBitboard, final long fromBitboard) {
+		black_queens ^= fromBitboard;
+		black_queens ^= toBitboard;
 	}
 
-	private void moveWhiteQueen(final long toBitboard, final long removeFromBoard) {
-		white_queens &= removeFromBoard;
-		white_queens |= toBitboard;
+	private void moveWhiteQueen(final long toBitboard, final long fromBitboard) {
+		white_queens ^= fromBitboard;
+		white_queens ^= toBitboard;
 	}
 
-	private void moveWhiteKing(final int toIdx, final long toBitboard, final int fromIdx, final long removeFromBoard) {
+	private void moveWhiteKing(final long toBitboard, final long fromBitboard, final int fromIdx, final int toIdx) {
 		white_king_or_rook_queen_side_moved = true;
 		white_king_or_rook_king_side_moved = true;
-		white_kings &= removeFromBoard;
-		white_kings |= toBitboard;
+		white_kings ^= fromBitboard;
+		white_kings ^= toBitboard;
 		if(fromIdx == 4 && toIdx == 2) {
-			white_rooks &= ~1L;
-			white_rooks |= 1L << 3;
+			this.white_rooks ^= a1Bitboard;
+			this.white_rooks ^= d1Bitboard;
 		} else if(fromIdx == 4 && toIdx == 6) {
-			white_rooks &= ~(1L << 7);
-			white_rooks |= 1L << 5;
+			this.white_rooks ^= h1Bitboard;
+			this.white_rooks ^= f1Bitboard;
 		}
 	}
 
-	private void moveBlackKing(final int toIdx, final long toBitboard, final int fromIdx, final long removeFromBoard) {
+	private void moveBlackKing(final long toBitboard, final long fromBitboard, final int fromIdx, final int toIdx) {
 		black_king_or_rook_queen_side_moved = true;
 		black_king_or_rook_king_side_moved = true;
-		black_kings &= removeFromBoard;
-		black_kings |= toBitboard;
+		black_kings ^= fromBitboard;
+		black_kings ^= toBitboard;
 		if(fromIdx == 60 && toIdx == 58) {
-			black_rooks &= ~(1L << 56);
-			black_rooks |= 1L << 59;
+			this.black_rooks ^= a8Bitboard;
+			this.black_rooks ^= d8Bitboard;
 		} else if(fromIdx == 60 && toIdx == 62) {
-			black_rooks &= ~(1L << 63);
-			black_rooks |= 1L << 61;
+			this.black_rooks ^= h8Bitboard;
+			this.black_rooks ^= f8Bitboard;
 		}
 	}
 
