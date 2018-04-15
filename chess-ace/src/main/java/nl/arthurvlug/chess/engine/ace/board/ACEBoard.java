@@ -27,6 +27,7 @@ import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUti
 public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 	public byte toMove;
 
+//	public long[][] pieces = new long[PieceType.values().length][2];
 	public long black_kings;
 	public long white_kings;
 	public long black_queens;

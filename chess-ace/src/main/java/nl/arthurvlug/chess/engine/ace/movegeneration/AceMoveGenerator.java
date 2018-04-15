@@ -11,30 +11,17 @@ import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
-import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.*;
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KING;
 
 public class AceMoveGenerator {
 	private static final int CASTLE_QUEEN_SIZE = 0;
 	private static final int CASTLE_KING_SIZE = 1;
 
-	public static boolean opponentIsInCheck(final ACEBoard engineBoard, final List<UnapplyableMove> generatedMoves) {
-		for(UnapplyableMove move : generatedMoves) {
-			final ColoredPiece takePiece = engineBoard.pieceAt(move.getTo());
-			if(takePiece != null && takePiece.getPieceType() == KING) {
-				return true;
-			}
-		}
-		return false;
-	}
 	/**
 	 * Generates both valid moves and invalid moves
-	 * @param engineBoard
-	 * @return
 	 */
 	public static List<UnapplyableMove> generateMoves(ACEBoard engineBoard) {
 		Preconditions.checkArgument(engineBoard.occupied_board != 0L);
@@ -124,8 +111,7 @@ public class AceMoveGenerator {
 		deg315_moves = (deg315_moves>>7) | (deg315_moves>>14) | (deg315_moves>>21) | (deg315_moves>>28) | (deg315_moves>>35) | (deg315_moves>>42);
 		deg315_moves = deg315_moves & deg315_board[sq];
 		deg315_moves = (deg315_moves ^ deg315_board[sq]) & engineBoard.enemy_and_empty_board;
-		long bishop_moves = deg45_moves | deg225_moves | deg135_moves | deg315_moves;
-		return bishop_moves;
+		return deg45_moves | deg225_moves | deg135_moves | deg315_moves;
 	}
 
 	private static List<UnapplyableMove> rookMoves(ACEBoard engineBoard) {
@@ -159,8 +145,7 @@ public class AceMoveGenerator {
 		down_moves = (down_moves>>8) | (down_moves>>16) | (down_moves>>24) | (down_moves>>32) | (down_moves>>40) | (down_moves>>48);
 		down_moves = down_moves & Xray.down_board[sq];
 		down_moves = (down_moves ^ Xray.down_board[sq]) & engineBoard.enemy_and_empty_board;
-		long rook_moves = right_moves | left_moves | up_moves | down_moves;
-		return rook_moves;
+		return right_moves | left_moves | up_moves | down_moves;
 	}
 
 	private static List<UnapplyableMove> knightMoves(ACEBoard engineBoard) {
@@ -235,7 +220,6 @@ public class AceMoveGenerator {
 		while(bitboard != 0) {
 			int onePos = Long.numberOfTrailingZeros(bitboard);
 			Coordinates toCoordinate = FieldUtils.coordinates(onePos);
-			final ColoredPiece piece = engineBoard.pieceAt(onePos);
 			UnapplyableMove move = UnapplyableMoveUtils.toMove(fromCoordinate, toCoordinate, Optional.empty(), engineBoard);
 			moves.add(move);
 
