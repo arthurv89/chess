@@ -43,7 +43,7 @@ public class MoveUtils {
 		return new Move(from, to, promotionPiece);
 	}
 	
-	private static Coordinates toField(String substring) {
+	public static Coordinates toField(String substring) {
 		int x = substring.charAt(0) - 'a';
 		int y = substring.charAt(1) - '1';
 		return new Coordinates(x, y);

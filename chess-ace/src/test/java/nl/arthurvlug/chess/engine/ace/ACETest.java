@@ -1,18 +1,15 @@
 package nl.arthurvlug.chess.engine.ace;
 
-import static org.junit.Assert.assertTrue;
-
+import com.google.common.base.Splitter;
 import java.util.List;
 import java.util.function.Function;
-
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.utils.game.Move;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.google.common.base.Splitter;
+import static org.junit.Assert.assertTrue;
 
 public class ACETest {
 	

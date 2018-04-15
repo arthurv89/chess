@@ -1,20 +1,17 @@
 package nl.arthurvlug.chess;
 
+import com.google.common.base.Function;
 import java.util.List;
-
-import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
-import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
-
+import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import org.apache.crunch.CombineFn;
 import org.apache.crunch.DoFn;
 import org.apache.crunch.Emitter;
 import org.apache.crunch.MapFn;
 import org.apache.crunch.Pair;
-
-import com.google.common.base.Function;
 
 public class Functions {
 	private static final AceEvaluator evaluator = new AceEvaluator();
@@ -23,7 +20,7 @@ public class Functions {
 		private static final long serialVersionUID = 1L;
 		public void process(final Position position, final Emitter<Position> emitter) {
 			final ACEBoard board = createBoard(position);
-			for(Move newMove : AceMoveGenerator.generateMoves(board)) {
+			for(UnapplyableMove newMove : AceMoveGenerator.generateMoves(board)) {
 				Position childPosition = new Position(newMove.toString(), position);
 				emitter.emit(childPosition);
 			}

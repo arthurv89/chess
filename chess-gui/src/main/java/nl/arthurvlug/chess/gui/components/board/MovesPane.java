@@ -1,17 +1,14 @@
 package nl.arthurvlug.chess.gui.components.board;
 
+import com.google.common.eventbus.Subscribe;
 import java.awt.Graphics;
-
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-
 import nl.arthurvlug.chess.gui.events.EventHandler;
 import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.game.Game;
 import nl.arthurvlug.chess.utils.game.Move;
-
-import com.google.common.eventbus.Subscribe;
 
 @SuppressWarnings("serial")
 @EventHandler

@@ -1,21 +1,18 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
+import com.google.common.collect.ImmutableList;
+import java.util.Optional;
+import nl.arthurvlug.chess.engine.ColorUtils;
+import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
+import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
+import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
+import org.junit.Test;
+
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromBoard;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Optional;
-import nl.arthurvlug.chess.engine.ColorUtils;
-import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
-import nl.arthurvlug.chess.utils.MoveUtils;
-import nl.arthurvlug.chess.utils.board.FieldUtils;
-import nl.arthurvlug.chess.utils.game.Move;
-
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class ACEBoardTest {
 	private static final ACEBoard startPositionBoard = ACEBoardUtils.initializedBoard(WHITE, "" +
@@ -34,55 +31,23 @@ public class ACEBoardTest {
 	}
 
 	@Test
-	public void testPlayingMoves() {
-		playMoves(startPositionBoard);
-	}
-
-	@Test
 	public void testAfterPlayingMoves() {
-		final ACEBoard copyBoard = playMoves(startPositionBoard);
-		final ACEBoard blackToMove = copyBoard.clone(ColorUtils.otherToMove(copyBoard.toMove), false);
+		final ACEBoard copyBoard = startPositionBoard.cloneBoard();
+		copyBoard.apply(ImmutableList.of(
+				"a1a2",
+				"a8a7",
+				"b1b2",
+				"b8b7",
+				"c1c2",
+				"c8c7",
+				"d1d2",
+				"d8d7",
+				"e1e2",
+				"e8e7",
+				"f1f2",
+				"f8f7"));
+		final ACEBoard blackToMove = copyBoard.cloneBoard(ColorUtils.otherToMove(copyBoard.toMove), false);
 		verifyCopyBoard(blackToMove);
-	}
-
-	private ACEBoard playMoves(final ACEBoard startPositionBoard) {
-		ACEBoard copyBoard = startPositionBoard;
-		copyBoard = apply("a1", "a2", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("a8", "a7", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("b1", "b2", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("b8", "b7", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("c1", "c2", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("c8", "c7", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("d1", "d2", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("d8", "d7", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("e1", "e2", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("e8", "e7", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("f1", "f2", copyBoard);
-		assertFalse(copyBoard.lastMoveWasTakeMove);
-
-		copyBoard = apply("f8", "f7", copyBoard);
-		assertTrue(copyBoard.lastMoveWasTakeMove);
-		return copyBoard;
 	}
 
 	private void verifyStartPositionBoard(final ACEBoard startPositionBoard) {
@@ -175,28 +140,41 @@ public class ACEBoardTest {
 				"........\n" +
 				"........\n" +
 				"........\n"));
-
-		assertTrue(copyBoard.lastMoveWasTakeMove);
 	}
 
 	@Test
-	public void testAceBoard() {
-		final ACEBoard oldBoard = InitialACEBoard.createInitialACEBoard();
-		oldBoard.finalizeBitboards();
+	public void testUnapplyPawnMove() {
+		final ACEBoard oldBoard = ACEBoardUtils.initializedBoard(WHITE, "" +
+				"♟♞♝♜♛♚..\n" +
+				".....♙..\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"♙♘♗♖♕♔..\n");
 
-		final ACEBoard newBoard = oldBoard.clone();
-		Move move = MoveUtils.toMove("e2e4");
+
+		UnapplyableMove move = UnapplyableMoveUtils.toMove("f7e8", oldBoard);
+
+		final ACEBoard newBoard = startPositionBoard.cloneBoard();
 		newBoard.apply(move);
 		newBoard.unapply(move);
 		assertEquals(ACEBoardUtils.dump(oldBoard), ACEBoardUtils.dump(newBoard));
 	}
 
+	@Test
+	public void testUnapplyTakeMove() throws Exception {
+		verifyStartPositionBoard(startPositionBoard);
+	}
+
 	private ACEBoard apply(String from, String to, ACEBoard board) {
-		Move move = new Move(
+		UnapplyableMove move = new UnapplyableMove(
 				FieldUtils.coordinates(from),
 				FieldUtils.coordinates(to),
-				Optional.empty());
-		ACEBoard copiedBoard = board.clone();
+				Optional.empty(),
+				board.pieceAt(to));
+		ACEBoard copiedBoard = board.cloneBoard();
 		copiedBoard.finalizeBitboards();
 		copiedBoard.apply(move);
 		return copiedBoard;

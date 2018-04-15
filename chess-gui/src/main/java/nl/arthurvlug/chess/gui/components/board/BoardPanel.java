@@ -9,16 +9,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.IOException;
-
 import java.util.Optional;
-
 import javax.swing.JPanel;
 import nl.arthurvlug.chess.gui.board.AbstractChessFont;
 import nl.arthurvlug.chess.gui.game.Game;
 import nl.arthurvlug.chess.gui.game.player.HumanPlayer;
 import nl.arthurvlug.chess.utils.board.Board;
 import nl.arthurvlug.chess.utils.board.Coordinates;
-
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.game.Move;
 import rx.Subscriber;

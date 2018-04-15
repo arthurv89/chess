@@ -1,7 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.evaluation;
 
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.engine.customEngine.NormalScore;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +25,7 @@ public class SimplePieceEvaluatorTest {
 		board.addPiece(BLACK, KING, idx("a8"));
 		board.finalizeBitboards();
 		
-		int score = evaluator.evaluate(board.clone());
+		int score = evaluator.evaluate(board.cloneBoard());
 		assertEquals(0, score);
 	}
 	

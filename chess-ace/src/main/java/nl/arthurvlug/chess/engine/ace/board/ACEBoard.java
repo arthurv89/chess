@@ -4,30 +4,29 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import nl.arthurvlug.chess.engine.ColorUtils;
+import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
+import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
-import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.board.pieces.PieceUtils;
-import nl.arthurvlug.chess.utils.game.Move;
 import org.slf4j.LoggerFactory;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.isWhite;
 import static nl.arthurvlug.chess.engine.EngineConstants.WHITE;
 
-public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
-	public int toMove;
+public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
+	public byte toMove;
 
 	public long black_kings;
 	public long white_kings;
@@ -55,11 +54,6 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	public boolean black_king_or_rook_queen_side_moved;
 	public boolean black_king_or_rook_king_side_moved;
 
-	// TODO: Remove
-	private Move lastMove;
-	// TODO: remove
-	boolean lastMoveWasTakeMove;
-
 	// TODO: Implement
 	private int fiftyMove = 0;
 
@@ -79,59 +73,6 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		}
 	}
 
-	// Used for testing and creating an initial position
-	public static ACEBoard emptyBoard(int toMove, final boolean castlingEnabled) {
-		final ACEBoard board = new ACEBoard();
-		board.toMove = toMove;
-		if(!castlingEnabled) {
-			board.white_king_or_rook_queen_side_moved = true;
-			board.white_king_or_rook_king_side_moved = true;
-			board.black_king_or_rook_queen_side_moved = true;
-			board.black_king_or_rook_king_side_moved = true;
-		}
-		return board;
-	}
-
-	public ACEBoard clone(final int toMove, final boolean castlingEnabled) {
-		final ACEBoard board = clone();
-		board.toMove = toMove;
-		if(!castlingEnabled) {
-			board.white_king_or_rook_queen_side_moved = true;
-			board.white_king_or_rook_king_side_moved = true;
-			board.black_king_or_rook_queen_side_moved = true;
-			board.black_king_or_rook_king_side_moved = true;
-		}
-		board.finalizeBitboards();
-		return board;
-	}
-
-	public ACEBoard clone() {
-		final ACEBoard clonedBoard = new ACEBoard();
-		clonedBoard.black_kings = this.black_kings;
-		clonedBoard.white_kings = this.white_kings;
-		clonedBoard.black_queens = this.black_queens;
-		clonedBoard.white_queens = this.white_queens;
-		clonedBoard.white_rooks = this.white_rooks;
-		clonedBoard.black_rooks = this.black_rooks;
-		clonedBoard.white_bishops = this.white_bishops;
-		clonedBoard.black_bishops = this.black_bishops;
-		clonedBoard.white_knights = this.white_knights;
-		clonedBoard.black_knights = this.black_knights;
-		clonedBoard.white_pawns = this.white_pawns;
-		clonedBoard.black_pawns = this.black_pawns;
-
-		clonedBoard.white_king_or_rook_queen_side_moved = this.white_king_or_rook_queen_side_moved;
-		clonedBoard.white_king_or_rook_king_side_moved = this.white_king_or_rook_king_side_moved;
-		clonedBoard.black_king_or_rook_queen_side_moved = this.black_king_or_rook_queen_side_moved;
-		clonedBoard.black_king_or_rook_king_side_moved = this.black_king_or_rook_king_side_moved;
-
-		clonedBoard.toMove = this.toMove;
-		clonedBoard.lastMove = this.lastMove;
-		clonedBoard.lastMoveWasTakeMove = this.lastMoveWasTakeMove;
-		clonedBoard.zobristHash = 0;
-		return clonedBoard;
-	}
-
 
 	protected ACEBoard() { }
 
@@ -142,7 +83,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		
 		Color currentToMove = Color.WHITE;
 		for(String sMove : moveList) {
-			Move move = MoveUtils.toMove(sMove);
+			UnapplyableMove move = UnapplyableMoveUtils.toMove(sMove, this);
 			ColoredPiece movingPiece = pieceAt(move.getFrom());
 			if(movingPiece == null) {
 				throw new RuntimeException("Could not determine moving piece");
@@ -187,7 +128,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		return null;
 	}
 
-	public void apply(Move move) {
+	public void apply(UnapplyableMove move) {
 		int toIdx = FieldUtils.fieldIdx(move.getTo());
 		long toBitboard = 1L << toIdx;
 
@@ -260,18 +201,17 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 			default:
 				throw new RuntimeException("Undefined piece");
 		}
-		this.lastMoveWasTakeMove = (toBitboard & occupied_board) != 0;
 		this.toMove = ColorUtils.otherToMove(this.toMove);
-		this.lastMove = move;
 		finalizeBitboards();
 	}
 
 	@Override
-	public void unapply(final Move move) {
+	public void unapply(final UnapplyableMove move) {
 		this.toMove = ColorUtils.otherToMove(this.toMove);
 
 		int toIdx = FieldUtils.fieldIdx(move.getTo());
 		long toBitboard = 1L << toIdx;
+		final PieceType movingPiece = pieceAt(toIdx).getPieceType();
 
 		int fromIdx = FieldUtils.fieldIdx(move.getFrom());
 		long fromBitboard = 1L << fromIdx;
@@ -294,7 +234,6 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		// toBitboard
 		long removeToBoard = ~toBitboard;
 
-		final PieceType movingPiece = pieceAt(toIdx).getPieceType();
 		switch (movingPiece) {
 			case PAWN:
 				if(isWhite(toMove)) {
@@ -341,6 +280,54 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 			default:
 				throw new RuntimeException("Undefined piece");
 		}
+
+		if(move.getTakePiece() != null) {
+			switch (move.getTakePiece().getPieceType()) {
+				case PAWN:
+					if (isWhite(toMove)) {
+						black_pawns |= toBitboard;
+					} else {
+						white_pawns |= toBitboard;
+					}
+					break;
+				case BISHOP:
+					if (isWhite(toMove)) {
+						black_bishops |= toBitboard;
+					} else {
+						white_bishops |= toBitboard;
+					}
+					break;
+				case KNIGHT:
+					if (isWhite(toMove)) {
+						black_knights |= toBitboard;
+					} else {
+						white_knights |= toBitboard;
+					}
+					break;
+				case ROOK:
+					if (isWhite(toMove)) {
+						black_rooks |= toBitboard;
+					} else {
+						white_rooks |= toBitboard;
+					}
+					break;
+				case QUEEN:
+					if (isWhite(toMove)) {
+						black_queens |= toBitboard;
+					} else {
+						white_queens |= toBitboard;
+					}
+					break;
+				case KING:
+					if (isWhite(toMove)) {
+						black_kings |= toBitboard;
+					} else {
+						white_kings |= toBitboard;
+					}
+					break;
+			}
+		}
+
 		finalizeBitboards();
 	}
 
@@ -470,34 +457,14 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	}
 
 	@Override
-	public List<ACEBoard> generateSuccessorBoards(final List<Move> generatedMoves) {
-		return generatedMoves.stream()
-							 .map(move -> createBoardAfterMove(move))
-							 .collect(Collectors.toList());
-	}
-
-	@Override
-	public List<ACEBoard> generateSuccessorTakeBoards() {
-		List<Move> moves = AceMoveGenerator.generateMoves(this);
-
-		List<ACEBoard> successorBoards = new ArrayList<>(30);
-		for (Move move : moves) {
-			int idx = FieldUtils.fieldIdx(move.getTo());
-			if(pieceAt(idx) == null) {
-				continue;
-			}
-
-			final ACEBoard successorBoard = createBoardAfterMove(move);
-			successorBoards.add(successorBoard);
-		}
-		return successorBoards;
-	}
-
-	private ACEBoard createBoardAfterMove(final Move move) {
-		ACEBoard successorBoard = this.clone();
-		successorBoard.finalizeBitboards();
-		successorBoard.apply(move);
-		return successorBoard;
+	public List<UnapplyableMove> generateTakeMoves() {
+		return AceMoveGenerator.generateMoves(this)
+				.stream()
+				.filter(move  -> {
+					int idx = FieldUtils.fieldIdx(move.getTo());
+					return pieceAt(idx) != null;
+				})
+				.collect(Collectors.toList());
 	}
 
 	public String string() {
@@ -579,14 +546,60 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 		}
 	}
 
-	@Override
-	public List<Move> generateMoves() {
-		return AceMoveGenerator.generateMoves(this);
+	// Used for testing and creating an initial position
+	public static ACEBoard emptyBoard(byte toMove, final boolean castlingEnabled) {
+		final ACEBoard board = new ACEBoard();
+		board.toMove = toMove;
+		if(!castlingEnabled) {
+			board.white_king_or_rook_queen_side_moved = true;
+			board.white_king_or_rook_king_side_moved = true;
+			board.black_king_or_rook_queen_side_moved = true;
+			board.black_king_or_rook_king_side_moved = true;
+		}
+		return board;
+	}
+
+	public ACEBoard cloneBoard(final byte toMove, final boolean castlingEnabled) {
+		final ACEBoard board = cloneBoard();
+		board.toMove = toMove;
+		if(!castlingEnabled) {
+			board.white_king_or_rook_queen_side_moved = true;
+			board.white_king_or_rook_king_side_moved = true;
+			board.black_king_or_rook_queen_side_moved = true;
+			board.black_king_or_rook_king_side_moved = true;
+		}
+		board.finalizeBitboards();
+		return board;
+	}
+
+	public ACEBoard cloneBoard() {
+		final ACEBoard clonedBoard = new ACEBoard();
+		clonedBoard.black_kings = this.black_kings;
+		clonedBoard.white_kings = this.white_kings;
+		clonedBoard.black_queens = this.black_queens;
+		clonedBoard.white_queens = this.white_queens;
+		clonedBoard.white_rooks = this.white_rooks;
+		clonedBoard.black_rooks = this.black_rooks;
+		clonedBoard.white_bishops = this.white_bishops;
+		clonedBoard.black_bishops = this.black_bishops;
+		clonedBoard.white_knights = this.white_knights;
+		clonedBoard.black_knights = this.black_knights;
+		clonedBoard.white_pawns = this.white_pawns;
+		clonedBoard.black_pawns = this.black_pawns;
+
+		clonedBoard.white_king_or_rook_queen_side_moved = this.white_king_or_rook_queen_side_moved;
+		clonedBoard.white_king_or_rook_king_side_moved = this.white_king_or_rook_king_side_moved;
+		clonedBoard.black_king_or_rook_queen_side_moved = this.black_king_or_rook_queen_side_moved;
+		clonedBoard.black_king_or_rook_king_side_moved = this.black_king_or_rook_king_side_moved;
+
+		clonedBoard.toMove = this.toMove;
+		clonedBoard.zobristHash = 0;
+		return clonedBoard;
 	}
 
 	@Override
-	public Move getLastMove() {
-		return lastMove;
+	public List<UnapplyableMove> generateMoves() {
+		return AceMoveGenerator.generateMoves(this);
 	}
 
 	@Override

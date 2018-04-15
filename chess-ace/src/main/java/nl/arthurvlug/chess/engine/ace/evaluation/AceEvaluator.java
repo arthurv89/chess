@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
+import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
@@ -17,8 +18,8 @@ public class AceEvaluator implements BoardEvaluator<ACEBoard, Integer> {
 	private int blackBishopCount;
 
 	public Integer evaluate(final ACEBoard aceBoard) {
-		final List<Move> moves = AceMoveGenerator.generateMoves(aceBoard);
-		LinkedHashMultimap<Integer, Move> byFromPositionMap = byFromPosition(moves);
+		final List<UnapplyableMove> moves = AceMoveGenerator.generateMoves(aceBoard);
+		LinkedHashMultimap<Integer, UnapplyableMove> byFromPositionMap = byFromPosition(moves);
 		int score = 0;
 
 		long occupiedBoard = aceBoard.occupied_board;
@@ -34,9 +35,9 @@ public class AceEvaluator implements BoardEvaluator<ACEBoard, Integer> {
 	}
 
 
-	private LinkedHashMultimap<Integer, Move> byFromPosition(final List<Move> moves) {
-		final LinkedHashMultimap<Integer, Move> multiMap = LinkedHashMultimap.create();
-		for (final Move move : moves) {
+	private LinkedHashMultimap<Integer, UnapplyableMove> byFromPosition(final List<UnapplyableMove> moves) {
+		final LinkedHashMultimap<Integer, UnapplyableMove> multiMap = LinkedHashMultimap.create();
+		for (final UnapplyableMove move : moves) {
 			final Coordinates from = move.getFrom();
 			final Integer fromIdx = FieldUtils.fieldIdx(from);
 			multiMap.put(fromIdx, move);
@@ -45,7 +46,7 @@ public class AceEvaluator implements BoardEvaluator<ACEBoard, Integer> {
 	}
 
 
-	private int pieceScore(final int fieldIdx, final ColoredPiece coloredPiece, final Set<Move> moves) {
+	private int pieceScore(final int fieldIdx, final ColoredPiece coloredPiece, final Set<UnapplyableMove> moves) {
 		int totalScore = 0;
 
 		final int pieceValue = ACEConstants.pieceValues[coloredPiece.getPieceType().ordinal()];

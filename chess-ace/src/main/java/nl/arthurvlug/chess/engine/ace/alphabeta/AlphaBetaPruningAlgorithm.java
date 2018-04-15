@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
+import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.HashElement;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
@@ -41,6 +42,8 @@ public class AlphaBetaPruningAlgorithm {
 	private static final TranspositionTable transpositionTable = new TranspositionTable(HASH_TABLE_LENGTH);
 	private boolean quiesceEnabled = true;
 
+	private ACEBoard engineBoard;
+
 	public AlphaBetaPruningAlgorithm(final ChessEngineConfiguration<ACEBoard, Integer> configuration) {
 		this.evaluator = configuration.getEvaluator();
 		this.quiesceMaxDepth = configuration.getQuiesceMaxDepth();
@@ -49,51 +52,57 @@ public class AlphaBetaPruningAlgorithm {
 
 	public Move think(final ACEBoard engineBoard) {
 		Preconditions.checkArgument(depth > 0);
+		this.engineBoard = engineBoard;
 
 		cutoffs = 0;
 		nodesEvaluated = 0;
 		hashHits = 0;
 
-		Optional<Move> priorityMove = Optional.empty();
+		Optional<UnapplyableMove> priorityMove = Optional.empty();
 		for (int depthNow = 1; depthNow <= depth; depthNow++) {
-			final Move bestMove = alphaBetaRoot(engineBoard, depthNow, priorityMove);
+			final UnapplyableMove bestMove = alphaBetaRoot(depthNow, priorityMove);
 			if(bestMove == null) {
 				return null;
 			}
 			priorityMove = Optional.of(bestMove);
 		}
-		return priorityMove.get();
+		UnapplyableMove unapplyableMove = priorityMove.get();
+		return new Move(unapplyableMove.getFrom(),
+				unapplyableMove.getTo(),
+				unapplyableMove.getPromotionPiece());
 	}
 
-	private Move alphaBetaRoot(final ACEBoard engineBoard, final int depth, final Optional<Move> priorityMove) {
-		final List<Move> generatedMoves = engineBoard.generateMoves();
+	private UnapplyableMove alphaBetaRoot(final int depth, final Optional<UnapplyableMove> priorityMove) {
+		final List<UnapplyableMove> generatedMoves = engineBoard.generateMoves();
 		reorder(generatedMoves, priorityMove);
-		final List<ACEBoard> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
 
 		// TODO: Remove
-		Preconditions.checkState(successorBoards.size() > 0);
+		// TODO: Check for stalemate in the unit test
+		Preconditions.checkState(generatedMoves.size() > 0);
 
 		int alpha = OTHER_PLAYER_WINS;
 		int beta = CURRENT_PLAYER_WINS;
-		Move bestMove = null;
-		for(ACEBoard successorBoard : successorBoards) {
+		UnapplyableMove bestMove = null;
+		for(UnapplyableMove move : generatedMoves) {
 			// Do a recursive search
-			final int score = -alphaBeta(successorBoard, -beta, -alpha, depth - 1);
+			engineBoard.apply(move);
+//			int score = 0;
+			final int score = -alphaBeta(-beta, -alpha, depth - 1);
+			engineBoard.unapply(move);
 
-			final Move lastMove = successorBoard.getLastMove();
 			if (score >= beta) {
 				cutoffs++;
-				return lastMove;
+				return move;
 			}
 			if (score > alpha) {
 				alpha = score;
-				bestMove = lastMove;
+				bestMove = move;
 			}
 		}
 		return bestMove;
 	}
 
-	private void reorder(final List<Move> moves, final Optional<Move> priorityMove) {
+	private void reorder(final List<UnapplyableMove> moves, final Optional<UnapplyableMove> priorityMove) {
 		priorityMove.flatMap(prioMove -> {
 			Stream<Integer> range = IntStream.range(0, moves.size()).boxed();
 			return range
@@ -103,14 +112,14 @@ public class AlphaBetaPruningAlgorithm {
 		.ifPresent(pos -> swap(moves, 0, pos));
 	}
 
-	private Stream<Integer> findPrioPosition(final List<Move> generatedMoves, final Move prioMove, final Integer i) {
+	private Stream<Integer> findPrioPosition(final List<UnapplyableMove> generatedMoves, final UnapplyableMove prioMove, final Integer i) {
 		if (generatedMoves.get(i).equals(prioMove)) {
 			return Stream.of(i);
 		}
 		return Stream.empty();
 	}
 
-	private int alphaBeta(final ACEBoard engineBoard, int alpha, final int beta, final int depth) {
+	private int alphaBeta(int alpha, final int beta, final int depth) {
 		if (engineBoard.getFiftyMove() >= 50 || engineBoard.getRepeatedMove() >= 3) {
 			return 0;
 		}
@@ -132,24 +141,25 @@ public class AlphaBetaPruningAlgorithm {
 
 		if (depth == 0) {
 			// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
-			return quiesceSearch(engineBoard, alpha, beta, quiesceMaxDepth);
+			return quiesceSearch(alpha, beta, quiesceMaxDepth);
 		}
 		
-		List<Move> generatedMoves = engineBoard.generateMoves();
+		List<UnapplyableMove> generatedMoves = engineBoard.generateMoves();
 
-		final List<ACEBoard> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
-		Move bestMove = null;
-		for(ACEBoard successorBoard : successorBoards) {
+		UnapplyableMove bestMove = null;
+		for(final UnapplyableMove move : generatedMoves) {
 			// Do a recursive search
-			int score = -alphaBeta(successorBoard, -beta, -alpha, depth-1);
+			engineBoard.apply(move);
+			int score = -alphaBeta(-beta, -alpha, depth-1);
+			engineBoard.unapply(move);
 
+			if (score >= beta) {
+				cutoffs++;
+				transpositionTable.set(depth, score, hashfBETA, move, zobristHash);
+				return beta;
+			}
 			if (score > alpha) {
-				if (score >= beta) {
-					cutoffs++;
-					transpositionTable.set(depth, score, hashfBETA, successorBoard.getLastMove(), successorBoard.getZobristHash());
-					return beta;
-				}
-				bestMove = successorBoard.getLastMove();
+				bestMove = move;
 				alpha = score;
 				hashf = TranspositionTable.hashfEXACT;
 			}
@@ -163,7 +173,7 @@ public class AlphaBetaPruningAlgorithm {
 //		System.out.println(cutoffs + "/" + nodesEvaluated);
 	}
 
-	private int quiesceSearch(final ACEBoard engineBoard, int alpha, final int beta, final int depth) {
+	private int quiesceSearch(int alpha, final int beta, final int depth) {
 		int stand_pat = calculateScore(engineBoard);
 		if(depth == 0 || !quiesceEnabled) {
 			return stand_pat;
@@ -182,9 +192,11 @@ public class AlphaBetaPruningAlgorithm {
 			return OTHER_PLAYER_WINS;
 		}
 
-		final List<ACEBoard> successorBoards = engineBoard.generateSuccessorTakeBoards();
-		for(ACEBoard successorBoard : successorBoards) {
-			final int score = -quiesceSearch(successorBoard, -beta, -alpha, depth-1);
+		final List<UnapplyableMove> takeMoves = engineBoard.generateTakeMoves();
+		for(UnapplyableMove takeMove : takeMoves) {
+			engineBoard.apply(takeMove);
+			final int score = -quiesceSearch(-beta, -alpha, depth-1);
+			engineBoard.unapply(takeMove);
 //			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
 
 			if (score >= beta) {

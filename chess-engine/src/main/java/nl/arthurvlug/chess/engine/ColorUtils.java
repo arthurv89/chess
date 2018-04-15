@@ -1,7 +1,7 @@
 package nl.arthurvlug.chess.engine;
 
 public class ColorUtils {
-	public static int otherToMove(int toMove) {
+	public static byte otherToMove(byte toMove) {
 		return toMove == EngineConstants.WHITE
 				? EngineConstants.BLACK
 				: EngineConstants.WHITE;

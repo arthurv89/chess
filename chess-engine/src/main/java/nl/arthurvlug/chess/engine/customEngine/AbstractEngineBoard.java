@@ -3,26 +3,14 @@ package nl.arthurvlug.chess.engine.customEngine;
 import java.util.List;
 import nl.arthurvlug.chess.utils.game.Move;
 
-public abstract class AbstractEngineBoard<T extends AbstractEngineBoard<T>> {
-	public abstract List<Move> generateMoves();
+public abstract class AbstractEngineBoard<M extends EngineMove> {
+	public abstract List<M> generateTakeMoves();
 
-	public abstract Move getLastMove();
+	public abstract List<M> generateMoves();
 
 	public abstract int getRepeatedMove();
 
 	public abstract int getFiftyMove();
-
-	/**
-	 * @deprecated Use createMoves instead (in combination with apply/unapply)
-	 */
-	@Deprecated
-	public abstract List<T> generateSuccessorBoards(final List<Move> generatedMoves);
-
-	/**
-	 * @deprecated Use createMoves instead (in combination with apply/unapply)
-	 */
-	@Deprecated
-	public abstract List<T> generateSuccessorTakeBoards();
 
 	public abstract int getToMove();
 
@@ -30,5 +18,5 @@ public abstract class AbstractEngineBoard<T extends AbstractEngineBoard<T>> {
 
 	public abstract int getZobristHash();
 
-	public abstract void unapply(final Move move);
+	public abstract void unapply(final M move);
 }

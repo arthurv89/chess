@@ -19,8 +19,8 @@ public class ACEBoardUtils {
 		return startPositionBoard;
 	}
 
-	public static int toMove(final Color toMoveColor) {
-		return toMoveColor.isWhite() ? 0 : 1;
+	private static byte toMove(final Color toMoveColor) {
+		return (byte) (toMoveColor.isWhite() ? 0 : 1);
 	}
 
 	public static String dump(final ACEBoard aceBoard) {
