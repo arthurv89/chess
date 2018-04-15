@@ -22,8 +22,6 @@ import nl.arthurvlug.chess.utils.board.pieces.PieceUtils;
 import org.slf4j.LoggerFactory;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.*;
-import static nl.arthurvlug.chess.engine.ColorUtils.isWhite;
-import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 
 public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
@@ -161,7 +159,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		xorTakePiece(move, toBitboard);
 
 		this.toMove = opponent(this.toMove);
-		finalizeBitboardsAfterApply();
+		finalizeBitboardsAfterApply(fromIdx, toIdx, movingPiece, move.getTakePiece());
 	}
 
 	@Override
@@ -180,7 +178,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 
 		xorTakePiece(move, toBitboard);
 
-		finalizeBitboardsAfterApply();
+		finalizeBitboardsAfterApply(fromIdx, toIdx, movingPiece, move.getTakePiece());
 	}
 
 	private void xorMove(final long toBitboard, final long fromBitboard, final PieceType movingPiece) {
@@ -344,34 +342,42 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		unoccupied_board = ~occupied_board;
 		enemy_and_empty_board = occupiedSquares[opponent(toMove)] | unoccupied_board;
 
-		zobristHash = computeZobristHash();
+		computeZobristHash();
 	}
 
-	private void finalizeBitboardsAfterApply() {
+	private void finalizeBitboardsAfterApply(final int fromIdx, final int toIdx,
+											 final PieceType movingPiece, final ColoredPiece takenPiece) {
 		occupied_board = occupiedSquares[WHITE] | occupiedSquares[BLACK];
 		unoccupied_board = ~occupied_board;
-		enemy_and_empty_board = occupiedSquares[opponent(toMove)] | unoccupied_board;
+		byte opponent = opponent(toMove);
+		enemy_and_empty_board = occupiedSquares[opponent] | unoccupied_board;
 
-		// TODO: Do this differently
-		zobristHash = computeZobristHash();
+		// TODO: Test this hashing
+		zobristHash ^= bitsToSwap(fromIdx, movingPiece, opponent);
+		zobristHash ^= bitsToSwap(toIdx, movingPiece, opponent);
+		if(takenPiece != null) {
+			zobristHash ^= bitsToSwap(toIdx, takenPiece.getPieceType(), toMove);
+		}
 	}
 
 	// Only to be calculated once. After that, it should recalculate the hash using incremental updates
-	private int computeZobristHash() {
-		int zobristHash = 1659068882;
+	private void computeZobristHash() {
+		zobristHash = 1659068882;
 		for (int fieldIdx = 0; fieldIdx<64; fieldIdx++) {
-			final ColoredPiece coloredPiece = pieceAt(fieldIdx);
-			if (coloredPiece != null) {
-				zobristHash ^= zobristPieceHash(fieldIdx, coloredPiece);
+			ColoredPiece coloredPiece = pieceAt(fieldIdx);
+			if(coloredPiece != null) {
+				zobristHash ^= bitsToSwap(fieldIdx, coloredPiece.getPieceType(), coloredPiece.getColor().ordinal());
 			}
 		}
-		return zobristHash;
 	}
 
-	private int zobristPieceHash(final int fieldIdx, final ColoredPiece coloredPiece) {
-		int piece = coloredPiece.getPieceType().ordinal();
-		int color = coloredPiece.getColor().ordinal();
-		return zobristRandomTable[fieldIdx][piece][color];
+	private long bitsToSwap(final int fieldIdx, final PieceType pieceType, final int pieceColor) {
+		return zobristPieceHash(fieldIdx, pieceType, pieceColor);
+	}
+
+	private int zobristPieceHash(final int fieldIdx, final PieceType pieceType, final int pieceColor) {
+		int pieceTypeInt = pieceType.ordinal();
+		return zobristRandomTable[fieldIdx][pieceTypeInt][pieceColor];
 	}
 
 	@Override
