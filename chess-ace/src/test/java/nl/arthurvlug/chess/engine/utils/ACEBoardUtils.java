@@ -35,7 +35,11 @@ public class ACEBoardUtils {
 			final String fieldName = f.getName();
 			final Field field = aceBoardClass.getDeclaredField(fieldName);
 			field.setAccessible(true);
-			String value = field.get(aceBoard).toString();
+			final Object o = field.get(aceBoard);
+			String value = o.toString();
+			if(o.getClass().isArray()) {
+				value = Arrays.toString((long[]) o);
+			}
 			return String.format("%s=%s", fieldName, value);
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			throw new RuntimeException(e);

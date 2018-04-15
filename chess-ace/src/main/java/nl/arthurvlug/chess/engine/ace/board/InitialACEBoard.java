@@ -1,7 +1,7 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
-import static nl.arthurvlug.chess.engine.EngineConstants.BLACK;
-import static nl.arthurvlug.chess.engine.EngineConstants.WHITE;
+import static nl.arthurvlug.chess.engine.ColorUtils.BLACK;
+import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
 

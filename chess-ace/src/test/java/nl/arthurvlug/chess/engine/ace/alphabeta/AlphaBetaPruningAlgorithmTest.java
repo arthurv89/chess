@@ -9,8 +9,8 @@ import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
 import org.junit.Test;
 
-import static nl.arthurvlug.chess.engine.EngineConstants.BLACK;
-import static nl.arthurvlug.chess.engine.EngineConstants.WHITE;
+import static nl.arthurvlug.chess.engine.ColorUtils.BLACK;
+import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;

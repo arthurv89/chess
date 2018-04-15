@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import nl.arthurvlug.chess.engine.EngineConstants;
+import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
@@ -216,7 +216,7 @@ public class AlphaBetaPruningAlgorithm {
 		nodesEvaluated++;
 		Integer score = evaluator.evaluate(board);
 
-		if (board.getToMove() == EngineConstants.BLACK) {
+		if (board.getToMove() == ColorUtils.BLACK) {
 			return -score;
 		}
 		return score;

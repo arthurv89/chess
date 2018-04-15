@@ -7,13 +7,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import nl.arthurvlug.chess.engine.ColorUtils;
-import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
+import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
+import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.*;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.KING;
 
@@ -52,9 +53,10 @@ public class AceMoveGenerator {
 	}
 
 	private static List<UnapplyableMove> pawnMoves(ACEBoard engineBoard) {
-		long[] pawnXrayOneFieldMove = engineBoard.toMove == EngineConstants.WHITE ? pawn_xray_white_one_field_move : pawn_xray_black_one_field_move;
-		long[] pawnXrayTwoFieldMove = engineBoard.toMove == EngineConstants.WHITE ? pawn_xray_white_two_field_move : pawn_xray_black_two_field_move;;
-		long[] pawnXrayTakeFieldMove = engineBoard.toMove == EngineConstants.WHITE ? pawn_xray_white_take_field_move : pawn_xray_black_take_field_move;;
+		// TODO: Convert to arrays
+		long[] pawnXrayOneFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_one_field_move : pawn_xray_black_one_field_move;
+		long[] pawnXrayTwoFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_two_field_move : pawn_xray_black_two_field_move;;
+		long[] pawnXrayTakeFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_take_field_move : pawn_xray_black_take_field_move;;
 
 		List<UnapplyableMove> moves = new ArrayList<>();
 		long pawns = pawns(engineBoard);
@@ -69,7 +71,7 @@ public class AceMoveGenerator {
 				long twoFieldMove = pawnXrayTwoFieldMove[sq] & engineBoard.unoccupied_board;
 				moves.addAll(moves(sq, twoFieldMove, engineBoard));
 			}
-			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.enemy_board;
+			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.occupiedSquares[opponent(engineBoard.toMove)];
 			moves.addAll(moves(sq, twoFieldsMove, engineBoard));
 		}
 		return moves;
@@ -243,37 +245,37 @@ public class AceMoveGenerator {
 	}
 
 	private static long pawns(ACEBoard engineBoard) {
-		return engineBoard.toMove == EngineConstants.WHITE
+		return engineBoard.toMove == WHITE
 				? engineBoard.white_pawns
 				: engineBoard.black_pawns;
 	}
 
 	private static long queens(ACEBoard engineBoard) {
-		return engineBoard.toMove == EngineConstants.WHITE
+		return engineBoard.toMove == WHITE
 				? engineBoard.white_queens
 				: engineBoard.black_queens;
 	}
 
 	private static long bishops(ACEBoard engineBoard) {
-		return engineBoard.toMove == EngineConstants.WHITE
+		return engineBoard.toMove == WHITE
 				? engineBoard.white_bishops
 				: engineBoard.black_bishops;
 	}
 
 	private static long rooks(ACEBoard engineBoard) {
-		return engineBoard.toMove == EngineConstants.WHITE
+		return engineBoard.toMove == WHITE
 				? engineBoard.white_rooks
 				: engineBoard.black_rooks;
 	}
 
 	private static long kings(ACEBoard engineBoard) {
-		return engineBoard.toMove == EngineConstants.WHITE
+		return engineBoard.toMove == WHITE
 				? engineBoard.white_kings
 				: engineBoard.black_kings;
 	}
 
 	private static long knights(ACEBoard engineBoard) {
-		return engineBoard.toMove == EngineConstants.WHITE
+		return engineBoard.toMove == WHITE
 				? engineBoard.white_knights
 				: engineBoard.black_knights;
 	}

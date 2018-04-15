@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
-import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
@@ -22,8 +21,9 @@ import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.board.pieces.PieceUtils;
 import org.slf4j.LoggerFactory;
 
+import static nl.arthurvlug.chess.engine.ColorUtils.*;
 import static nl.arthurvlug.chess.engine.ColorUtils.isWhite;
-import static nl.arthurvlug.chess.engine.EngineConstants.WHITE;
+import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 
 public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
@@ -42,9 +42,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 	public long white_pawns;
 	public long black_pawns;
 
-	long whiteOccupiedSquares;
-	long blackOccupiedSquares;
-	public long enemy_board;
+	public long[] occupiedSquares = new long[2];
 	public long unoccupied_board;
 	public long occupied_board;
 	public long enemy_and_empty_board;
@@ -162,13 +160,13 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		xorMove(toBitboard, fromBitboard, movingPiece);
 		xorTakePiece(move, toBitboard);
 
-		this.toMove = ColorUtils.otherToMove(this.toMove);
+		this.toMove = opponent(this.toMove);
 		finalizeBitboardsAfterApply();
 	}
 
 	@Override
 	public void unapply(final UnapplyableMove move) {
-		this.toMove = ColorUtils.otherToMove(this.toMove);
+		this.toMove = opponent(this.toMove);
 
 		int toIdx = FieldUtils.fieldIdx(move.getTo());
 		long toBitboard = 1L << toIdx;
@@ -209,12 +207,12 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		}
 	}
 
-	private void recalculateBlackOccupiedSquares() {
-		blackOccupiedSquares = black_pawns | black_knights | black_bishops | black_rooks | black_queens | black_kings;
+	private void recalculateWhiteOccupiedSquares() {
+		occupiedSquares[WHITE] = white_pawns | white_knights | white_bishops | white_rooks | white_queens | white_kings;
 	}
 
-	private void recalculateWhiteOccupiedSquares() {
-		whiteOccupiedSquares = white_pawns | white_knights | white_bishops | white_rooks | white_queens | white_kings;
+	private void recalculateBlackOccupiedSquares() {
+		occupiedSquares[BLACK] = black_pawns | black_knights | black_bishops | black_rooks | black_queens | black_kings;
 	}
 
 	private void xorTakePiece(final UnapplyableMove move, final long toBitboard) {
@@ -339,28 +337,20 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 	}
 
 	public void finalizeBitboards() {
-		whiteOccupiedSquares = white_pawns | white_knights | white_bishops | white_rooks | white_queens | white_kings;
-		blackOccupiedSquares = black_pawns | black_knights | black_bishops | black_rooks | black_queens | black_kings;
+		occupiedSquares[WHITE] = white_pawns | white_knights | white_bishops | white_rooks | white_queens | white_kings;
+		occupiedSquares[BLACK] = black_pawns | black_knights | black_bishops | black_rooks | black_queens | black_kings;
 
-		enemy_board = isWhite(toMove)
-				? blackOccupiedSquares
-				: whiteOccupiedSquares;
-		occupied_board = whiteOccupiedSquares | blackOccupiedSquares;
+		occupied_board = occupiedSquares[WHITE] | occupiedSquares[BLACK];
 		unoccupied_board = ~occupied_board;
-		enemy_and_empty_board = enemy_board | unoccupied_board;
+		enemy_and_empty_board = occupiedSquares[opponent(toMove)] | unoccupied_board;
 
 		zobristHash = computeZobristHash();
 	}
 
 	private void finalizeBitboardsAfterApply() {
-		// TODO: Put in array
-		enemy_board = isWhite(toMove)
-				? blackOccupiedSquares
-				: whiteOccupiedSquares;
-
-		occupied_board = whiteOccupiedSquares | blackOccupiedSquares;
+		occupied_board = occupiedSquares[WHITE] | occupiedSquares[BLACK];
 		unoccupied_board = ~occupied_board;
-		enemy_and_empty_board = enemy_board | unoccupied_board;
+		enemy_and_empty_board = occupiedSquares[opponent(toMove)] | unoccupied_board;
 
 		// TODO: Do this differently
 		zobristHash = computeZobristHash();
@@ -398,7 +388,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 	public String string() {
 		Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
 		Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
-		Preconditions.checkArgument((whiteOccupiedSquares & blackOccupiedSquares) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toBitboardString((whiteOccupiedSquares & blackOccupiedSquares)));
+		Preconditions.checkArgument((occupiedSquares[WHITE] & occupiedSquares[BLACK]) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toBitboardString((occupiedSquares[WHITE] & occupiedSquares[BLACK])));
 		
 		StringBuilder sb = new StringBuilder();
 		for (int fieldIdx = 0; fieldIdx < 64; fieldIdx++) {

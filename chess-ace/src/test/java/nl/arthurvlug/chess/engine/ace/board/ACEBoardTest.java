@@ -25,7 +25,7 @@ public class ACEBoardTest {
 
 	@Test
 	public void testStartingPosition() throws Exception {
-		verifyStartPositionBoard(startPositionBoard);
+		verifyBitboards(startPositionBoard);
 	}
 
 	@Test
@@ -44,11 +44,11 @@ public class ACEBoardTest {
 				"e8e7",
 				"f1f2",
 				"f8f7"));
-		final ACEBoard blackToMove = copyBoard.cloneBoard(ColorUtils.otherToMove(copyBoard.toMove), false);
+		final ACEBoard blackToMove = copyBoard.cloneBoard(ColorUtils.opponent(copyBoard.toMove), false);
 		verifyCopyBoard(blackToMove);
 	}
 
-	private void verifyStartPositionBoard(final ACEBoard startPositionBoard) {
+	private void verifyBitboards(final ACEBoard startPositionBoard) {
 		assertEquals(startPositionBoard.white_pawns, bitboardFromFieldName("a1 f7"));
 		assertEquals(startPositionBoard.white_knights, bitboardFromFieldName("b1"));
 		assertEquals(startPositionBoard.white_bishops, bitboardFromFieldName("c1"));
@@ -73,7 +73,7 @@ public class ACEBoardTest {
 				"♟♟♟♟♟♟♟♟\n" +
 				"......♟♟\n"));
 
-		assertEquals(startPositionBoard.whiteOccupiedSquares, bitboardFromBoard(
+		assertEquals(startPositionBoard.occupiedSquares[ColorUtils.WHITE], bitboardFromBoard(
 				"........\n" +
 				".....♟..\n" +
 				"........\n" +
@@ -83,7 +83,7 @@ public class ACEBoardTest {
 				"........\n" +
 				"♟♟♟♟♟♟..\n"));
 
-		assertEquals(startPositionBoard.blackOccupiedSquares, bitboardFromBoard(
+		assertEquals(startPositionBoard.occupiedSquares[ColorUtils.BLACK], bitboardFromBoard(
 				"♟♟♟♟♟♟..\n" +
 				"........\n" +
 				"........\n" +
@@ -119,7 +119,7 @@ public class ACEBoardTest {
 				"♟♟♟♟♟♟♟♟\n" +
 				"♟♟♟♟♟♟♟♟\n"));
 
-		assertEquals(copyBoard.whiteOccupiedSquares, bitboardFromBoard(
+		assertEquals(copyBoard.occupiedSquares[ColorUtils.WHITE], bitboardFromBoard(
 				"........\n" +
 				"........\n" +
 				"........\n" +
@@ -129,7 +129,7 @@ public class ACEBoardTest {
 				"♟♟♟♟♟♟..\n" +
 				"........\n"));
 
-		assertEquals(copyBoard.blackOccupiedSquares, bitboardFromBoard(
+		assertEquals(copyBoard.occupiedSquares[ColorUtils.BLACK], bitboardFromBoard(
 				"........\n" +
 				"♟♟♟♟♟♟..\n" +
 				"........\n" +
@@ -163,7 +163,7 @@ public class ACEBoardTest {
 
 	@Test
 	public void testUnapplyTakeMove() throws Exception {
-		verifyStartPositionBoard(startPositionBoard);
+		verifyBitboards(startPositionBoard);
 	}
 
 }
