@@ -18,7 +18,7 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 	private static void performanceTest(int depth) {
 		log.debug("");
 		log.debug("Starting performance test for depth {}", depth);
-		final InitialACEBoard board = new InitialACEBoard();
+		final InitialACEBoard board = InitialACEBoard.createInitialACEBoard();
 		board.finalizeBitboards();
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
 		

@@ -52,27 +52,17 @@ public class AceMoveGenerator {
 	public static List<Move> generateMoves(ACEBoard engineBoard) {
 		Preconditions.checkArgument(engineBoard.occupied_board != 0L);
 		Preconditions.checkArgument(engineBoard.enemy_and_empty_board != 0L);
-		
-		ImmutableList<Move> validAndInvalidMoves = ImmutableList.<Move> builder()
-			.addAll(knightMoves(engineBoard))
-			.addAll(pawnMoves(engineBoard))
-			.addAll(rookMoves(engineBoard))
-			.addAll(bishopMoves(engineBoard))
-			.addAll(queenMoves(engineBoard))
-			.addAll(kingMoves(engineBoard))
-			.addAll(castlingMoves(engineBoard))
-			// TODO: Implement castling, en passent
-			.build();
-		
-		List<Move> validMoves = new ArrayList<>();
-		for (Move validOrInvalidMove : validAndInvalidMoves) {
-			ACEBoard successorBoard = new ACEBoard(engineBoard);
-			successorBoard.finalizeBitboards();
-			successorBoard.apply(validOrInvalidMove);
 
-			validMoves.add(validOrInvalidMove);
-		}
-		return validMoves;
+		final List<Move> list = new ArrayList<>();
+		list.addAll(knightMoves(engineBoard));
+		list.addAll(pawnMoves(engineBoard));
+		list.addAll(rookMoves(engineBoard));
+		list.addAll(bishopMoves(engineBoard));
+		list.addAll(queenMoves(engineBoard));
+		list.addAll(kingMoves(engineBoard));
+		list.addAll(castlingMoves(engineBoard));
+		// TODO: Implement en passent, promotions
+		return list;
 	}
 
 	private static List<Move> pawnMoves(ACEBoard engineBoard) {

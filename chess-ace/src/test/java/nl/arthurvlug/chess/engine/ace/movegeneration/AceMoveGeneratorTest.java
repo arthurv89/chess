@@ -22,19 +22,19 @@ import org.junit.Test;
 public class AceMoveGeneratorTest {
 	@Test
 	public void testKingMoves() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.WHITE, false);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("a1"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("b7"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, fieldIdx("a7"));
 		engineBoard.finalizeBitboards();
 
-		List<Move> whiteMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE, false));
+		List<Move> whiteMoves = generateMoves(engineBoard.clone(EngineConstants.WHITE, false));
 		assertEquals(3, whiteMoves.size());
 		assertTrue(whiteMoves.contains(move("a1b1")));
 		assertTrue(whiteMoves.contains(move("a1a2")));
 		assertTrue(whiteMoves.contains(move("a1b2")));
 
-		List<Move> blackMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK, false));
+		List<Move> blackMoves = generateMoves(engineBoard.clone(EngineConstants.BLACK, false));
 		assertEquals(9, blackMoves.size());
 		assertTrue(blackMoves.contains(move("a7a5")));
 		assertTrue(blackMoves.contains(move("a7a6")));
@@ -49,7 +49,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testCastlingMovesWhite() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.WHITE, true);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("h1"));
@@ -62,7 +62,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testCastlingMovesWhite_rook_kingside_moved() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.WHITE, true);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("h1"));
@@ -77,7 +77,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testCastling_when_white_castled_kingside_then_verify_king_and_rook_position() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.WHITE, true);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("h1"));
@@ -93,7 +93,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testCastling_when_white_castled_queenside_then_verify_king_and_rook_position() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.WHITE, true);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("h1"));
@@ -109,7 +109,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testCastlingMovesBlack() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK, true);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.BLACK, true);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("a8"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
@@ -122,7 +122,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testCastling_when_black_castled_kingside_then_verify_king_and_rook_position() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK, true);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.BLACK, true);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("a8"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
@@ -138,7 +138,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testCastling_when_black_castled_queenside_then_verify_king_and_rook_position() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK, true);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.BLACK, true);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("a8"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
@@ -154,7 +154,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testRookMoves() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.WHITE, false);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("h8"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("a4"));
@@ -163,7 +163,7 @@ public class AceMoveGeneratorTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, fieldIdx("f1"));
 		engineBoard.finalizeBitboards();
 
-		List<Move> whiteMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE, false));
+		List<Move> whiteMoves = generateMoves(engineBoard.clone(EngineConstants.WHITE, false));
 		assertEquals(11, whiteMoves.size());
 		assertTrue(whiteMoves.contains(move("a4a5")));
 		assertTrue(whiteMoves.contains(move("a1a2")));
@@ -178,7 +178,7 @@ public class AceMoveGeneratorTest {
 		assertTrue(whiteMoves.contains(move("h8g7")));
 		assertTrue(whiteMoves.contains(move("h8h7")));
 
-		List<Move> blackMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK, false));
+		List<Move> blackMoves = generateMoves(engineBoard.clone(EngineConstants.BLACK, false));
 		assertEquals(19, blackMoves.size());
 		assertTrue(blackMoves.contains(move("b2b1")));
 		assertTrue(blackMoves.contains(move("b2b3")));
@@ -204,7 +204,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testKnightMoves() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.WHITE, false);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("h8"));
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("h6"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, fieldIdx("a1"));
@@ -213,7 +213,7 @@ public class AceMoveGeneratorTest {
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("a4"));
 		engineBoard.finalizeBitboards();
 		
-		List<Move> whiteMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE, false));
+		List<Move> whiteMoves = generateMoves(engineBoard.clone(EngineConstants.WHITE, false));
 		assertEquals(6, whiteMoves.size());
 		assertTrue(whiteMoves.contains(move("a4a5")));
 		assertTrue(whiteMoves.contains(move("a1b3")));
@@ -222,7 +222,7 @@ public class AceMoveGeneratorTest {
 		assertTrue(whiteMoves.contains(move("h8h7")));
 		assertTrue(whiteMoves.contains(move("h8g7")));
 
-		List<Move> blackMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK, false));
+		List<Move> blackMoves = generateMoves(engineBoard.clone(EngineConstants.BLACK, false));
 		assertEquals(9, blackMoves.size());
 		assertTrue(blackMoves.contains(move("c4c3")));
 		assertTrue(blackMoves.contains(move("b2a4")));
@@ -237,7 +237,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testBishopMoves() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.WHITE, false);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.BISHOP, fieldIdx("d1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("c1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("e1"));
@@ -251,7 +251,7 @@ public class AceMoveGeneratorTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("h6"));
 		engineBoard.finalizeBitboards();
 		
-		List<Move> whiteMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE, false));
+		List<Move> whiteMoves = generateMoves(engineBoard.clone(EngineConstants.WHITE, false));
 		assertEquals(9, whiteMoves.size());
 		assertTrue(whiteMoves.contains(move("h8g8")));
 		assertTrue(whiteMoves.contains(move("e2e3")));
@@ -263,7 +263,7 @@ public class AceMoveGeneratorTest {
 		assertTrue(whiteMoves.contains(move("h8h7")));
 		assertTrue(whiteMoves.contains(move("h8g7")));
 
-		List<Move> blackMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK, false));
+		List<Move> blackMoves = generateMoves(engineBoard.clone(EngineConstants.BLACK, false));
 		assertEquals(8, blackMoves.size());
 		assertTrue(blackMoves.contains(move("b7a8")));
 		assertTrue(blackMoves.contains(move("b7c8")));
@@ -277,7 +277,7 @@ public class AceMoveGeneratorTest {
 
 	@Test
 	public void testQueenMoves() throws Exception {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
+		ACEBoard engineBoard = ACEBoard.emptyBoard(EngineConstants.WHITE, false);
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("h6"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.QUEEN, fieldIdx("d1"));
 		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("c1"));
@@ -289,10 +289,10 @@ public class AceMoveGeneratorTest {
 		engineBoard.addPiece(EngineConstants.BLACK, PieceType.QUEEN, fieldIdx("a8"));
 		engineBoard.finalizeBitboards();
 		
-//		List<Move> whiteMoves = EngineTestUtils.AceMoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE));
+//		List<Move> whiteMoves = EngineTestUtils.AceMoveGenerator.generateMoves(engineBoard.clone(EngineConstants.WHITE));
 //		assertEquals(0, whiteMoves.size());
 		
-		List<Move> blackMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.BLACK, false));
+		List<Move> blackMoves = generateMoves(engineBoard.clone(EngineConstants.BLACK, false));
 		assertEquals(23, blackMoves.size());
 		assertTrue(blackMoves.contains(move("a8a7")));
 		assertTrue(blackMoves.contains(move("a8a6")));

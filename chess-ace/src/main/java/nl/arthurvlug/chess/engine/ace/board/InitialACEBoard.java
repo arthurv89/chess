@@ -1,54 +1,51 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
-import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.utils.board.FieldUtils;
-import nl.arthurvlug.chess.utils.board.pieces.PieceType;
+import static nl.arthurvlug.chess.engine.EngineConstants.BLACK;
+import static nl.arthurvlug.chess.engine.EngineConstants.WHITE;
+import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
 
 public class InitialACEBoard extends ACEBoard {
-	public InitialACEBoard() {
-		super(initialEngineBoard());
+	private InitialACEBoard() {
+		super();
+		addPiece(WHITE, ROOK, fieldIdx("a1"));
+		addPiece(WHITE, KNIGHT, fieldIdx("b1"));
+		addPiece(WHITE, BISHOP, fieldIdx("c1"));
+		addPiece(WHITE, QUEEN, fieldIdx("d1"));
+		addPiece(WHITE, KING, fieldIdx("e1"));
+		addPiece(WHITE, BISHOP, fieldIdx("f1"));
+		addPiece(WHITE, KNIGHT, fieldIdx("g1"));
+		addPiece(WHITE, ROOK, fieldIdx("h1"));
+
+		addPiece(WHITE, PAWN, fieldIdx("a2"));
+		addPiece(WHITE, PAWN, fieldIdx("b2"));
+		addPiece(WHITE, PAWN, fieldIdx("c2"));
+		addPiece(WHITE, PAWN, fieldIdx("d2"));
+		addPiece(WHITE, PAWN, fieldIdx("e2"));
+		addPiece(WHITE, PAWN, fieldIdx("f2"));
+		addPiece(WHITE, PAWN, fieldIdx("g2"));
+		addPiece(WHITE, PAWN, fieldIdx("h2"));
+
+		addPiece(BLACK, ROOK, fieldIdx("a8"));
+		addPiece(BLACK, KNIGHT, fieldIdx("b8"));
+		addPiece(BLACK, BISHOP, fieldIdx("c8"));
+		addPiece(BLACK, QUEEN, fieldIdx("d8"));
+		addPiece(BLACK, KING, fieldIdx("e8"));
+		addPiece(BLACK, BISHOP, fieldIdx("f8"));
+		addPiece(BLACK, KNIGHT, fieldIdx("g8"));
+		addPiece(BLACK, ROOK, fieldIdx("h8"));
+
+		addPiece(BLACK, PAWN, fieldIdx("a7"));
+		addPiece(BLACK, PAWN, fieldIdx("b7"));
+		addPiece(BLACK, PAWN, fieldIdx("c7"));
+		addPiece(BLACK, PAWN, fieldIdx("d7"));
+		addPiece(BLACK, PAWN, fieldIdx("e7"));
+		addPiece(BLACK, PAWN, fieldIdx("f7"));
+		addPiece(BLACK, PAWN, fieldIdx("g7"));
+		addPiece(BLACK, PAWN, fieldIdx("h7"));
 	}
 
-	private static ACEBoard initialEngineBoard() {
-		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
-		
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, FieldUtils.fieldIdx("a1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, FieldUtils.fieldIdx("b1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.BISHOP, FieldUtils.fieldIdx("c1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.QUEEN, FieldUtils.fieldIdx("d1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, FieldUtils.fieldIdx("e1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.BISHOP, FieldUtils.fieldIdx("f1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, FieldUtils.fieldIdx("g1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, FieldUtils.fieldIdx("h1"));
-		
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, FieldUtils.fieldIdx("a2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, FieldUtils.fieldIdx("b2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, FieldUtils.fieldIdx("c2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, FieldUtils.fieldIdx("d2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, FieldUtils.fieldIdx("e2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, FieldUtils.fieldIdx("f2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, FieldUtils.fieldIdx("g2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, FieldUtils.fieldIdx("h2"));
-		
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, FieldUtils.fieldIdx("a8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KNIGHT, FieldUtils.fieldIdx("b8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.BISHOP, FieldUtils.fieldIdx("c8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.QUEEN, FieldUtils.fieldIdx("d8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, FieldUtils.fieldIdx("e8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.BISHOP, FieldUtils.fieldIdx("f8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KNIGHT, FieldUtils.fieldIdx("g8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, FieldUtils.fieldIdx("h8"));
-		
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, FieldUtils.fieldIdx("a7"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, FieldUtils.fieldIdx("b7"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, FieldUtils.fieldIdx("c7"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, FieldUtils.fieldIdx("d7"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, FieldUtils.fieldIdx("e7"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, FieldUtils.fieldIdx("f7"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, FieldUtils.fieldIdx("g7"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, FieldUtils.fieldIdx("h7"));
-		
-		return engineBoard;
+	public static InitialACEBoard createInitialACEBoard() {
+		return new InitialACEBoard();
 	}
-
 }

@@ -7,8 +7,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableList;
 import java.util.Optional;
+import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
@@ -18,25 +18,31 @@ import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Test;
 
 public class ACEBoardTest {
+	private static final ACEBoard startPositionBoard = ACEBoardUtils.initializedBoard(WHITE, "" +
+			"♟♞♝♜♛♚..\n" +
+			".....♙..\n" +
+			"........\n" +
+			"........\n" +
+			"........\n" +
+			"........\n" +
+			"........\n" +
+			"♙♘♗♖♕♔..\n");
+
 	@Test
-	public void testBitboardMoveAll() throws Exception {
-		final ACEBoard startPositionBoard = ACEBoardUtils.initializedBoard(WHITE, "" +
-				"♟♞♝♜♛♚..\n" +
-				".....♙..\n" +
-				"........\n" +
-				"........\n" +
-				"........\n" +
-				"........\n" +
-				"........\n" +
-				"♙♘♗♖♕♔..\n");
-
+	public void testStartingPosition() throws Exception {
 		verifyStartPositionBoard(startPositionBoard);
+	}
 
+	@Test
+	public void testPlayingMoves() {
+		playMoves(startPositionBoard);
+	}
 
-		ACEBoard copyBoard = playMoves(startPositionBoard);
-
-		copyBoard = new ACEBoard(copyBoard, EngineConstants.BLACK, false);
-		verifyCopyBoard(copyBoard);
+	@Test
+	public void testAfterPlayingMoves() {
+		final ACEBoard copyBoard = playMoves(startPositionBoard);
+		final ACEBoard blackToMove = copyBoard.clone(ColorUtils.otherToMove(copyBoard.toMove), false);
+		verifyCopyBoard(blackToMove);
 	}
 
 	private ACEBoard playMoves(final ACEBoard startPositionBoard) {
@@ -175,7 +181,7 @@ public class ACEBoardTest {
 
 	@Test
 	public void testAceBoard() {
-		final ACEBoard oldBoard = new InitialACEBoard();
+		final ACEBoard oldBoard = InitialACEBoard.createInitialACEBoard();
 		oldBoard.finalizeBitboards();
 
 		final ACEBoard newBoard = oldBoard.clone();
@@ -190,7 +196,7 @@ public class ACEBoardTest {
 				FieldUtils.coordinates(from),
 				FieldUtils.coordinates(to),
 				Optional.empty());
-		ACEBoard copiedBoard = new ACEBoard(board);
+		ACEBoard copiedBoard = board.clone();
 		copiedBoard.finalizeBitboards();
 		copiedBoard.apply(move);
 		return copiedBoard;

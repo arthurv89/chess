@@ -1,6 +1,5 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -81,64 +80,60 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	}
 
 	// Used for testing and creating an initial position
-	public ACEBoard(int toMove, final boolean castlingEnabled) {
-		this();
-		zobristHash = 0;
-		this.toMove = toMove;
+	public static ACEBoard emptyBoard(int toMove, final boolean castlingEnabled) {
+		final ACEBoard board = new ACEBoard();
+		board.toMove = toMove;
 		if(!castlingEnabled) {
-			white_king_or_rook_queen_side_moved = true;
-			white_king_or_rook_king_side_moved = true;
-			black_king_or_rook_queen_side_moved = true;
-			black_king_or_rook_king_side_moved = true;
+			board.white_king_or_rook_queen_side_moved = true;
+			board.white_king_or_rook_king_side_moved = true;
+			board.black_king_or_rook_queen_side_moved = true;
+			board.black_king_or_rook_king_side_moved = true;
 		}
+		return board;
 	}
 
-	@Deprecated // Switch board in another way
-	@VisibleForTesting
-	public ACEBoard(ACEBoard board, int toMove, final boolean castlingEnabled) {
-		this(board);
-		this.toMove = toMove;
-		finalizeBitboards();
+	public ACEBoard clone(final int toMove, final boolean castlingEnabled) {
+		final ACEBoard board = clone();
+		board.toMove = toMove;
 		if(!castlingEnabled) {
-			white_king_or_rook_queen_side_moved = true;
-			white_king_or_rook_king_side_moved = true;
-			black_king_or_rook_queen_side_moved = true;
-			black_king_or_rook_king_side_moved = true;
+			board.white_king_or_rook_queen_side_moved = true;
+			board.white_king_or_rook_king_side_moved = true;
+			board.black_king_or_rook_queen_side_moved = true;
+			board.black_king_or_rook_king_side_moved = true;
 		}
-	}
-
-	@Deprecated // Implement move/unmove instead
-	public ACEBoard(ACEBoard board) {
-		this();
-		toMove = board.toMove;
-		lastMove = board.lastMove;
-		lastMoveWasTakeMove = board.lastMoveWasTakeMove;
-
-		black_kings = board.black_kings;
-		white_kings = board.white_kings;
-		black_queens = board.black_queens;
-		white_queens = board.white_queens;
-		white_rooks = board.white_rooks;
-		black_rooks = board.black_rooks;
-		white_bishops = board.white_bishops;
-		black_bishops = board.black_bishops;
-		white_knights = board.white_knights;
-		black_knights = board.black_knights;
-		white_pawns = board.white_pawns;
-		black_pawns = board.black_pawns;
-		zobristHash = 0;
-
-		white_king_or_rook_queen_side_moved = board.white_king_or_rook_queen_side_moved;
-		white_king_or_rook_king_side_moved = board.white_king_or_rook_king_side_moved;
-		black_king_or_rook_queen_side_moved = board.black_king_or_rook_queen_side_moved;
-		black_king_or_rook_king_side_moved = board.black_king_or_rook_king_side_moved;
+		board.finalizeBitboards();
+		return board;
 	}
 
 	public ACEBoard clone() {
-		return new ACEBoard(this);
+		final ACEBoard clonedBoard = new ACEBoard();
+		clonedBoard.black_kings = this.black_kings;
+		clonedBoard.white_kings = this.white_kings;
+		clonedBoard.black_queens = this.black_queens;
+		clonedBoard.white_queens = this.white_queens;
+		clonedBoard.white_rooks = this.white_rooks;
+		clonedBoard.black_rooks = this.black_rooks;
+		clonedBoard.white_bishops = this.white_bishops;
+		clonedBoard.black_bishops = this.black_bishops;
+		clonedBoard.white_knights = this.white_knights;
+		clonedBoard.black_knights = this.black_knights;
+		clonedBoard.white_pawns = this.white_pawns;
+		clonedBoard.black_pawns = this.black_pawns;
+
+		clonedBoard.white_king_or_rook_queen_side_moved = this.white_king_or_rook_queen_side_moved;
+		clonedBoard.white_king_or_rook_king_side_moved = this.white_king_or_rook_king_side_moved;
+		clonedBoard.black_king_or_rook_queen_side_moved = this.black_king_or_rook_queen_side_moved;
+		clonedBoard.black_king_or_rook_king_side_moved = this.black_king_or_rook_king_side_moved;
+
+		clonedBoard.toMove = this.toMove;
+		clonedBoard.lastMove = this.lastMove;
+		clonedBoard.lastMoveWasTakeMove = this.lastMoveWasTakeMove;
+		clonedBoard.zobristHash = 0;
+		return clonedBoard;
 	}
 
-	private ACEBoard() { }
+
+	protected ACEBoard() { }
 
 	public void apply(List<String> moveList) {
 		if(moveList.isEmpty()) {
@@ -438,7 +433,8 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 			black_rooks |= 1L << 61;
 		}
 	}
-	
+
+	@Deprecated // We should do incremental updates to this
 	public void finalizeBitboards() {
 		whiteOccupiedSquares = white_pawns | white_knights | white_bishops | white_rooks | white_queens | white_kings;
 		blackOccupiedSquares = black_pawns | black_knights | black_bishops | black_rooks | black_queens | black_kings;
@@ -498,7 +494,7 @@ public class ACEBoard extends AbstractEngineBoard<ACEBoard> {
 	}
 
 	private ACEBoard createBoardAfterMove(final Move move) {
-		ACEBoard successorBoard = new ACEBoard(this);
+		ACEBoard successorBoard = this.clone();
 		successorBoard.finalizeBitboards();
 		successorBoard.apply(move);
 		return successorBoard;

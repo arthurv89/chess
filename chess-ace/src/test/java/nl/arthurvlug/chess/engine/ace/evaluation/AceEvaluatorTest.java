@@ -19,7 +19,7 @@ public class AceEvaluatorTest {
 	
 	@Test
 	public void testStartingPosition() {
-		InitialACEBoard board = new InitialACEBoard();
+		InitialACEBoard board = InitialACEBoard.createInitialACEBoard();
 		board.finalizeBitboards();
 		int evaluation = aceEvaluator.evaluate(board);
 		assertEquals(0, evaluation);
@@ -27,7 +27,7 @@ public class AceEvaluatorTest {
 	
 	@Test
 	public void testAfterE4() {
-		InitialACEBoard board = new InitialACEBoard();
+		InitialACEBoard board = InitialACEBoard.createInitialACEBoard();
 		board.apply(Arrays.asList("e2e4"));
 		int evaluation = aceEvaluator.evaluate(board);
 		assertEquals(50, evaluation);

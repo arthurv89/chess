@@ -35,7 +35,7 @@ public class Functions {
 	private static ACEBoard createBoard(Position position) {
 		final List<String> currentAndAncestorMoves = position.getCurrentAndAncestorMoves();
 		
-		final ACEBoard board = new InitialACEBoard();
+		final ACEBoard board = InitialACEBoard.createInitialACEBoard();
 		board.apply(currentAndAncestorMoves);
 		return board;
 	}
@@ -81,7 +81,7 @@ public class Functions {
 		@Override
 		public Position map(final Position position) {
 			ACEBoard board = createBoard(position);
-			Integer score = evaluator.evaluate(board).getValue();
+			Integer score = evaluator.evaluate(board);
 			position.setScore(score);
 			return position;
 		}

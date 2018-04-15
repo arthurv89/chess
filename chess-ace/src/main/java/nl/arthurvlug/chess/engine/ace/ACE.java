@@ -48,7 +48,7 @@ public class ACE extends CustomEngine {
 
 	@Override
 	public Move think(List<String> moveList, ThinkingParams thinkingParams) {
-		ACEBoard engineBoard = new InitialACEBoard();
+		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
 		engineBoard.apply(moveList);
 		log.debug("\n{}", engineBoard);

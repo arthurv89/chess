@@ -24,7 +24,7 @@ public class NotPlayTest {
 	}
 
 	private Move think(List<String> moveList) {
-		InitialACEBoard board = new InitialACEBoard();
+		InitialACEBoard board = InitialACEBoard.createInitialACEBoard();
 		board.apply(moveList);
 		Move move = algorithm.think(board);
 		System.out.println(move);

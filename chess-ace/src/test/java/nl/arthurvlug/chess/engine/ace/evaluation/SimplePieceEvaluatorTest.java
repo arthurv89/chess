@@ -21,12 +21,12 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testEqual() {
-		ACEBoard board = new ACEBoard(WHITE, false);
+		ACEBoard board = ACEBoard.emptyBoard(WHITE, false);
 		board.addPiece(WHITE, KING, idx("a1"));
 		board.addPiece(BLACK, KING, idx("a8"));
 		board.finalizeBitboards();
 		
-		int score = evaluator.evaluate(new ACEBoard(board));
+		int score = evaluator.evaluate(board.clone());
 		assertEquals(0, score);
 	}
 	
@@ -36,7 +36,7 @@ public class SimplePieceEvaluatorTest {
 
 	@Test
 	public void testPlusPawn() {
-		ACEBoard board = new ACEBoard(WHITE, false);
+		ACEBoard board = ACEBoard.emptyBoard(WHITE, false);
 		board.addPiece(WHITE, KING, idx("a1"));
 		board.addPiece(WHITE, PAWN, idx("a2"));
 		board.addPiece(BLACK, KING, idx("a8"));
@@ -48,7 +48,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testMinusPawn() {
-		ACEBoard board = new ACEBoard(WHITE, false);
+		ACEBoard board = ACEBoard.emptyBoard(WHITE, false);
 		board.addPiece(WHITE, KING, idx("a1"));
 		board.addPiece(BLACK, PAWN, idx("a2"));
 		board.addPiece(BLACK, KING, idx("a8"));
@@ -60,7 +60,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testPlusKnight() {
-		ACEBoard board = new ACEBoard(WHITE, false);
+		ACEBoard board = ACEBoard.emptyBoard(WHITE, false);
 		board.addPiece(WHITE, KING, idx("a1"));
 		board.addPiece(WHITE, KNIGHT, idx("a2"));
 		board.addPiece(BLACK, KING, idx("a8"));
@@ -72,7 +72,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testPlusBishop() {
-		ACEBoard board = new ACEBoard(WHITE, false);
+		ACEBoard board = ACEBoard.emptyBoard(WHITE, false);
 		board.addPiece(WHITE, KING, idx("a1"));
 		board.addPiece(WHITE, BISHOP, idx("a2"));
 		board.addPiece(BLACK, KING, idx("a8"));
@@ -84,7 +84,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testPlusRook() {
-		ACEBoard board = new ACEBoard(WHITE, false);
+		ACEBoard board = ACEBoard.emptyBoard(WHITE, false);
 		board.addPiece(WHITE, KING, idx("a1"));
 		board.addPiece(WHITE, ROOK, idx("a2"));
 		board.addPiece(BLACK, KING, idx("a8"));
@@ -96,7 +96,7 @@ public class SimplePieceEvaluatorTest {
 	
 	@Test
 	public void testPlusQueen() {
-		ACEBoard board = new ACEBoard(WHITE, false);
+		ACEBoard board = ACEBoard.emptyBoard(WHITE, false);
 		board.addPiece(WHITE, KING, idx("a1"));
 		board.addPiece(WHITE, QUEEN, idx("a2"));
 		board.addPiece(BLACK, KING, idx("a8"));
