@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.isWhite;
 import static nl.arthurvlug.chess.engine.EngineConstants.WHITE;
+import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 
 public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 	public byte toMove;
@@ -59,14 +60,26 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 
 	// TODO: Implement
 	private int repeatedMove = 0;
-	private static final long a8Bitboard = 1L << 56;
-	private static final long d8Bitboard = 1L << 59;
-	private static final long f8Bitboard = 1L << 61;
-	private static final long h8Bitboard = 1L << 63;
-	private static final long a1Bitboard = 1L;
-	private static final long d1Bitboard = 1L << 3;
-	private static final long f1Bitboard = 1L << 5;
-	private static final long h1Bitboard = 1L << 7;
+
+	// Black rook positions
+	private static final long a8Bitboard = bitboardFromFieldName("a8");
+	private static final long d8Bitboard = bitboardFromFieldName("d8");
+	private static final long f8Bitboard = bitboardFromFieldName("f8");
+	private static final long h8Bitboard = bitboardFromFieldName("h8");
+	// King positions
+	private static final long g8Bitboard = bitboardFromFieldName("g8");
+	private static final long c8Bitboard = bitboardFromFieldName("c8");
+	private static final long e8Bitboard = bitboardFromFieldName("e8");
+
+	// White castling positions
+	private static final long a1Bitboard = bitboardFromFieldName("a1");
+	private static final long d1Bitboard = bitboardFromFieldName("d1");
+	private static final long f1Bitboard = bitboardFromFieldName("f1");
+	private static final long h1Bitboard = bitboardFromFieldName("h1");
+	// King positions
+	private static final long g1Bitboard = bitboardFromFieldName("g1");
+	private static final long c1Bitboard = bitboardFromFieldName("c1");
+	private static final long e1Bitboard = bitboardFromFieldName("e1");
 
 	private int zobristHash;
 	private static int[][][] zobristRandomTable = new int[64][6][2];
@@ -148,21 +161,21 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 
 		if(isWhite(toMove)) {
 			switch (movingPiece) {
-				case PAWN:   moveWhitePawn   (toBitboard, fromBitboard); break;
-				case BISHOP: moveWhiteBishop (toBitboard, fromBitboard); break;
-				case KNIGHT: moveWhiteKnight (toBitboard, fromBitboard); break;
-				case ROOK:   moveWhiteRook   (toBitboard, fromBitboard, fromIdx); break;
-				case QUEEN:  moveWhiteQueen  (toBitboard, fromBitboard); break;
-				case KING:   moveWhiteKing   (toBitboard, fromBitboard, fromIdx, toIdx); break;
+				case PAWN:   moveWhitePawn   (fromBitboard, toBitboard); break;
+				case BISHOP: moveWhiteBishop (fromBitboard, toBitboard); break;
+				case KNIGHT: moveWhiteKnight (fromBitboard, toBitboard); break;
+				case ROOK:   moveWhiteRook   (fromBitboard, toBitboard, fromIdx); break;
+				case QUEEN:  moveWhiteQueen  (fromBitboard, toBitboard); break;
+				case KING:   moveWhiteKing   (fromBitboard, toBitboard); break;
 			}
 		} else {
 			switch (movingPiece) {
-				case PAWN:   moveBlackPawn  (toBitboard, fromBitboard); break;
-				case BISHOP: moveBlackBishop(toBitboard, fromBitboard); break;
-				case KNIGHT: moveBlackKnight(toBitboard, fromBitboard); break;
-				case ROOK:   moveBlackRook  (toBitboard, fromBitboard, fromIdx); break;
-				case QUEEN:  moveBlackQueen (toBitboard, fromBitboard); break;
-				case KING:   moveBlackKing  (toBitboard, fromBitboard, fromIdx, toIdx); break;
+				case PAWN:   moveBlackPawn  (fromBitboard, toBitboard); break;
+				case BISHOP: moveBlackBishop(fromBitboard, toBitboard); break;
+				case KNIGHT: moveBlackKnight(fromBitboard, toBitboard); break;
+				case ROOK:   moveBlackRook  (fromBitboard, toBitboard, fromIdx); break;
+				case QUEEN:  moveBlackQueen (fromBitboard, toBitboard); break;
+				case KING:   moveBlackKing  (fromBitboard, toBitboard); break;
 			}
 		}
 
@@ -206,44 +219,44 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		switch (movingPiece) {
 			case PAWN:
 				if(isWhite(toMove)) {
-					moveWhitePawn(fromBitboard, toBitboard);
+					moveWhitePawn(toBitboard, fromBitboard);
 				} else {
-					moveBlackPawn(fromBitboard, toBitboard);
+					moveBlackPawn(toBitboard, fromBitboard);
 				}
 				break;
 			case BISHOP:
 				if(isWhite(toMove)) {
-					moveWhiteBishop(fromBitboard, toBitboard);
+					moveWhiteBishop(toBitboard, fromBitboard);
 				} else {
-					moveBlackBishop(fromBitboard, toBitboard);
+					moveBlackBishop(toBitboard, fromBitboard);
 				}
 				break;
 			case KNIGHT:
 				if(isWhite(toMove)) {
-					moveWhiteKnight(fromBitboard, toBitboard);
+					moveWhiteKnight(toBitboard, fromBitboard);
 				} else {
-					moveBlackKnight(fromBitboard, toBitboard);
+					moveBlackKnight(toBitboard, fromBitboard);
 				}
 				break;
 			case ROOK:
 				if(isWhite(toMove)) {
-					moveWhiteRook(fromBitboard, toBitboard, fromIdx);
+					moveWhiteRook(toBitboard, fromBitboard, fromIdx);
 				} else {
-					moveBlackRook(fromBitboard, toBitboard, fromIdx);
+					moveBlackRook(toBitboard, fromBitboard, fromIdx);
 				}
 				break;
 			case QUEEN:
 				if(isWhite(toMove)) {
-					moveWhiteQueen(fromBitboard, toBitboard);
+					moveWhiteQueen(toBitboard, fromBitboard);
 				} else {
-					moveBlackQueen(fromBitboard, toBitboard);
+					moveBlackQueen(toBitboard, fromBitboard);
 				}
 				break;
 			case KING:
 				if(isWhite(toMove)) {
-					moveWhiteKing(fromBitboard, toBitboard, fromIdx, toIdx);
+					moveWhiteKing(toBitboard, fromBitboard);
 				} else {
-					moveBlackKing(fromBitboard, toBitboard, fromIdx, toIdx);
+					moveBlackKing(toBitboard, fromBitboard);
 				}
 				break;
 			default:
@@ -300,37 +313,37 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		finalizeBitboards();
 	}
 
-	private void moveWhitePawn(final long toBitboard, final long fromBitboard) {
+	private void moveWhitePawn(final long fromBitboard, final long toBitboard) {
 		white_pawns ^= fromBitboard;
 		white_pawns ^= toBitboard;
 	}
 
-	private void moveBlackPawn(final long toBitboard, final long fromBitboard) {
+	private void moveBlackPawn(final long fromBitboard, final long toBitboard) {
 		black_pawns ^= fromBitboard;
 		black_pawns ^= toBitboard;
 	}
 
-	private void moveWhiteBishop(final long toBitboard, final long fromBitboard) {
+	private void moveWhiteBishop(final long fromBitboard, final long toBitboard) {
 		white_bishops ^= fromBitboard;
 		white_bishops ^= toBitboard;
 	}
 
-	private void moveBlackBishop(final long toBitboard, final long fromBitboard) {
+	private void moveBlackBishop(final long fromBitboard, final long toBitboard) {
 		black_bishops ^= fromBitboard;
 		black_bishops ^= toBitboard;
 	}
 
-	private void moveBlackKnight(final long toBitboard, final long fromBitboard) {
+	private void moveBlackKnight(final long fromBitboard, final long toBitboard) {
 		black_knights ^= fromBitboard;
 		black_knights ^= toBitboard;
 	}
 
-	private void moveWhiteKnight(final long toBitboard, final long fromBitboard) {
+	private void moveWhiteKnight(final long fromBitboard, final long toBitboard) {
 		white_knights ^= fromBitboard;
 		white_knights ^= toBitboard;
 	}
 
-	private void moveWhiteRook(final long toBitboard, final long fromBitboard, final int fromIdx) {
+	private void moveWhiteRook(final long fromBitboard, final long toBitboard, final int fromIdx) {
 		if(fromIdx == 0) {
 			white_king_or_rook_queen_side_moved = true;
 		}
@@ -341,7 +354,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		white_rooks ^= toBitboard;
 	}
 
-	private void moveBlackRook(final long toBitboard, final long fromBitboard, final int fromIdx) {
+	private void moveBlackRook(final long fromBitboard, final long toBitboard, final int fromIdx) {
 		if(fromIdx == 56) {
 			black_king_or_rook_queen_side_moved = true;
 		}
@@ -352,41 +365,46 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		black_rooks ^= toBitboard;
 	}
 
-	private void moveBlackQueen(final long toBitboard, final long fromBitboard) {
+	private void moveBlackQueen(final long fromBitboard, final long toBitboard) {
 		black_queens ^= fromBitboard;
 		black_queens ^= toBitboard;
 	}
 
-	private void moveWhiteQueen(final long toBitboard, final long fromBitboard) {
+	private void moveWhiteQueen(final long fromBitboard, final long toBitboard) {
 		white_queens ^= fromBitboard;
 		white_queens ^= toBitboard;
 	}
 
-	private void moveWhiteKing(final long toBitboard, final long fromBitboard, final int fromIdx, final int toIdx) {
+	private void moveWhiteKing(final long fromBitboard, final long toBitboard) {
 		white_king_or_rook_queen_side_moved = true;
 		white_king_or_rook_king_side_moved = true;
 		white_kings ^= fromBitboard;
 		white_kings ^= toBitboard;
-		if(fromIdx == 4 && toIdx == 2) {
-			this.white_rooks ^= a1Bitboard;
-			this.white_rooks ^= d1Bitboard;
-		} else if(fromIdx == 4 && toIdx == 6) {
-			this.white_rooks ^= h1Bitboard;
-			this.white_rooks ^= f1Bitboard;
+		if(fromBitboard == e1Bitboard) {
+			if (toBitboard == c1Bitboard) {
+				this.white_rooks ^= a1Bitboard;
+				this.white_rooks ^= d1Bitboard;
+			} else if (toBitboard == g1Bitboard) {
+				this.white_rooks ^= h1Bitboard;
+				this.white_rooks ^= f1Bitboard;
+			}
 		}
 	}
 
-	private void moveBlackKing(final long toBitboard, final long fromBitboard, final int fromIdx, final int toIdx) {
+	private void moveBlackKing(final long fromBitboard, final long toBitboard) {
 		black_king_or_rook_queen_side_moved = true;
 		black_king_or_rook_king_side_moved = true;
 		black_kings ^= fromBitboard;
 		black_kings ^= toBitboard;
-		if(fromIdx == 60 && toIdx == 58) {
-			this.black_rooks ^= a8Bitboard;
-			this.black_rooks ^= d8Bitboard;
-		} else if(fromIdx == 60 && toIdx == 62) {
-			this.black_rooks ^= h8Bitboard;
-			this.black_rooks ^= f8Bitboard;
+
+		if (fromBitboard == e8Bitboard) {
+			if (toBitboard == c8Bitboard) {
+				this.black_rooks ^= a8Bitboard;
+				this.black_rooks ^= d8Bitboard;
+			} else if (toBitboard == g8Bitboard) {
+				this.black_rooks ^= h8Bitboard;
+				this.black_rooks ^= f8Bitboard;
+			}
 		}
 	}
 
