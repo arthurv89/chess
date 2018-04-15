@@ -164,7 +164,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 				case PAWN:   moveWhitePawn   (fromBitboard, toBitboard); break;
 				case BISHOP: moveWhiteBishop (fromBitboard, toBitboard); break;
 				case KNIGHT: moveWhiteKnight (fromBitboard, toBitboard); break;
-				case ROOK:   moveWhiteRook   (fromBitboard, toBitboard, fromIdx); break;
+				case ROOK:   moveWhiteRook   (fromBitboard, toBitboard); break;
 				case QUEEN:  moveWhiteQueen  (fromBitboard, toBitboard); break;
 				case KING:   moveWhiteKing   (fromBitboard, toBitboard); break;
 			}
@@ -173,7 +173,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 				case PAWN:   moveBlackPawn  (fromBitboard, toBitboard); break;
 				case BISHOP: moveBlackBishop(fromBitboard, toBitboard); break;
 				case KNIGHT: moveBlackKnight(fromBitboard, toBitboard); break;
-				case ROOK:   moveBlackRook  (fromBitboard, toBitboard, fromIdx); break;
+				case ROOK:   moveBlackRook  (fromBitboard, toBitboard); break;
 				case QUEEN:  moveBlackQueen (fromBitboard, toBitboard); break;
 				case KING:   moveBlackKing  (fromBitboard, toBitboard); break;
 			}
@@ -240,9 +240,9 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 				break;
 			case ROOK:
 				if(isWhite(toMove)) {
-					moveWhiteRook(toBitboard, fromBitboard, fromIdx);
+					moveWhiteRook(toBitboard, fromBitboard);
 				} else {
-					moveBlackRook(toBitboard, fromBitboard, fromIdx);
+					moveBlackRook(toBitboard, fromBitboard);
 				}
 				break;
 			case QUEEN:
@@ -343,22 +343,22 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		white_knights ^= toBitboard;
 	}
 
-	private void moveWhiteRook(final long fromBitboard, final long toBitboard, final int fromIdx) {
-		if(fromIdx == 0) {
+	private void moveWhiteRook(final long fromBitboard, final long toBitboard) {
+		if(fromBitboard == a1Bitboard) {
 			white_king_or_rook_queen_side_moved = true;
 		}
-		else if(fromIdx == 7) {
+		else if(fromBitboard == h1Bitboard) {
 			white_king_or_rook_king_side_moved = true;
 		}
 		white_rooks ^= fromBitboard;
 		white_rooks ^= toBitboard;
 	}
 
-	private void moveBlackRook(final long fromBitboard, final long toBitboard, final int fromIdx) {
-		if(fromIdx == 56) {
+	private void moveBlackRook(final long fromBitboard, final long toBitboard) {
+		if(fromBitboard == a8Bitboard) {
 			black_king_or_rook_queen_side_moved = true;
 		}
-		else if(fromIdx == 63) {
+		else if(fromBitboard == h8Bitboard) {
 			black_king_or_rook_king_side_moved = true;
 		}
 		black_rooks ^= fromBitboard;
@@ -479,8 +479,7 @@ public class ACEBoard extends AbstractEngineBoard<UnapplyableMove> {
 		// Reverse rows
 		List<String> l = Lists.newArrayList(Splitter.on('\n').split(reversedBoard));
 		Collections.reverse(l);
-		final String s = Joiner.on('\n').join(l);
-		return s;
+		return Joiner.on('\n').join(l);
 	}
 
 	public void addPiece(int engineColor, PieceType pieceType, int fieldIndex) {
