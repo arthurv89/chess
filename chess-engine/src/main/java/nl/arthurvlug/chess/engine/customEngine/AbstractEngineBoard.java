@@ -12,8 +12,6 @@ public abstract class AbstractEngineBoard<T extends AbstractEngineBoard<T>> {
 
 	public abstract int getFiftyMove();
 
-	public abstract boolean opponentIsInCheck(final List<Move> generatedMoves);
-
 	/**
 	 * @deprecated Use createMoves instead (in combination with apply/unapply)
 	 */
@@ -31,4 +29,6 @@ public abstract class AbstractEngineBoard<T extends AbstractEngineBoard<T>> {
 	public abstract boolean hasNoKing();
 
 	public abstract int getZobristHash();
+
+	public abstract void unapply(final Move move);
 }

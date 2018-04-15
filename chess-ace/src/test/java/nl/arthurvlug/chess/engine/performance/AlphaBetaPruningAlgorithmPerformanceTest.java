@@ -1,9 +1,9 @@
 package nl.arthurvlug.chess.engine.performance;
 
 import lombok.extern.slf4j.Slf4j;
+import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
-import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 
 import org.joda.time.DateTime;
 
@@ -18,7 +18,7 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 	private static void performanceTest(int depth) {
 		log.debug("");
 		log.debug("Starting performance test for depth {}", depth);
-		final InitialEngineBoard board = new InitialEngineBoard();
+		final InitialACEBoard board = new InitialACEBoard();
 		board.finalizeBitboards();
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
 		

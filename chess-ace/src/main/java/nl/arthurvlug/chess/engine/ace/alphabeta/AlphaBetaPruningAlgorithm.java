@@ -8,20 +8,19 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.EngineConstants;
-import nl.arthurvlug.chess.engine.ace.configuration.ChessEngineConfiguration;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.HashElement;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable;
-import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
-import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
-import nl.arthurvlug.chess.engine.customEngine.NormalScore;
+import nl.arthurvlug.chess.engine.customEngine.ChessEngineConfiguration;
 import nl.arthurvlug.chess.utils.game.Move;
 
 import static java.util.Collections.swap;
 import static nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable.*;
 
 @Slf4j
-public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
+public class AlphaBetaPruningAlgorithm {
 	private static final int CURRENT_PLAYER_WINS = 1000000000;
 	private static final int OTHER_PLAYER_WINS = -CURRENT_PLAYER_WINS;
 
@@ -30,9 +29,9 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	@Getter
 	private int cutoffs;
 	@Getter
-	private int hashHits = 0;
+	private int hashHits;
 
-	private BoardEvaluator evaluator;
+	private BoardEvaluator<ACEBoard, Integer> evaluator;
 	private final int quiesceMaxDepth;
 	private int depth;
 //	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
@@ -42,17 +41,18 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 	private static final TranspositionTable transpositionTable = new TranspositionTable(HASH_TABLE_LENGTH);
 	private boolean quiesceEnabled = true;
 
-	public AlphaBetaPruningAlgorithm(final ChessEngineConfiguration configuration) {
+	public AlphaBetaPruningAlgorithm(final ChessEngineConfiguration<ACEBoard, Integer> configuration) {
 		this.evaluator = configuration.getEvaluator();
 		this.quiesceMaxDepth = configuration.getQuiesceMaxDepth();
 		this.depth = configuration.getSearchDepth();
 	}
 
-	public Move think(final T engineBoard) {
+	public Move think(final ACEBoard engineBoard) {
 		Preconditions.checkArgument(depth > 0);
 
 		cutoffs = 0;
 		nodesEvaluated = 0;
+		hashHits = 0;
 
 		Optional<Move> priorityMove = Optional.empty();
 		for (int depthNow = 1; depthNow <= depth; depthNow++) {
@@ -65,10 +65,10 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		return priorityMove.get();
 	}
 
-	private Move alphaBetaRoot(final T engineBoard, final int depth, final Optional<Move> priorityMove) {
+	private Move alphaBetaRoot(final ACEBoard engineBoard, final int depth, final Optional<Move> priorityMove) {
 		final List<Move> generatedMoves = engineBoard.generateMoves();
 		reorder(generatedMoves, priorityMove);
-		final List<T> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
+		final List<ACEBoard> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
 
 		// TODO: Remove
 		Preconditions.checkState(successorBoards.size() > 0);
@@ -76,7 +76,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		int alpha = OTHER_PLAYER_WINS;
 		int beta = CURRENT_PLAYER_WINS;
 		Move bestMove = null;
-		for(T successorBoard : successorBoards) {
+		for(ACEBoard successorBoard : successorBoards) {
 			// Do a recursive search
 			final int score = -alphaBeta(successorBoard, -beta, -alpha, depth - 1);
 
@@ -110,7 +110,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		return Stream.empty();
 	}
 
-	private int alphaBeta(final T engineBoard, int alpha, final int beta, final int depth) {
+	private int alphaBeta(final ACEBoard engineBoard, int alpha, final int beta, final int depth) {
 		if (engineBoard.getFiftyMove() >= 50 || engineBoard.getRepeatedMove() >= 3) {
 			return 0;
 		}
@@ -136,13 +136,10 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		}
 		
 		List<Move> generatedMoves = engineBoard.generateMoves();
-		if (engineBoard.opponentIsInCheck(generatedMoves)) {
-			return CURRENT_PLAYER_WINS;
-		}
 
-		final List<T> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
+		final List<ACEBoard> successorBoards = engineBoard.generateSuccessorBoards(generatedMoves);
 		Move bestMove = null;
-		for(T successorBoard : successorBoards) {
+		for(ACEBoard successorBoard : successorBoards) {
 			// Do a recursive search
 			int score = -alphaBeta(successorBoard, -beta, -alpha, depth-1);
 
@@ -166,7 +163,7 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 //		System.out.println(cutoffs + "/" + nodesEvaluated);
 	}
 
-	private int quiesceSearch(final T engineBoard, int alpha, final int beta, final int depth) {
+	private int quiesceSearch(final ACEBoard engineBoard, int alpha, final int beta, final int depth) {
 		int stand_pat = calculateScore(engineBoard);
 		if(depth == 0 || !quiesceEnabled) {
 			return stand_pat;
@@ -185,8 +182,8 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 			return OTHER_PLAYER_WINS;
 		}
 
-		final List<T> successorBoards = engineBoard.generateSuccessorTakeBoards();
-		for(T successorBoard : successorBoards) {
+		final List<ACEBoard> successorBoards = engineBoard.generateSuccessorTakeBoards();
+		for(ACEBoard successorBoard : successorBoards) {
 			final int score = -quiesceSearch(successorBoard, -beta, -alpha, depth-1);
 //			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
 
@@ -203,28 +200,25 @@ public class AlphaBetaPruningAlgorithm<T extends AbstractEngineBoard<T>> {
 		return alpha;
 	}
 
-	private int calculateScore(final T board) {
+	private int calculateScore(final ACEBoard board) {
 		nodesEvaluated++;
-		NormalScore score = (NormalScore) evaluator.evaluate(board);
+		Integer score = evaluator.evaluate(board);
 
-		int sideDependentScore;
 		if (board.getToMove() == EngineConstants.BLACK) {
-			sideDependentScore = -score.getValue();
-		} else {
-			sideDependentScore = score.getValue();
+			return -score;
 		}
-		return sideDependentScore;
+		return score;
 	}
 
-	public void setDepth(final int depth) {
+	void setDepth(final int depth) {
 		this.depth = depth;
 	}
 
-	public void setQuiesceEnabled(final boolean quiesceEnabled) {
-		this.quiesceEnabled = quiesceEnabled;
+	void disableQuesce() {
+		this.quiesceEnabled = false;
 	}
 
-	public void setEvaluator(final SimplePieceEvaluator evaluator) {
-		this.evaluator = evaluator;
+	void useSimplePieceEvaluator() {
+		this.evaluator = new SimplePieceEvaluator();
 	}
 }

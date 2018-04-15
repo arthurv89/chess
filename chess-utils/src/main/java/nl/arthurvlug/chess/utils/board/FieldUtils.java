@@ -9,7 +9,7 @@ public class FieldUtils {
 		return coordinates.getX() + coordinates.getY()*8;
 	}
 
-	public static int toIndex(String fieldName) {
+	public static int fieldIdx(String fieldName) {
 		return fieldIdx(coordinates(fieldName));
 	}
 

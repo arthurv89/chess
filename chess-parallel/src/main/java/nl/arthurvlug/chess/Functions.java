@@ -2,9 +2,9 @@ package nl.arthurvlug.chess;
 
 import java.util.List;
 
+import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 
@@ -35,7 +35,7 @@ public class Functions {
 	private static ACEBoard createBoard(Position position) {
 		final List<String> currentAndAncestorMoves = position.getCurrentAndAncestorMoves();
 		
-		final ACEBoard board = new InitialEngineBoard();
+		final ACEBoard board = new InitialACEBoard();
 		board.apply(currentAndAncestorMoves);
 		return board;
 	}

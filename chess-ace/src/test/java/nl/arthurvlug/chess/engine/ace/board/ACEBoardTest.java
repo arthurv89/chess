@@ -7,9 +7,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Optional;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 
@@ -169,6 +171,18 @@ public class ACEBoardTest {
 				"........\n"));
 
 		assertTrue(copyBoard.lastMoveWasTakeMove);
+	}
+
+	@Test
+	public void testAceBoard() {
+		final ACEBoard oldBoard = new InitialACEBoard();
+		oldBoard.finalizeBitboards();
+
+		final ACEBoard newBoard = oldBoard.clone();
+		Move move = MoveUtils.toMove("e2e4");
+		newBoard.apply(move);
+		newBoard.unapply(move);
+		assertEquals(ACEBoardUtils.dump(oldBoard), ACEBoardUtils.dump(newBoard));
 	}
 
 	private ACEBoard apply(String from, String to, ACEBoard board) {

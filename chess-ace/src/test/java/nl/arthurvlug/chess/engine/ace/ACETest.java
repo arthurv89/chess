@@ -2,13 +2,9 @@ package nl.arthurvlug.chess.engine.ace;
 
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.function.Function;
 
-import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
-import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.utils.game.Move;

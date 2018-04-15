@@ -5,10 +5,10 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.List;
 
+import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
-import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class NotPlayTest {
 	}
 
 	private Move think(List<String> moveList) {
-		InitialEngineBoard board = new InitialEngineBoard();
+		InitialACEBoard board = new InitialACEBoard();
 		board.apply(moveList);
 		Move move = algorithm.think(board);
 		System.out.println(move);

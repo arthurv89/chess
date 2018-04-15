@@ -3,42 +3,29 @@ package nl.arthurvlug.chess.engine.ace.evaluation;
 import com.google.common.collect.LinkedHashMultimap;
 import java.util.List;
 import java.util.Set;
-import nl.arthurvlug.chess.utils.board.FieldUtils;
-import nl.arthurvlug.chess.utils.game.Move;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
-import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
-import nl.arthurvlug.chess.engine.customEngine.NormalScore;
-import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.game.Move;
 
-public class AceEvaluator implements BoardEvaluator {
-	@Override
-	public NormalScore evaluate(final AbstractEngineBoard board) {
-		ACEBoard aceBoard = (ACEBoard) board;
-		int score = calculate(aceBoard);
-//		System.out.printf("Score: %d:\n%s%n", score, aceBoard.toString());
-
-		return new NormalScore(score);
-	}
-
-
+public class AceEvaluator implements BoardEvaluator<ACEBoard, Integer> {
 	private int whiteBishopCount;
 	private int blackBishopCount;
 
-	public int calculate(final ACEBoard engineBoard) {
-		final List<Move> moves = AceMoveGenerator.generateMoves(engineBoard);
+	public Integer evaluate(final ACEBoard aceBoard) {
+		final List<Move> moves = AceMoveGenerator.generateMoves(aceBoard);
 		LinkedHashMultimap<Integer, Move> byFromPositionMap = byFromPosition(moves);
 		int score = 0;
 
-		long occupiedBoard = engineBoard.occupied_board;
+		long occupiedBoard = aceBoard.occupied_board;
 		while(occupiedBoard != 0L) {
 			final int fieldIdx = Long.numberOfTrailingZeros(occupiedBoard);
 
-			final ColoredPiece coloredPiece = engineBoard.pieceAt(fieldIdx);
+			final ColoredPiece coloredPiece = aceBoard.pieceAt(fieldIdx);
 			score += pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx));
 //			System.out.println(FieldUtils.coordinates(fieldIdx) + " -> " + pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx)));
 			occupiedBoard ^= 1L << fieldIdx;
@@ -61,7 +48,7 @@ public class AceEvaluator implements BoardEvaluator {
 	private int pieceScore(final int fieldIdx, final ColoredPiece coloredPiece, final Set<Move> moves) {
 		int totalScore = 0;
 
-		final int pieceValue = ACEConstants.pieceValue(coloredPiece.getPieceType());
+		final int pieceValue = ACEConstants.pieceValues[coloredPiece.getPieceType().ordinal()];
 		totalScore += pieceValue;
 
 		final int extraScore = extraScore(fieldIdx, coloredPiece);

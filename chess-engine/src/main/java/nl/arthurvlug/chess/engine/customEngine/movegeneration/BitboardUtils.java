@@ -7,7 +7,7 @@ import nl.arthurvlug.chess.utils.game.Move;
 import static nl.arthurvlug.chess.utils.StringToBoardConverter.conv;
 import static nl.arthurvlug.chess.utils.board.FieldUtils.coordinates;
 import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
-import static nl.arthurvlug.chess.utils.board.FieldUtils.toIndex;
+import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
 
 
 public class BitboardUtils {
@@ -44,7 +44,7 @@ public class BitboardUtils {
 		final String[] fieldNameArray = fieldNames.split(" ");
 		long bitboard = 0L;
 		for(final String fieldName : fieldNameArray) {
-			bitboard |= 1L << toIndex(fieldName);
+			bitboard |= 1L << FieldUtils.fieldIdx(fieldName);
 		}
 		return bitboard;
 	}

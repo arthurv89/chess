@@ -4,7 +4,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.engine.ace.board.InitialEngineBoard;
+import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.CustomEngine;
@@ -25,7 +25,7 @@ public class ACE extends CustomEngine {
 		this(depth, DEFAULT_EVALUATOR, DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
-	public ACE(final int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
+	ACE(final int depth, final BoardEvaluator<ACEBoard, Integer> evaluator, final int quiesceMaxDepth) {
 		this(builder()
 				.searchDepth(depth)
 				.evaluator(evaluator)
@@ -48,12 +48,16 @@ public class ACE extends CustomEngine {
 
 	@Override
 	public Move think(List<String> moveList, ThinkingParams thinkingParams) {
-		ACEBoard engineBoard = new InitialEngineBoard();
+		ACEBoard engineBoard = new InitialACEBoard();
 		engineBoard.finalizeBitboards();
 		engineBoard.apply(moveList);
 		log.debug("\n{}", engineBoard);
 
 		Move think = searchAlgorithm.think(engineBoard);
+
+		log.debug("Nodes evaluated: {}", searchAlgorithm.getNodesEvaluated());
+		log.debug("Cut-offs: {}", searchAlgorithm.getCutoffs());
+		log.debug("Cache hits: {}", searchAlgorithm.getHashHits());
 		return think;
 	}
 	

@@ -1,5 +1,9 @@
 package nl.arthurvlug.chess.engine.utils;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.utils.StringToBoardConverter;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
@@ -16,7 +20,26 @@ public class ACEBoardUtils {
 		return startPositionBoard;
 	}
 
-	private static int toMove(final Color toMoveColor) {
+	public static int toMove(final Color toMoveColor) {
 		return toMoveColor.isWhite() ? 0 : 1;
+	}
+
+	public static String dump(final ACEBoard aceBoard) {
+		final Class<ACEBoard> aceBoardClass = ACEBoard.class;
+		return Arrays.stream(aceBoardClass.getFields())
+				.map(f -> fieldString(aceBoard, aceBoardClass, f))
+				.collect(Collectors.joining("\n"));
+	}
+
+	private static String fieldString(final ACEBoard aceBoard, final Class<ACEBoard> aceBoardClass, final Field f) {
+		try {
+			final String fieldName = f.getName();
+			final Field field = aceBoardClass.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			String value = field.get(aceBoard).toString();
+			return String.format("%s=%s", fieldName, value);
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

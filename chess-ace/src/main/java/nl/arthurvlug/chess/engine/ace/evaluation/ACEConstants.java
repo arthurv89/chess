@@ -1,11 +1,10 @@
 package nl.arthurvlug.chess.engine.ace.evaluation;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
-public class ACEConstants {
+import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
+
+class ACEConstants {
 	static int[] pawnPositionBonus = new int[] {
 		 0,   0,   0,   0,   0,   0,   0,   0,
 		50,  50,  50,  50,  50,  50,  50,  50,
@@ -61,18 +60,16 @@ public class ACEConstants {
 		-50,-30,-30,-30,-30,-30,-30,-50
 	};
 
-	public static Map<PieceType, Integer> pieceValues() {
-		Map<PieceType, Integer> map = new HashMap<>();
-		map.put(PieceType.KING, 10000000);
-		map.put(PieceType.QUEEN, 975);
-		map.put(PieceType.ROOK, 500);
-		map.put(PieceType.BISHOP, 290);
-		map.put(PieceType.KNIGHT, 280);
-		map.put(PieceType.PAWN, 100);
-		return map;
-	}
+	public static int[] pieceValues = createPieceValuesArray();
 
-	public static int pieceValue(PieceType pieceType) {
-		return pieceValues().get(pieceType);
+	private static int[] createPieceValuesArray() {
+		final int[] arr = new int[6];
+		arr[KING.ordinal()] = 10000000;
+		arr[QUEEN.ordinal()] = 975;
+		arr[ROOK.ordinal()] = 500;
+		arr[BISHOP.ordinal()] = 290;
+		arr[KNIGHT.ordinal()] = 280;
+		arr[PAWN.ordinal()] = 100;
+		return arr;
 	}
 }

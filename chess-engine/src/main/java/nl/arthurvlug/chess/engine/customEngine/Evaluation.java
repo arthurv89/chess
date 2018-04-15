@@ -1,5 +1,4 @@
 package nl.arthurvlug.chess.engine.customEngine;
 
-
-public abstract class Evaluation {
+abstract class Evaluation {
 }

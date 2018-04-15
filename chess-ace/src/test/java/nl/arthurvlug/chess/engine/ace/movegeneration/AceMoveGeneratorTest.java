@@ -2,16 +2,14 @@ package nl.arthurvlug.chess.engine.ace.movegeneration;
 
 import static nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator.*;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.*;
-import static nl.arthurvlug.chess.utils.board.FieldUtils.toIndex;
+import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import com.google.inject.matcher.Matchers;
 import java.util.List;
 
-import java.util.Optional;
 import nl.arthurvlug.chess.engine.EngineConstants;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
@@ -25,9 +23,9 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testKingMoves() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("b7"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, toIndex("a7"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("a1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("b7"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, fieldIdx("a7"));
 		engineBoard.finalizeBitboards();
 
 		List<Move> whiteMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE, false));
@@ -52,10 +50,10 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testCastlingMovesWhite() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("e1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, toIndex("h1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("e8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("h1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
 		engineBoard.finalizeBitboards();
 
 		List<Move> moves = castlingMoves(engineBoard);
@@ -65,10 +63,10 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testCastlingMovesWhite_rook_kingside_moved() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("e1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, toIndex("h1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("e8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("h1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
 		engineBoard.finalizeBitboards();
 
 		engineBoard.apply(ImmutableList.of("h1h8", "e8e7", "h8h1", "e7e8"));
@@ -80,10 +78,10 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testCastling_when_white_castled_kingside_then_verify_king_and_rook_position() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("e1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, toIndex("h1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("e8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("h1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
 		engineBoard.finalizeBitboards();
 
 		engineBoard.apply(ImmutableList.of("e1g1"));
@@ -96,10 +94,10 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testCastling_when_white_castled_queenside_then_verify_king_and_rook_position() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, true);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("e1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, toIndex("h1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("e8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("h1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
 		engineBoard.finalizeBitboards();
 
 		engineBoard.apply(ImmutableList.of("e1c1"));
@@ -112,10 +110,10 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testCastlingMovesBlack() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK, true);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("e1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, toIndex("a8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("e8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, toIndex("h8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("a8"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("h8"));
 		engineBoard.finalizeBitboards();
 
 		List<Move> moves = castlingMoves(engineBoard);
@@ -125,10 +123,10 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testCastling_when_black_castled_kingside_then_verify_king_and_rook_position() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK, true);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("e1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, toIndex("a8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("e8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, toIndex("h8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("a8"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("h8"));
 		engineBoard.finalizeBitboards();
 
 		engineBoard.apply(ImmutableList.of("e8g8"));
@@ -141,10 +139,10 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testCastling_when_black_castled_queenside_then_verify_king_and_rook_position() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.BLACK, true);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("e1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, toIndex("a8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("e8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, toIndex("h8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("e1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("a8"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("e8"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("h8"));
 		engineBoard.finalizeBitboards();
 
 		engineBoard.apply(ImmutableList.of("e8c8"));
@@ -157,12 +155,12 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testRookMoves() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("h8"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("a4"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("h6"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, toIndex("b2"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, toIndex("f1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("h8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.ROOK, fieldIdx("a1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("a4"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("h6"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.ROOK, fieldIdx("b2"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, fieldIdx("f1"));
 		engineBoard.finalizeBitboards();
 
 		List<Move> whiteMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE, false));
@@ -207,12 +205,12 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testKnightMoves() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("h8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("h6"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, toIndex("a1"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KNIGHT, toIndex("b2"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, toIndex("c4"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("a4"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("h8"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("h6"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KNIGHT, fieldIdx("a1"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KNIGHT, fieldIdx("b2"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, fieldIdx("c4"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("a4"));
 		engineBoard.finalizeBitboards();
 		
 		List<Move> whiteMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE, false));
@@ -240,17 +238,17 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testBishopMoves() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.BISHOP, toIndex("d1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("c1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("e1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("c2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("d2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("e2"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.BISHOP, toIndex("b7"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, toIndex("c6"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("c5"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("h8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("h6"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.BISHOP, fieldIdx("d1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("c1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("e1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("c2"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("d2"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("e2"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.BISHOP, fieldIdx("b7"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.PAWN, fieldIdx("c6"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("c5"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("h8"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("h6"));
 		engineBoard.finalizeBitboards();
 		
 		List<Move> whiteMoves = generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE, false));
@@ -280,15 +278,15 @@ public class AceMoveGeneratorTest {
 	@Test
 	public void testQueenMoves() throws Exception {
 		ACEBoard engineBoard = new ACEBoard(EngineConstants.WHITE, false);
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, toIndex("h6"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.QUEEN, toIndex("d1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("c1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("e1"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("c2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("d2"));
-		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, toIndex("e2"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, toIndex("h8"));
-		engineBoard.addPiece(EngineConstants.BLACK, PieceType.QUEEN, toIndex("a8"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.KING, fieldIdx("h6"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.QUEEN, fieldIdx("d1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("c1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("e1"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("c2"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("d2"));
+		engineBoard.addPiece(EngineConstants.WHITE, PieceType.PAWN, fieldIdx("e2"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.KING, fieldIdx("h8"));
+		engineBoard.addPiece(EngineConstants.BLACK, PieceType.QUEEN, fieldIdx("a8"));
 		engineBoard.finalizeBitboards();
 		
 //		List<Move> whiteMoves = EngineTestUtils.AceMoveGenerator.generateMoves(new ACEBoard(engineBoard, EngineConstants.WHITE));
