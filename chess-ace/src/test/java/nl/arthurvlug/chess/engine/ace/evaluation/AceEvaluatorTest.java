@@ -1,19 +1,19 @@
 package nl.arthurvlug.chess.engine.ace.evaluation;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Arrays;
-
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
-
+import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 public class AceEvaluatorTest {
 	private AceEvaluator aceEvaluator;
-	
+
 	@Before
 	public void before() {
+		AceConfiguration.DEBUG = true;
 		this.aceEvaluator = new AceEvaluator();
 	}
 	

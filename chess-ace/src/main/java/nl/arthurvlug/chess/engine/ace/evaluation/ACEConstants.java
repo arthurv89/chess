@@ -1,8 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.evaluation;
 
-import nl.arthurvlug.chess.utils.board.pieces.PieceType;
-
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
+import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
 
 class ACEConstants {
 	static int[] pawnPositionBonus = new int[] {
@@ -60,16 +58,22 @@ class ACEConstants {
 		-50,-30,-30,-30,-30,-30,-30,-50
 	};
 
-	public static int[] pieceValues = createPieceValuesArray();
+	static int[] pieceValues = createPieceValuesArray();
 
 	private static int[] createPieceValuesArray() {
-		final int[] arr = new int[6];
-		arr[KING.ordinal()] = 10000000;
-		arr[QUEEN.ordinal()] = 975;
-		arr[ROOK.ordinal()] = 500;
-		arr[BISHOP.ordinal()] = 290;
-		arr[KNIGHT.ordinal()] = 280;
-		arr[PAWN.ordinal()] = 100;
+		final int[] arr = new int[13];
+		arr[WHITE_KING_BYTE] = 10000000;
+		arr[WHITE_QUEEN_BYTE] = 975;
+		arr[WHITE_ROOK_BYTE] = 500;
+		arr[WHITE_BISHOP_BYTE] = 290;
+		arr[WHITE_KNIGHT_BYTE] = 280;
+		arr[WHITE_PAWN_BYTE] = 100;
+		arr[BLACK_KING_BYTE] = 10000000;
+		arr[BLACK_QUEEN_BYTE] = 975;
+		arr[BLACK_ROOK_BYTE] = 500;
+		arr[BLACK_BISHOP_BYTE] = 290;
+		arr[BLACK_KNIGHT_BYTE] = 280;
+		arr[BLACK_PAWN_BYTE] = 100;
 		return arr;
 	}
 }

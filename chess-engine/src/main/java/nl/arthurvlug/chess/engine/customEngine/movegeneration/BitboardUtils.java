@@ -6,8 +6,6 @@ import nl.arthurvlug.chess.utils.game.Move;
 
 import static nl.arthurvlug.chess.utils.StringToBoardConverter.conv;
 import static nl.arthurvlug.chess.utils.board.FieldUtils.coordinates;
-import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
-import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
 
 
 public class BitboardUtils {
@@ -18,7 +16,7 @@ public class BitboardUtils {
 		return new Move(coordinates(from), coordinates(to), Optional.empty());
 	}
 
-	public static String toBitboardString(long bitboard) {
+	public static String targetBitboardString(long bitboard) {
 		StringBuilder paddedBinaryString = new StringBuilder();
 		String binaryString = Long.toBinaryString(bitboard);
 		for (int i = 0; i < 64 - binaryString.length(); i++) {

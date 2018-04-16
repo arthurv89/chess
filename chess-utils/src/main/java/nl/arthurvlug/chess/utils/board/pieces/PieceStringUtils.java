@@ -2,7 +2,7 @@ package nl.arthurvlug.chess.utils.board.pieces;
 
 import java.util.Optional;
 
-public class PieceUtils {
+public class PieceStringUtils {
 	public static final PieceCharacterConverter pieceToCharacterConverter = new PieceCharacterConverter();
 	public static final PieceToChessSymbolConverter pieceToChessSymbolMap = new PieceToChessSymbolConverter();
 

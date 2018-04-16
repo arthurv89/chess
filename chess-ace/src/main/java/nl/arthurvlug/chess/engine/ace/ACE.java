@@ -6,7 +6,7 @@ import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
-import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
+import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.CustomEngine;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.utils.game.Move;
@@ -25,7 +25,7 @@ public class ACE extends CustomEngine {
 		this(depth, DEFAULT_EVALUATOR, DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
-	ACE(final int depth, final BoardEvaluator<ACEBoard, Integer> evaluator, final int quiesceMaxDepth) {
+	ACE(final int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
 		this(builder()
 				.searchDepth(depth)
 				.evaluator(evaluator)

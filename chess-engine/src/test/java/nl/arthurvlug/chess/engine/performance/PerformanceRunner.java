@@ -1,10 +1,6 @@
 package nl.arthurvlug.chess.engine.performance;
 
 import lombok.extern.slf4j.Slf4j;
-import nl.arthurvlug.chess.engine.customEngine.AbstractEngineBoard;
-
-import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
-import org.joda.time.DateTime;
 
 @Slf4j
 public class PerformanceRunner {

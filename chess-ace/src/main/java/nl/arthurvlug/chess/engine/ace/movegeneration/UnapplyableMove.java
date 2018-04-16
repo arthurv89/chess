@@ -1,34 +1,45 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
-import java.util.Optional;
-import javax.annotation.Nullable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import nl.arthurvlug.chess.engine.customEngine.EngineMove;
-import nl.arthurvlug.chess.utils.MoveUtils;
-import nl.arthurvlug.chess.utils.board.Coordinates;
-import nl.arthurvlug.chess.utils.board.FieldUtils;
-import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
-import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
-@Getter
-@AllArgsConstructor
 public class UnapplyableMove extends EngineMove {
-	// TODO: Change from, to and promotionPiece into byte, byte and @Nullable PieceType
-	private Coordinates from;
-	private Coordinates to;
-	private Optional<PieceType> promotionPiece;
+	public static final byte NO_PROMOTION = 1;
+	private static final int targetMask = ((byte) -1) << 8;
+	private static final int takePieceMask = ((byte) -1) << 16;
+	private static final int movingPieceMask = ((byte) -1) << 24;
 
-	@Nullable
-	private ColoredPiece takePiece;
+//	private byte from;
+//	private byte target;
+//	private byte takePiece;
+//	private byte promotionPiece;
 
-	@Override
-	public String toString() {
-		return FieldUtils.fieldToString(from) + FieldUtils.fieldToString(to) + MoveUtils.promotionToString(promotionPiece);
+	private UnapplyableMove() {
+		throw new RuntimeException("Can't create this");
+	}
+
+	public static byte fromIdx(final int move) {
+		return (byte) move;
+	}
+
+	public static byte targetIdx(final int move) {
+		return (byte) ((move & targetMask) >> 8);
+	}
+
+	public static byte takePiece(final int move) {
+		return (byte) ((move & takePieceMask) >> 16);
+	}
+
+	public static byte movingPiece(final int move) {
+		return (byte) ((move & movingPieceMask) >> 24);
+	}
+
+	public static int create(final byte fromIdx, final byte targetIdx, final byte movingPiece, final byte takePiece, final byte promotionPiece) {
+		return fromIdx | targetIdx << 8 | takePiece << 16 | movingPiece << 24;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		return toString().equals(obj.toString());
 	}
+
 }

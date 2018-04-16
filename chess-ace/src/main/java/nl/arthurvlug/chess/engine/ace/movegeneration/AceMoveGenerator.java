@@ -5,15 +5,13 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.utils.board.Coordinates;
-import nl.arthurvlug.chess.utils.board.FieldUtils;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove.NO_PROMOTION;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.*;
 
 public class AceMoveGenerator {
@@ -23,13 +21,14 @@ public class AceMoveGenerator {
 	/**
 	 * Generates both valid moves and invalid moves
 	 */
-	public static List<UnapplyableMove> generateMoves(ACEBoard engineBoard) {
+	// TODO: Change this to a generator/lazy iterator
+	public static List<Integer> generateMoves(ACEBoard engineBoard) {
 		Preconditions.checkArgument(engineBoard.occupied_board != 0L);
 		Preconditions.checkArgument(engineBoard.enemy_and_empty_board != 0L);
 
-		final List<UnapplyableMove> list = new ArrayList<>();
-		list.addAll(knightMoves(engineBoard));
+		final List<Integer> list = new ArrayList<>();
 		list.addAll(pawnMoves(engineBoard));
+		list.addAll(knightMoves(engineBoard));
 		list.addAll(rookMoves(engineBoard));
 		list.addAll(bishopMoves(engineBoard));
 		list.addAll(queenMoves(engineBoard));
@@ -39,16 +38,16 @@ public class AceMoveGenerator {
 		return list;
 	}
 
-	private static List<UnapplyableMove> pawnMoves(ACEBoard engineBoard) {
+	private static List<Integer> pawnMoves(ACEBoard engineBoard) {
 		// TODO: Convert to arrays
 		long[] pawnXrayOneFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_one_field_move : pawn_xray_black_one_field_move;
 		long[] pawnXrayTwoFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_two_field_move : pawn_xray_black_two_field_move;;
 		long[] pawnXrayTakeFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_take_field_move : pawn_xray_black_take_field_move;;
 
-		List<UnapplyableMove> moves = new ArrayList<>();
+		List<Integer> moves = new ArrayList<>();
 		long pawns = pawns(engineBoard);
 		while(pawns != 0L) {
-			int sq = Long.numberOfTrailingZeros(pawns);
+			byte sq = (byte) Long.numberOfTrailingZeros(pawns);
 			pawns -= 1L << sq;
 
 			long oneFieldMove = pawnXrayOneFieldMove[sq] & engineBoard.unoccupied_board;
@@ -64,11 +63,11 @@ public class AceMoveGenerator {
 		return moves;
 	}
 
-	private static List<UnapplyableMove> queenMoves(ACEBoard engineBoard) {
-		List<UnapplyableMove> moves = new ArrayList<>();
+	private static List<Integer> queenMoves(ACEBoard engineBoard) {
+		List<Integer> moves = new ArrayList<>();
 		long queens = queens(engineBoard);
 		while(queens != 0L) {
-			int sq = Long.numberOfTrailingZeros(queens);
+			byte sq = (byte) Long.numberOfTrailingZeros(queens);
 
 			long queen_perpendicular_moves = bishopMoves(engineBoard, sq);
 			long queen_diagonal_moves = rookMoves(engineBoard, sq);
@@ -80,11 +79,11 @@ public class AceMoveGenerator {
 		return moves;
 	}
 
-	private static List<UnapplyableMove> bishopMoves(ACEBoard engineBoard) {
-		List<UnapplyableMove> moves = new ArrayList<>();
+	private static List<Integer> bishopMoves(ACEBoard engineBoard) {
+		List<Integer> moves = new ArrayList<>();
 		long bishops = bishops(engineBoard);
 		while(bishops != 0L) {
-			int sq = Long.numberOfTrailingZeros(bishops);
+			byte sq = (byte) Long.numberOfTrailingZeros(bishops);
 
 			long bishop_moves = bishopMoves(engineBoard, sq);
 
@@ -94,7 +93,7 @@ public class AceMoveGenerator {
 		return moves;
 	}
 
-	private static long bishopMoves(ACEBoard engineBoard, int sq) {
+	private static long bishopMoves(ACEBoard engineBoard, byte sq) {
 		long deg45_moves = deg45_board[sq] & engineBoard.occupied_board;
 		deg45_moves = (deg45_moves<<9) | (deg45_moves<<18) | (deg45_moves<<27) | (deg45_moves<<36) | (deg45_moves<<45) | (deg45_moves<<54);
 		deg45_moves = deg45_moves & deg45_board[sq];
@@ -114,11 +113,11 @@ public class AceMoveGenerator {
 		return deg45_moves | deg225_moves | deg135_moves | deg315_moves;
 	}
 
-	private static List<UnapplyableMove> rookMoves(ACEBoard engineBoard) {
-		List<UnapplyableMove> moves = new ArrayList<>();
+	private static List<Integer> rookMoves(ACEBoard engineBoard) {
+		List<Integer> moves = new ArrayList<>();
 		long rooks = rooks(engineBoard);
 		while(rooks != 0L) {
-			int sq = Long.numberOfTrailingZeros(rooks);
+			byte sq = (byte) Long.numberOfTrailingZeros(rooks);
 
 			long rook_moves = rookMoves(engineBoard, sq);
 
@@ -128,7 +127,7 @@ public class AceMoveGenerator {
 		return moves;
 	}
 
-	private static long rookMoves(ACEBoard engineBoard, int sq) {
+	private static long rookMoves(ACEBoard engineBoard, byte sq) {
 		long right_moves = right_board[sq] & engineBoard.occupied_board;
 		right_moves = (right_moves<<1) | (right_moves<<2) | (right_moves<<3) | (right_moves<<4) | (right_moves<<5) | (right_moves<<6);
 		right_moves = right_moves & right_board[sq];
@@ -148,11 +147,11 @@ public class AceMoveGenerator {
 		return right_moves | left_moves | up_moves | down_moves;
 	}
 
-	private static List<UnapplyableMove> knightMoves(ACEBoard engineBoard) {
-		List<UnapplyableMove> moves = new ArrayList<>();
+	private static List<Integer> knightMoves(ACEBoard engineBoard) {
+		List<Integer> moves = new ArrayList<>();
 		long knights = knights(engineBoard);
 		while(knights != 0L) {
-			int sq = Long.numberOfTrailingZeros(knights);
+			byte sq = (byte) Long.numberOfTrailingZeros(knights);
 			long destinationBitboard = Xray.knight_xray[sq] & engineBoard.enemy_and_empty_board;
 			knights -= 1L << sq;
 			moves.addAll(moves(sq, destinationBitboard, engineBoard));
@@ -160,8 +159,8 @@ public class AceMoveGenerator {
 		return moves;
 	}
 
-	private static List<UnapplyableMove> kingMoves(ACEBoard engineBoard) {
-		int sq = Long.numberOfTrailingZeros(kings(engineBoard));
+	private static List<Integer> kingMoves(ACEBoard engineBoard) {
+		byte sq = (byte) Long.numberOfTrailingZeros(kings(engineBoard));
 		if(sq == 64) {
 			return Collections.emptyList();
 		}
@@ -170,34 +169,28 @@ public class AceMoveGenerator {
 		return moves(sq, destinationBitboard, engineBoard);
 	}
 
-	static List<UnapplyableMove> castlingMoves(final ACEBoard engineBoard) {
-		final List<UnapplyableMove> moves = new ArrayList<>();
+	static List<Integer> castlingMoves(final ACEBoard engineBoard) {
+		final List<Integer> moves = new ArrayList<>();
 		if(ColorUtils.isWhite(engineBoard.toMove)) {
-			Coordinates fromCoordinate = FieldUtils.coordinates(4);
 			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.white_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
 			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.white_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
 			if(canCastleQueenSide) {
-				Coordinates toCoordinate = FieldUtils.coordinates(2);
-				UnapplyableMove move = UnapplyableMoveUtils.toMove(fromCoordinate, toCoordinate, Optional.empty(), engineBoard);
+				Integer move = UnapplyableMoveUtils.createMove((byte) 4, (byte) 2, NO_PROMOTION, engineBoard);
 				moves.add(move);
 			}
 			if(canCastleKingSide) {
-				Coordinates toCoordinate = FieldUtils.coordinates(6);
-				UnapplyableMove move = UnapplyableMoveUtils.toMove(fromCoordinate, toCoordinate, Optional.empty(), engineBoard);
+				Integer move = UnapplyableMoveUtils.createMove((byte) 4, (byte) 6, NO_PROMOTION, engineBoard);
 				moves.add(move);
 			}
 		} else {
-			Coordinates fromCoordinate = FieldUtils.coordinates(60);
 			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.black_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
 			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.black_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
 			if(canCastleQueenSide) {
-				Coordinates toCoordinate = FieldUtils.coordinates(58);
-				UnapplyableMove move = UnapplyableMoveUtils.toMove(fromCoordinate, toCoordinate, Optional.empty(), engineBoard);
+				Integer move = UnapplyableMoveUtils.createMove((byte) 60, (byte) 58, NO_PROMOTION, engineBoard);
 				moves.add(move);
 			}
 			if(canCastleKingSide) {
-				Coordinates toCoordinate = FieldUtils.coordinates(62);
-				UnapplyableMove move = UnapplyableMoveUtils.toMove(fromCoordinate, toCoordinate, Optional.empty(), engineBoard);
+				Integer move = UnapplyableMoveUtils.createMove((byte) 60, (byte) 62, NO_PROMOTION, engineBoard);
 				moves.add(move);
 			}
 		}
@@ -213,17 +206,15 @@ public class AceMoveGenerator {
 				&& (xRay & engineBoard.occupied_board) == 0L;
 	}
 
-	private static List<UnapplyableMove> moves(int index, long bitboard, final ACEBoard engineBoard) {
-		List<UnapplyableMove> moves = new ArrayList<>();
-		Coordinates fromCoordinate = FieldUtils.coordinates(index);
+	private static List<Integer> moves(byte fromIdx, long bitboard, final ACEBoard engineBoard) {
+		List<Integer> moves = new ArrayList<>();
 
 		while(bitboard != 0) {
-			int onePos = Long.numberOfTrailingZeros(bitboard);
-			Coordinates toCoordinate = FieldUtils.coordinates(onePos);
-			UnapplyableMove move = UnapplyableMoveUtils.toMove(fromCoordinate, toCoordinate, Optional.empty(), engineBoard);
+			byte targetIdx = (byte) Long.numberOfTrailingZeros(bitboard);
+			Integer move = UnapplyableMoveUtils.createMove(fromIdx, targetIdx, NO_PROMOTION, engineBoard);
 			moves.add(move);
 
-			bitboard -= 1L << onePos;
+			bitboard -= 1L << targetIdx;
 		}
 		return moves;
 	}

@@ -1,20 +1,24 @@
 package nl.arthurvlug.chess.engine.ace.evaluation;
 
-import static org.junit.Assert.*;
-
 import java.util.Arrays;
 import java.util.List;
-
+import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.utils.game.Move;
-import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
-
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
+
 public class NotPlayTest {
 	private AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
+
+	@Before
+	public void before() {
+		AceConfiguration.DEBUG = true;
+	}
 
 	@Ignore
 	@Test

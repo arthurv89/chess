@@ -6,7 +6,6 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
-import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import org.apache.crunch.CombineFn;
 import org.apache.crunch.DoFn;
 import org.apache.crunch.Emitter;
@@ -20,7 +19,7 @@ public class Functions {
 		private static final long serialVersionUID = 1L;
 		public void process(final Position position, final Emitter<Position> emitter) {
 			final ACEBoard board = createBoard(position);
-			for(UnapplyableMove newMove : AceMoveGenerator.generateMoves(board)) {
+			for(Integer newMove : AceMoveGenerator.generateMoves(board)) {
 				Position childPosition = new Position(newMove.toString(), position);
 				emitter.emit(childPosition);
 			}

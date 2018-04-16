@@ -1,7 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.transpositiontable;
 
 import com.google.common.base.Preconditions;
-import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 
 public class TranspositionTable {
 	private HashElement[] hash_table;
@@ -35,7 +34,7 @@ public class TranspositionTable {
 		return zobristKey & TableSizeMask;
 	}
 
-	public void set(int depth, int val, int hashf, final UnapplyableMove bestMove, final int zobristHash) {
+	public void set(int depth, int val, int hashf, final Integer bestMove, final int zobristHash) {
 		int hashKey = hashKey(zobristHash);
 		HashElement phashe = hash_table[hashKey];
 		if(phashe == null) {

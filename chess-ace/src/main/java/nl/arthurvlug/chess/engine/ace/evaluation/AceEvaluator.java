@@ -3,53 +3,52 @@ package nl.arthurvlug.chess.engine.ace.evaluation;
 import com.google.common.collect.LinkedHashMultimap;
 import java.util.List;
 import java.util.Set;
+import nl.arthurvlug.chess.engine.ace.PieceUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
-import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
-import nl.arthurvlug.chess.utils.board.Coordinates;
-import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
-import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.game.Move;
 
-public class AceEvaluator implements BoardEvaluator<ACEBoard, Integer> {
+import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
+
+public class AceEvaluator extends BoardEvaluator {
 	private int whiteBishopCount;
 	private int blackBishopCount;
 
+	@Override
 	public Integer evaluate(final ACEBoard aceBoard) {
-		final List<UnapplyableMove> moves = AceMoveGenerator.generateMoves(aceBoard);
-		LinkedHashMultimap<Integer, UnapplyableMove> byFromPositionMap = byFromPosition(moves);
+		final List<Integer> moves = AceMoveGenerator.generateMoves(aceBoard);
+		LinkedHashMultimap<Byte, Integer> byFromPositionMap = byFromPosition(moves);
 		int score = 0;
 
 		long occupiedBoard = aceBoard.occupied_board;
 		while(occupiedBoard != 0L) {
-			final int fieldIdx = Long.numberOfTrailingZeros(occupiedBoard);
+			final byte fieldIdx = (byte) Long.numberOfTrailingZeros(occupiedBoard);
 
-			final ColoredPiece coloredPiece = aceBoard.pieceAt(fieldIdx);
+			final short coloredPiece = aceBoard.coloredPiece(fieldIdx);
 			score += pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx));
-//			System.out.println(FieldUtils.coordinates(fieldIdx) + " -> " + pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx)));
 			occupiedBoard ^= 1L << fieldIdx;
 		}
 		return score;
 	}
 
 
-	private LinkedHashMultimap<Integer, UnapplyableMove> byFromPosition(final List<UnapplyableMove> moves) {
-		final LinkedHashMultimap<Integer, UnapplyableMove> multiMap = LinkedHashMultimap.create();
-		for (final UnapplyableMove move : moves) {
-			final Coordinates from = move.getFrom();
-			final Integer fromIdx = FieldUtils.fieldIdx(from);
+	// TODO: Make more efficient by using an array with in there the pieces?
+	private LinkedHashMultimap<Byte, Integer> byFromPosition(final List<Integer> moves) {
+		final LinkedHashMultimap<Byte, Integer> multiMap = LinkedHashMultimap.create();
+		for (final Integer move : moves) {
+			final byte fromIdx = UnapplyableMove.fromIdx(move);
 			multiMap.put(fromIdx, move);
 		}
 		return multiMap;
 	}
 
 
-	private int pieceScore(final int fieldIdx, final ColoredPiece coloredPiece, final Set<UnapplyableMove> moves) {
+	private int pieceScore(final int fieldIdx, final short coloredPiece, final Set<Integer> moves) {
 		int totalScore = 0;
 
-		final int pieceValue = ACEConstants.pieceValues[coloredPiece.getPieceType().ordinal()];
+		final int pieceValue = ACEConstants.pieceValues[coloredPiece];
 		totalScore += pieceValue;
 
 		final int extraScore = extraScore(fieldIdx, coloredPiece);
@@ -58,7 +57,7 @@ public class AceEvaluator implements BoardEvaluator<ACEBoard, Integer> {
 //		int mobilityScore = mobilityScore(moves);
 //		totalScore += mobilityScore;
 
-		return coloredPiece.getColor().isWhite()
+		return PieceUtils.isWhitePiece(coloredPiece)
 				? totalScore
 				: -totalScore;
 	}
@@ -69,14 +68,21 @@ public class AceEvaluator implements BoardEvaluator<ACEBoard, Integer> {
 	}
 
 
-	private int extraScore(final int fieldIdx, final ColoredPiece coloredPiece) {
-		switch (coloredPiece.getPieceType()) {
-			case PAWN: return pawnBonus(fieldIdx, coloredPiece.getColor());
-			case KNIGHT: return knightBonus(fieldIdx, coloredPiece.getColor());
-			case BISHOP: return bishopBonus(fieldIdx, coloredPiece.getColor());
-			case ROOK: return rookBonus(fieldIdx, coloredPiece.getColor());
-			case QUEEN: return queenBonus(fieldIdx, coloredPiece.getColor());
-			case KING: return kingBonus(fieldIdx, coloredPiece.getColor());
+	private int extraScore(final int fieldIdx, final short coloredPiece) {
+		switch (coloredPiece) {
+			case WHITE_PAWN_BYTE:   return pawnBonus(fieldIdx, Color.WHITE);
+			case WHITE_KNIGHT_BYTE: return knightBonus(fieldIdx, Color.WHITE);
+			case WHITE_BISHOP_BYTE: return bishopBonus(fieldIdx, Color.WHITE);
+			case WHITE_ROOK_BYTE:   return rookBonus(fieldIdx, Color.WHITE);
+			case WHITE_QUEEN_BYTE:  return queenBonus(fieldIdx, Color.WHITE);
+			case WHITE_KING_BYTE:   return kingBonus(fieldIdx, Color.WHITE);
+
+			case BLACK_PAWN_BYTE:   return pawnBonus(fieldIdx, Color.BLACK);
+			case BLACK_KNIGHT_BYTE: return knightBonus(fieldIdx, Color.BLACK);
+			case BLACK_BISHOP_BYTE: return bishopBonus(fieldIdx, Color.BLACK);
+			case BLACK_ROOK_BYTE:   return rookBonus(fieldIdx, Color.BLACK);
+			case BLACK_QUEEN_BYTE:  return queenBonus(fieldIdx, Color.BLACK);
+			case BLACK_KING_BYTE:   return kingBonus(fieldIdx, Color.BLACK);
 		}
 		throw new RuntimeException("Not yet implemented");
 	}

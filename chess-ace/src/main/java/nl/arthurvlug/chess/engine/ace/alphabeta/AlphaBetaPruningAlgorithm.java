@@ -9,12 +9,13 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
+import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.HashElement;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable;
-import nl.arthurvlug.chess.engine.customEngine.BoardEvaluator;
-import nl.arthurvlug.chess.engine.customEngine.ChessEngineConfiguration;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 
 import static java.util.Collections.swap;
@@ -32,7 +33,7 @@ public class AlphaBetaPruningAlgorithm {
 	@Getter
 	private int hashHits;
 
-	private BoardEvaluator<ACEBoard, Integer> evaluator;
+	private BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
 	private int depth;
 //	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
@@ -44,7 +45,7 @@ public class AlphaBetaPruningAlgorithm {
 
 	private ACEBoard engineBoard;
 
-	public AlphaBetaPruningAlgorithm(final ChessEngineConfiguration<ACEBoard, Integer> configuration) {
+	public AlphaBetaPruningAlgorithm(final AceConfiguration configuration) {
 		this.evaluator = configuration.getEvaluator();
 		this.quiesceMaxDepth = configuration.getQuiesceMaxDepth();
 		this.depth = configuration.getSearchDepth();
@@ -58,22 +59,23 @@ public class AlphaBetaPruningAlgorithm {
 		nodesEvaluated = 0;
 		hashHits = 0;
 
-		Optional<UnapplyableMove> priorityMove = Optional.empty();
+		Optional<Integer> priorityMove = Optional.empty();
 		for (int depthNow = 1; depthNow <= depth; depthNow++) {
-			final UnapplyableMove bestMove = alphaBetaRoot(depthNow, priorityMove);
+			final Integer bestMove = alphaBetaRoot(depthNow, priorityMove);
 			if(bestMove == null) {
 				return null;
 			}
 			priorityMove = Optional.of(bestMove);
 		}
-		UnapplyableMove unapplyableMove = priorityMove.get();
-		return new Move(unapplyableMove.getFrom(),
-				unapplyableMove.getTo(),
-				unapplyableMove.getPromotionPiece());
+		Integer unapplyableMove = priorityMove.get();
+		return new Move(
+				FieldUtils.coordinates(UnapplyableMove.fromIdx(unapplyableMove)),
+				FieldUtils.coordinates(UnapplyableMove.targetIdx(unapplyableMove)),
+				Optional.empty());
 	}
 
-	private UnapplyableMove alphaBetaRoot(final int depth, final Optional<UnapplyableMove> priorityMove) {
-		final List<UnapplyableMove> generatedMoves = engineBoard.generateMoves();
+	private Integer alphaBetaRoot(final int depth, final Optional<Integer> priorityMove) {
+		final List<Integer> generatedMoves = engineBoard.generateMoves();
 		reorder(generatedMoves, priorityMove);
 
 		// TODO: Remove
@@ -82,8 +84,8 @@ public class AlphaBetaPruningAlgorithm {
 
 		int alpha = OTHER_PLAYER_WINS;
 		int beta = CURRENT_PLAYER_WINS;
-		UnapplyableMove bestMove = null;
-		for(UnapplyableMove move : generatedMoves) {
+		Integer bestMove = null;
+		for(int move : generatedMoves) {
 			// Do a recursive search
 			engineBoard.apply(move);
 //			int score = 0;
@@ -102,7 +104,7 @@ public class AlphaBetaPruningAlgorithm {
 		return bestMove;
 	}
 
-	private void reorder(final List<UnapplyableMove> moves, final Optional<UnapplyableMove> priorityMove) {
+	private void reorder(final List<Integer> moves, final Optional<Integer> priorityMove) {
 		priorityMove.flatMap(prioMove -> {
 			Stream<Integer> range = IntStream.range(0, moves.size()).boxed();
 			return range
@@ -112,7 +114,7 @@ public class AlphaBetaPruningAlgorithm {
 		.ifPresent(pos -> swap(moves, 0, pos));
 	}
 
-	private Stream<Integer> findPrioPosition(final List<UnapplyableMove> generatedMoves, final UnapplyableMove prioMove, final Integer i) {
+	private Stream<Integer> findPrioPosition(final List<Integer> generatedMoves, final Integer prioMove, final Integer i) {
 		if (generatedMoves.get(i).equals(prioMove)) {
 			return Stream.of(i);
 		}
@@ -144,10 +146,10 @@ public class AlphaBetaPruningAlgorithm {
 			return quiesceSearch(alpha, beta, quiesceMaxDepth);
 		}
 		
-		List<UnapplyableMove> generatedMoves = engineBoard.generateMoves();
+		List<Integer> generatedMoves = engineBoard.generateMoves();
 
-		UnapplyableMove bestMove = null;
-		for(final UnapplyableMove move : generatedMoves) {
+		Integer bestMove = null;
+		for(final Integer move : generatedMoves) {
 			// Do a recursive search
 			engineBoard.apply(move);
 			int score = -alphaBeta(-beta, -alpha, depth-1);
@@ -192,8 +194,8 @@ public class AlphaBetaPruningAlgorithm {
 			return OTHER_PLAYER_WINS;
 		}
 
-		final List<UnapplyableMove> takeMoves = engineBoard.generateTakeMoves();
-		for(UnapplyableMove takeMove : takeMoves) {
+		final List<Integer> takeMoves = engineBoard.generateTakeMoves();
+		for(Integer takeMove : takeMoves) {
 			engineBoard.apply(takeMove);
 			final int score = -quiesceSearch(-beta, -alpha, depth-1);
 			engineBoard.unapply(takeMove);
@@ -222,15 +224,15 @@ public class AlphaBetaPruningAlgorithm {
 		return score;
 	}
 
-	void setDepth(final int depth) {
+	public void setDepth(final int depth) {
 		this.depth = depth;
 	}
 
-	void disableQuesce() {
+	public void disableQuesce() {
 		this.quiesceEnabled = false;
 	}
 
-	void useSimplePieceEvaluator() {
+	public void useSimplePieceEvaluator() {
 		this.evaluator = new SimplePieceEvaluator();
 	}
 }

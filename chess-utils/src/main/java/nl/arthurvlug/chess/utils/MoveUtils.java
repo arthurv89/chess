@@ -6,9 +6,10 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import nl.arthurvlug.chess.utils.board.Coordinates;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
+import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
-import nl.arthurvlug.chess.utils.board.pieces.PieceUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 
 import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldToString;
@@ -16,7 +17,7 @@ import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldToString;
 public class MoveUtils {
 	private static final Function<Move, String> TO_ENGINE_MOVES = move -> toEngineMove(move);
 	private static final Function<PieceType, String> TO_CHARACTER = pieceType -> {
-		return PieceUtils.toCharacterString(pieceType, Color.BLACK, PieceUtils.pieceToCharacterConverter); // Lowercase
+		return PieceStringUtils.toCharacterString(pieceType, Color.BLACK, PieceStringUtils.pieceToCharacterConverter); // Lowercase
 	};
 	
 	public static String toEngineMoves(List<Move> moves) {
@@ -35,17 +36,12 @@ public class MoveUtils {
 	}
 
 	public static Move toMove(String sMove) {
-		Coordinates from = toField(sMove.substring(0, 2));
-		Coordinates to = toField(sMove.substring(2, 4));
+		Coordinates from = FieldUtils.coordinates(sMove.substring(0, 2));
+		Coordinates to = FieldUtils.coordinates(sMove.substring(2, 4));
 		Optional<PieceType> promotionPiece = sMove.length() == 5
-				? PieceUtils.fromChar(sMove.charAt(4), PieceUtils.pieceToCharacterConverter)
+				? PieceStringUtils.fromChar(sMove.charAt(4), PieceStringUtils.pieceToCharacterConverter)
 				: Optional.empty();
 		return new Move(from, to, promotionPiece);
 	}
-	
-	public static Coordinates toField(String substring) {
-		int x = substring.charAt(0) - 'a';
-		int y = substring.charAt(1) - '1';
-		return new Coordinates(x, y);
-	}
+
 }

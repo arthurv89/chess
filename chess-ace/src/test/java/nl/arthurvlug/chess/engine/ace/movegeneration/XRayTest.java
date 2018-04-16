@@ -1,13 +1,19 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
-import static org.junit.Assert.assertEquals;
-import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
+import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.utils.board.Coordinates;
-
 import nl.arthurvlug.chess.utils.board.FieldUtils;
+import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 public class XRayTest {
+	@Before
+	public void before() {
+		AceConfiguration.DEBUG = true;
+	}
+
 	@Test
 	public void testKingXRay() {
 		long[] xray = Xray.king_xray;
