@@ -147,7 +147,7 @@ public class ACEBoard {
 		}
 		byte movingPiece = UnapplyableMove.movingPiece(move);
 
-		xorMove(targetBitboard, fromBitboard, movingPiece);
+		xorMove(targetBitboard, fromBitboard, movingPiece, true);
 		xorTakePiece(move, targetBitboard);
 
 		this.toMove = opponent(this.toMove);
@@ -165,14 +165,14 @@ public class ACEBoard {
 		long fromBitboard = 1L << fromIdx;
 
 		// This is a reverse move
-		xorMove(fromBitboard, targetBitboard, movingPiece);
+		xorMove(fromBitboard, targetBitboard, movingPiece, false);
 
 		xorTakePiece(move, targetBitboard);
 
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, movingPiece, UnapplyableMove.takePiece(move));
 	}
 
-	private void xorMove(final long targetBitboard, final long fromBitboard, final short movingPiece) {
+	private void xorMove(final long targetBitboard, final long fromBitboard, final short movingPiece, final boolean isApply) {
 		// TODO: Remove if statement
 		if(isWhite(toMove)) {
 			switch (movingPiece) {
@@ -181,7 +181,7 @@ public class ACEBoard {
 				case WHITE_BISHOP_BYTE: moveWhiteBishop(fromBitboard, targetBitboard); break;
 				case WHITE_ROOK_BYTE:   moveWhiteRook  (fromBitboard, targetBitboard); break;
 				case WHITE_QUEEN_BYTE:  moveWhiteQueen (fromBitboard, targetBitboard); break;
-				case WHITE_KING_BYTE:   moveWhiteKing  (fromBitboard, targetBitboard); break;
+				case WHITE_KING_BYTE:   moveWhiteKing  (fromBitboard, targetBitboard, isApply); break;
 			}
 			recalculateWhiteOccupiedSquares();
 		} else {
@@ -191,7 +191,7 @@ public class ACEBoard {
 				case BLACK_BISHOP_BYTE: moveBlackBishop(fromBitboard, targetBitboard); break;
 				case BLACK_ROOK_BYTE:   moveBlackRook  (fromBitboard, targetBitboard); break;
 				case BLACK_QUEEN_BYTE:  moveBlackQueen (fromBitboard, targetBitboard); break;
-				case BLACK_KING_BYTE:   moveBlackKing  (fromBitboard, targetBitboard); break;
+				case BLACK_KING_BYTE:   moveBlackKing  (fromBitboard, targetBitboard, isApply); break;
 			}
 			recalculateBlackOccupiedSquares();
 		}
@@ -295,12 +295,12 @@ public class ACEBoard {
 		white_queens ^= targetBitboard;
 	}
 
-	private void moveWhiteKing(final long fromBitboard, final long targetBitboard) {
+	private void moveWhiteKing(final long fromBitboard, final long targetBitboard, final boolean isApply) {
 		white_king_or_rook_queen_side_moved = true;
 		white_king_or_rook_king_side_moved = true;
 		white_kings ^= fromBitboard;
 		white_kings ^= targetBitboard;
-		if(fromBitboard == e1Bitboard) {
+		if(isApply && fromBitboard == e1Bitboard || !isApply && targetBitboard == e1Bitboard) {
 			if (targetBitboard == c1Bitboard) {
 				this.white_rooks ^= a1Bitboard;
 				this.white_rooks ^= d1Bitboard;
@@ -311,19 +311,31 @@ public class ACEBoard {
 		}
 	}
 
-	private void moveBlackKing(final long fromBitboard, final long targetBitboard) {
+	private void moveBlackKing(final long fromBitboard, final long targetBitboard, final boolean isApply) {
 		black_king_or_rook_queen_side_moved = true;
 		black_king_or_rook_king_side_moved = true;
 		black_kings ^= fromBitboard;
 		black_kings ^= targetBitboard;
 
-		if (fromBitboard == e8Bitboard) {
-			if (targetBitboard == c8Bitboard) {
-				this.black_rooks ^= a8Bitboard;
-				this.black_rooks ^= d8Bitboard;
-			} else if (targetBitboard == g8Bitboard) {
-				this.black_rooks ^= h8Bitboard;
-				this.black_rooks ^= f8Bitboard;
+		if(isApply) {
+			if (fromBitboard == e8Bitboard) {
+				if (targetBitboard == c8Bitboard) {
+					this.black_rooks ^= a8Bitboard;
+					this.black_rooks ^= d8Bitboard;
+				} else if (targetBitboard == g8Bitboard) {
+					this.black_rooks ^= h8Bitboard;
+					this.black_rooks ^= f8Bitboard;
+				}
+			}
+		} else {
+			if (targetBitboard == e8Bitboard) {
+				if (fromBitboard == c8Bitboard) {
+					this.black_rooks ^= a8Bitboard;
+					this.black_rooks ^= d8Bitboard;
+				} else if (fromBitboard == g8Bitboard) {
+					this.black_rooks ^= h8Bitboard;
+					this.black_rooks ^= f8Bitboard;
+				}
 			}
 		}
 	}

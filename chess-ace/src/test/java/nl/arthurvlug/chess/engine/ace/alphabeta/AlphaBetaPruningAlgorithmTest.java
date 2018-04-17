@@ -1,9 +1,9 @@
-package nl.arthurvlug.chess.engine.ace;
+package nl.arthurvlug.chess.engine.ace.alphabeta;
 
 import com.google.common.base.Splitter;
 import java.util.List;
 import java.util.function.Function;
-import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
+import nl.arthurvlug.chess.engine.ace.ACE;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;

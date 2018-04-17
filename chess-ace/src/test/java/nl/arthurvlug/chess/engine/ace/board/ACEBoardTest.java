@@ -1,10 +1,13 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
 import com.google.common.collect.ImmutableList;
+import java.util.List;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
+import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
+import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,6 +15,7 @@ import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromBoard;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class ACEBoardTest {
@@ -28,6 +32,25 @@ public class ACEBoardTest {
 	@Before
 	public void before() {
 		AceConfiguration.DEBUG = true;
+	}
+
+	@Test
+	public void testInvalidRookMove() throws Exception {
+		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
+		final List<String> moves = ImmutableList.of(
+				"d2d4", "d7d5", "b1c3", "b8c6", "c1f4", "c8f5", "c3b5", "a8c8",
+				"g1f3", "e7e6", "b5c7", "c8c7", "f4c7", "d8c7", "e2e3", "c7b6",
+				"d1c1", "c6b4", "f1d3", "f5d3", "e1d2", "d3e4", "c2c4", "b4c2",
+				"a1b1", "f8b4", "d2d1", "c2e3", "f2e3", "e4b1", "c4c5", "b6a5",
+				"c1b1", "g8f6", "a2a3", "a5a4", "d1c1", "b4a5", "b1d3", "f6e4",
+				"h1f1", "a5c7", "c1b1", "b7b6", "c5b6", "c7b6", "f3d2", "f7f5",
+				"d2f3", "f5f4", "e3f4");
+		engineBoard.apply(moves);
+		AceConfiguration configuration = new AceConfiguration();
+		configuration.setSearchDepth(2);
+		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
+		final Move move = algorithm.think(engineBoard);
+		assertThat(move.toString()).isNotEqualTo("f8f4");
 	}
 
 	@Test

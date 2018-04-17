@@ -25,7 +25,7 @@ public class ACE extends CustomEngine {
 		this(depth, DEFAULT_EVALUATOR, DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
-	ACE(final int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
+	public ACE(final int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
 		this(builder()
 				.searchDepth(depth)
 				.evaluator(evaluator)
