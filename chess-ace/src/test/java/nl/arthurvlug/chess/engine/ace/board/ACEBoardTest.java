@@ -35,7 +35,29 @@ public class ACEBoardTest {
 	}
 
 	@Test
-	public void testInvalidRookMove() throws Exception {
+	public void testThinkingDoesNotAlterEngineboard() throws Exception {
+		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
+		final List<String> moves = ImmutableList.of(
+				"d2d4", "d7d5", "b1c3", "b8c6", "c1f4", "c8f5", "c3b5", "a8c8",
+				"g1f3", "e7e6", "b5c7", "c8c7", "f4c7", "d8c7", "e2e3", "c7b6",
+				"d1c1", "c6b4", "f1d3", "f5d3", "e1d2", "d3e4", "c2c4", "b4c2",
+				"a1b1", "f8b4", "d2d1", "c2e3", "f2e3", "e4b1", "c4c5", "b6a5",
+				"c1b1", "g8f6", "a2a3", "a5a4", "d1c1", "b4a5", "b1d3", "f6e4",
+				"h1f1", "a5c7", "c1b1", "b7b6", "c5b6", "c7b6", "f3d2", "f7f5",
+				"d2f3", "f5f4", "e3f4");
+		engineBoard.apply(moves);
+		final ACEBoard copyEngineBoard = engineBoard.cloneBoard();
+		AceConfiguration configuration = new AceConfiguration();
+		configuration.setSearchDepth(2);
+		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
+		algorithm.think(engineBoard);
+
+		// Check that after considering a castling move, the engine board is the same as before because we haven't moved yet
+		assertThat(ACEBoardUtils.dump(engineBoard)).isEqualTo(ACEBoardUtils.dump(copyEngineBoard));
+	}
+
+	@Test
+	public void testUnapplyAfterCastlingPutsRookBack() throws Exception {
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		final List<String> moves = ImmutableList.of(
 				"d2d4", "d7d5", "b1c3", "b8c6", "c1f4", "c8f5", "c3b5", "a8c8",
@@ -50,8 +72,14 @@ public class ACEBoardTest {
 		configuration.setSearchDepth(2);
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
 		final Move move = algorithm.think(engineBoard);
+
+		// Check that the rook moves back to h8 after considering castling king-side
 		assertThat(move.toString()).isNotEqualTo("f8f4");
 	}
+
+	// Check ignored after Nd2
+//	[10:04:59:059 BST]  INFO [CustomEngine 27] n.a.c.e.c.CustomEngine: [d2d4, d7d5, b1c3, b8c6, c1f4, c8f5, c3b5, a8c8, g1f3, e7e6, b5c7, c8c7, f4c7, d8c7, e2e3, c7b6, d1c1, c6b4, f1d3, f5d3, e1d2, d3e4, c2c4, b4c2, a1b1, f8b4, d2d1, c2e3, f2e3, e4b1, c4c5, b6a5, c1b1, g8f6, a2a3, a5a4, d1c1, b4a5, b1d3, f6e4, h1f1, a5c7, c1b1, e8f8, d3d1, a4b5, b1a1, f8g8, a3a4, b5c6, a1b1, b7b6, c5b6, c6b6, d1c1, b6b3, f3e5, f7f5, e5f7, g8f7, c1c7, f7g6, f1c1, e4d2, c7g3]
+
 
 	@Test
 	public void testStartingPosition() throws Exception {
@@ -174,8 +202,12 @@ public class ACEBoardTest {
 		Integer move = UnapplyableMoveUtils.createMove("f7e8", oldBoard);
 
 		final ACEBoard newBoard = startPositionBoard.cloneBoard();
+		boolean white_king_or_rook_queen_side_moved = newBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = newBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = newBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = newBoard.black_king_or_rook_king_side_moved;
 		newBoard.apply(move);
-		newBoard.unapply(move);
+		newBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved);
 		assertEquals(ACEBoardUtils.dump(oldBoard), ACEBoardUtils.dump(newBoard));
 	}
 

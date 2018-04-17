@@ -90,6 +90,7 @@ public class ACEBoard {
 	}
 
 	private byte[] piecesArray;
+	public byte castleBits;
 
 
 	protected ACEBoard() { }
@@ -150,12 +151,12 @@ public class ACEBoard {
 		xorMove(targetBitboard, fromBitboard, movingPiece, true);
 		xorTakePiece(move, targetBitboard);
 
-		this.toMove = opponent(this.toMove);
+		toMove = opponent(toMove);
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, movingPiece, UnapplyableMove.takePiece(move));
 	}
 
-	public void unapply(final int move) {
-		this.toMove = opponent(this.toMove);
+	public void unapply(final int move, final boolean white_king_or_rook_queen_side_moved, final boolean white_king_or_rook_king_side_moved, final boolean black_king_or_rook_queen_side_moved, final boolean black_king_or_rook_king_side_moved) {
+		toMove = opponent(toMove);
 
 		byte targetIdx = UnapplyableMove.targetIdx(move);
 		long targetBitboard = 1L << targetIdx;
@@ -169,6 +170,11 @@ public class ACEBoard {
 
 		xorTakePiece(move, targetBitboard);
 
+		this.white_king_or_rook_queen_side_moved = white_king_or_rook_queen_side_moved;
+		this.white_king_or_rook_king_side_moved = white_king_or_rook_king_side_moved;
+		this.black_king_or_rook_queen_side_moved = black_king_or_rook_queen_side_moved;
+		this.black_king_or_rook_king_side_moved = black_king_or_rook_king_side_moved;
+
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, movingPiece, UnapplyableMove.takePiece(move));
 	}
 
@@ -179,7 +185,7 @@ public class ACEBoard {
 				case WHITE_PAWN_BYTE:   moveWhitePawn  (fromBitboard, targetBitboard); break;
 				case WHITE_KNIGHT_BYTE: moveWhiteKnight(fromBitboard, targetBitboard); break;
 				case WHITE_BISHOP_BYTE: moveWhiteBishop(fromBitboard, targetBitboard); break;
-				case WHITE_ROOK_BYTE:   moveWhiteRook  (fromBitboard, targetBitboard); break;
+				case WHITE_ROOK_BYTE:   moveWhiteRook  (fromBitboard, targetBitboard, isApply); break;
 				case WHITE_QUEEN_BYTE:  moveWhiteQueen (fromBitboard, targetBitboard); break;
 				case WHITE_KING_BYTE:   moveWhiteKing  (fromBitboard, targetBitboard, isApply); break;
 			}
@@ -189,7 +195,7 @@ public class ACEBoard {
 				case BLACK_PAWN_BYTE:   moveBlackPawn  (fromBitboard, targetBitboard); break;
 				case BLACK_KNIGHT_BYTE: moveBlackKnight(fromBitboard, targetBitboard); break;
 				case BLACK_BISHOP_BYTE: moveBlackBishop(fromBitboard, targetBitboard); break;
-				case BLACK_ROOK_BYTE:   moveBlackRook  (fromBitboard, targetBitboard); break;
+				case BLACK_ROOK_BYTE:   moveBlackRook  (fromBitboard, targetBitboard, isApply); break;
 				case BLACK_QUEEN_BYTE:  moveBlackQueen (fromBitboard, targetBitboard); break;
 				case BLACK_KING_BYTE:   moveBlackKing  (fromBitboard, targetBitboard, isApply); break;
 			}
@@ -263,23 +269,23 @@ public class ACEBoard {
 		white_knights ^= targetBitboard;
 	}
 
-	private void moveWhiteRook(final long fromBitboard, final long targetBitboard) {
+	private void moveWhiteRook(final long fromBitboard, final long targetBitboard, final boolean isApply) {
 		if(fromBitboard == a1Bitboard) {
-			white_king_or_rook_queen_side_moved = true;
+			white_king_or_rook_queen_side_moved = isApply;
 		}
 		else if(fromBitboard == h1Bitboard) {
-			white_king_or_rook_king_side_moved = true;
+			white_king_or_rook_king_side_moved = isApply;
 		}
 		white_rooks ^= fromBitboard;
 		white_rooks ^= targetBitboard;
 	}
 
-	private void moveBlackRook(final long fromBitboard, final long targetBitboard) {
+	private void moveBlackRook(final long fromBitboard, final long targetBitboard, final boolean isApply) {
 		if(fromBitboard == a8Bitboard) {
-			black_king_or_rook_queen_side_moved = true;
+			black_king_or_rook_queen_side_moved = isApply;
 		}
 		else if(fromBitboard == h8Bitboard) {
-			black_king_or_rook_king_side_moved = true;
+			black_king_or_rook_king_side_moved = isApply;
 		}
 		black_rooks ^= fromBitboard;
 		black_rooks ^= targetBitboard;
@@ -296,45 +302,61 @@ public class ACEBoard {
 	}
 
 	private void moveWhiteKing(final long fromBitboard, final long targetBitboard, final boolean isApply) {
-		white_king_or_rook_queen_side_moved = true;
-		white_king_or_rook_king_side_moved = true;
 		white_kings ^= fromBitboard;
 		white_kings ^= targetBitboard;
-		if(isApply && fromBitboard == e1Bitboard || !isApply && targetBitboard == e1Bitboard) {
-			if (targetBitboard == c1Bitboard) {
-				this.white_rooks ^= a1Bitboard;
-				this.white_rooks ^= d1Bitboard;
-			} else if (targetBitboard == g1Bitboard) {
-				this.white_rooks ^= h1Bitboard;
-				this.white_rooks ^= f1Bitboard;
+		if(isApply) {
+			if (fromBitboard == e1Bitboard) {
+				if (targetBitboard == c1Bitboard) {
+					white_king_or_rook_queen_side_moved = true;
+					white_rooks ^= a1Bitboard;
+					white_rooks ^= d1Bitboard;
+				} else if (targetBitboard == g1Bitboard) {
+					white_king_or_rook_king_side_moved = true;
+					white_rooks ^= h1Bitboard;
+					white_rooks ^= f1Bitboard;
+				}
+			}
+		} else {
+			if (targetBitboard == e1Bitboard) {
+				if (fromBitboard == c1Bitboard) {
+					white_king_or_rook_queen_side_moved = false;
+					white_rooks ^= a1Bitboard;
+					white_rooks ^= d1Bitboard;
+				} else if (fromBitboard == g1Bitboard) {
+					white_king_or_rook_king_side_moved = false;
+					white_rooks ^= h1Bitboard;
+					white_rooks ^= f1Bitboard;
+				}
 			}
 		}
 	}
 
 	private void moveBlackKing(final long fromBitboard, final long targetBitboard, final boolean isApply) {
-		black_king_or_rook_queen_side_moved = true;
-		black_king_or_rook_king_side_moved = true;
 		black_kings ^= fromBitboard;
 		black_kings ^= targetBitboard;
 
 		if(isApply) {
 			if (fromBitboard == e8Bitboard) {
 				if (targetBitboard == c8Bitboard) {
-					this.black_rooks ^= a8Bitboard;
+					black_king_or_rook_queen_side_moved = true;
+					black_rooks ^= a8Bitboard;
 					this.black_rooks ^= d8Bitboard;
 				} else if (targetBitboard == g8Bitboard) {
-					this.black_rooks ^= h8Bitboard;
-					this.black_rooks ^= f8Bitboard;
+					black_king_or_rook_king_side_moved = true;
+					black_rooks ^= h8Bitboard;
+					black_rooks ^= f8Bitboard;
 				}
 			}
 		} else {
 			if (targetBitboard == e8Bitboard) {
 				if (fromBitboard == c8Bitboard) {
-					this.black_rooks ^= a8Bitboard;
-					this.black_rooks ^= d8Bitboard;
+					black_king_or_rook_queen_side_moved = false;
+					black_rooks ^= a8Bitboard;
+					black_rooks ^= d8Bitboard;
 				} else if (fromBitboard == g8Bitboard) {
-					this.black_rooks ^= h8Bitboard;
-					this.black_rooks ^= f8Bitboard;
+					black_king_or_rook_king_side_moved = false;
+					black_rooks ^= h8Bitboard;
+					black_rooks ^= f8Bitboard;
 				}
 			}
 		}
@@ -502,25 +524,25 @@ public class ACEBoard {
 
 	public ACEBoard cloneBoard() {
 		final ACEBoard clonedBoard = new ACEBoard();
-		clonedBoard.black_kings = this.black_kings;
-		clonedBoard.white_kings = this.white_kings;
-		clonedBoard.black_queens = this.black_queens;
-		clonedBoard.white_queens = this.white_queens;
-		clonedBoard.white_rooks = this.white_rooks;
-		clonedBoard.black_rooks = this.black_rooks;
-		clonedBoard.white_bishops = this.white_bishops;
-		clonedBoard.black_bishops = this.black_bishops;
-		clonedBoard.white_knights = this.white_knights;
-		clonedBoard.black_knights = this.black_knights;
-		clonedBoard.white_pawns = this.white_pawns;
-		clonedBoard.black_pawns = this.black_pawns;
+		clonedBoard.black_kings = black_kings;
+		clonedBoard.white_kings = white_kings;
+		clonedBoard.black_queens = black_queens;
+		clonedBoard.white_queens = white_queens;
+		clonedBoard.white_rooks = white_rooks;
+		clonedBoard.black_rooks = black_rooks;
+		clonedBoard.white_bishops = white_bishops;
+		clonedBoard.black_bishops = black_bishops;
+		clonedBoard.white_knights = white_knights;
+		clonedBoard.black_knights = black_knights;
+		clonedBoard.white_pawns = white_pawns;
+		clonedBoard.black_pawns = black_pawns;
 
-		clonedBoard.white_king_or_rook_queen_side_moved = this.white_king_or_rook_queen_side_moved;
-		clonedBoard.white_king_or_rook_king_side_moved = this.white_king_or_rook_king_side_moved;
-		clonedBoard.black_king_or_rook_queen_side_moved = this.black_king_or_rook_queen_side_moved;
-		clonedBoard.black_king_or_rook_king_side_moved = this.black_king_or_rook_king_side_moved;
+		clonedBoard.white_king_or_rook_queen_side_moved = white_king_or_rook_queen_side_moved;
+		clonedBoard.white_king_or_rook_king_side_moved = white_king_or_rook_king_side_moved;
+		clonedBoard.black_king_or_rook_queen_side_moved = black_king_or_rook_queen_side_moved;
+		clonedBoard.black_king_or_rook_king_side_moved = black_king_or_rook_king_side_moved;
 
-		clonedBoard.toMove = this.toMove;
+		clonedBoard.toMove = toMove;
 		clonedBoard.zobristHash = 0;
 		clonedBoard.finalizeBitboards();
 		return clonedBoard;

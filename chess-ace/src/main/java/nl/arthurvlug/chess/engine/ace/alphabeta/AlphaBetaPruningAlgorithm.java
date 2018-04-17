@@ -85,12 +85,16 @@ public class AlphaBetaPruningAlgorithm {
 		int alpha = OTHER_PLAYER_WINS;
 		int beta = CURRENT_PLAYER_WINS;
 		Integer bestMove = null;
+		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
 		for(int move : generatedMoves) {
 			// Do a recursive search
 			engineBoard.apply(move);
 //			int score = 0;
 			final int score = -alphaBeta(-beta, -alpha, depth - 1);
-			engineBoard.unapply(move);
+			engineBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved);
 
 			if (score >= beta) {
 				cutoffs++;
@@ -149,11 +153,15 @@ public class AlphaBetaPruningAlgorithm {
 		List<Integer> generatedMoves = engineBoard.generateMoves();
 
 		Integer bestMove = null;
+		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
 		for(final Integer move : generatedMoves) {
 			// Do a recursive search
 			engineBoard.apply(move);
 			int score = -alphaBeta(-beta, -alpha, depth-1);
-			engineBoard.unapply(move);
+			engineBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved);
 
 			if (score >= beta) {
 				cutoffs++;
@@ -195,10 +203,18 @@ public class AlphaBetaPruningAlgorithm {
 		}
 
 		final List<Integer> takeMoves = engineBoard.generateTakeMoves();
+		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
 		for(Integer takeMove : takeMoves) {
 			engineBoard.apply(takeMove);
 			final int score = -quiesceSearch(-beta, -alpha, depth-1);
-			engineBoard.unapply(takeMove);
+			engineBoard.unapply(takeMove,
+					white_king_or_rook_queen_side_moved,
+					white_king_or_rook_king_side_moved,
+					black_king_or_rook_queen_side_moved,
+					black_king_or_rook_king_side_moved);
 //			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
 
 			if (score >= beta) {
