@@ -1,32 +1,26 @@
 package nl.arthurvlug.chess.utils.board.pieces;
 
-import java.util.Map;
-
+import com.google.common.collect.BiMap;
 import java.util.Optional;
 
-public abstract class PieceConverter<T> {
+abstract class PieceConverter {
 	Optional<PieceType> fromChar(final char character) {
 		return getMap()
-				.keySet()
+				.values()
 				.stream()
-				.filter(k -> {
-					final T symbol = getMap().get(k);
-					return isPiece(symbol, character);
-				})
-				.findFirst();
+				.filter(pieceSymbol -> pieceSymbol.getWhite() == character || pieceSymbol.getBlack() == character)
+				.findFirst()
+				.map(pieceSymbol -> getMap().inverse().get(pieceSymbol));
 	}
 
-	public char convert(final PieceType pieceType, final Color color) {
-		T t = getMap().get(pieceType);
+	char convert(final PieceType pieceType, final Color color) {
+		PieceSymbol t = getMap().get(pieceType);
 		if(color == Color.WHITE) {
-			return whiteChar(t);
+			return t.getWhite();
 		} else {
-			return blackChar(t);
+			return t.getBlack();
 		}
 	}
 
-	abstract char whiteChar(T t);
-	abstract char blackChar(T t);
-	abstract boolean isPiece(final T t, final char character);
-	abstract Map<PieceType, T> getMap();
+	abstract BiMap<PieceType, PieceSymbol> getMap();
 }

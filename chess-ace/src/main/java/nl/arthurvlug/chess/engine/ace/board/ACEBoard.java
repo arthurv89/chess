@@ -271,14 +271,16 @@ public class ACEBoard {
 	private void moveWhitePawn(final long fromBitboard, final long targetBitboard, final int move, boolean isApply) {
 		if(isApply) {
 			if ((targetBitboard & last_row) != 0L) {
-				white_queens ^= targetBitboard;
+				final byte promotionPiece = UnapplyableMove.promotionPiece(move);
+				promoteWhitePawn(targetBitboard, promotionPiece);
 			} else {
 				white_pawns ^= targetBitboard;
 			}
 			white_pawns ^= fromBitboard;
 		} else {
 			if ((fromBitboard & last_row) != 0L) {
-				white_queens ^= fromBitboard;
+				final byte promotionPiece = UnapplyableMove.promotionPiece(move);
+				promoteWhitePawn(fromBitboard, promotionPiece);
 			} else {
 				white_pawns ^= fromBitboard;
 			}
@@ -290,18 +292,39 @@ public class ACEBoard {
 		if(isApply) {
 			if((targetBitboard & first_row) != 0L) {
 				final byte promotionPiece = UnapplyableMove.promotionPiece(move);
-				black_queens ^= targetBitboard;
+				promoteBlackPawn(targetBitboard, promotionPiece);
 			} else {
 				black_pawns ^= targetBitboard;
 			}
 			black_pawns ^= fromBitboard;
 		} else {
 			if ((fromBitboard & first_row) != 0L) {
-				black_queens ^= fromBitboard;
+				final byte promotionPiece = UnapplyableMove.promotionPiece(move);
+				promoteBlackPawn(fromBitboard, promotionPiece);
 			} else {
 				black_pawns ^= fromBitboard;
 			}
 			black_pawns ^= targetBitboard;
+		}
+	}
+
+	// TODO: Do with array
+	private void promoteWhitePawn(final long bitboard, final byte promotionPiece) {
+		switch (promotionPiece) {
+			case WHITE_KNIGHT_BYTE: white_knights ^= bitboard; break;
+			case WHITE_BISHOP_BYTE: white_bishops ^= bitboard; break;
+			case WHITE_ROOK_BYTE: white_rooks ^= bitboard; break;
+			case WHITE_QUEEN_BYTE: white_queens ^= bitboard; break;
+		}
+	}
+
+	// TODO: Do with array
+	private void promoteBlackPawn(final long bitboard, final byte promotionPiece) {
+		switch (promotionPiece) {
+			case BLACK_KNIGHT_BYTE: black_knights ^= bitboard; break;
+			case BLACK_BISHOP_BYTE: black_bishops ^= bitboard; break;
+			case BLACK_ROOK_BYTE: black_rooks ^= bitboard; break;
+			case BLACK_QUEEN_BYTE: black_queens ^= bitboard; break;
 		}
 	}
 

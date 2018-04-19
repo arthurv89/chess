@@ -9,8 +9,10 @@ import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
+import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
+import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -301,6 +303,36 @@ public class AlphaBetaPruningAlgorithmTest {
 		 */
 		Move bestMove = algorithm.think(engineBoard);
 		assertEquals(MoveUtils.toMove("d8d2"), bestMove);
+	}
+
+	@Test
+	public void testShouldPromoteToQueenAndWin() {
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
+				".......♚\n" +
+				"...♙..♟♟\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				".....♔..\n");
+		Move bestMove = algorithm.think(engineBoard);
+		assertEquals(MoveUtils.toMove("d7d8q"), bestMove);
+	}
+
+	@Test
+	public void testShouldPromoteToKnightAndWin() {
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
+				".....♔..\n" +
+				".....♟♙♟\n" +
+				"......♟♚\n" +
+				"......♟♟\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n");
+		Move bestMove = algorithm.think(engineBoard);
+		assertEquals(MoveUtils.toMove("g7g8n"), bestMove);
 	}
 
 

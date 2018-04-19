@@ -16,9 +16,9 @@ public class UnapplyableMove extends EngineMove {
 	private static final byte PROMOTION_PIECE_MASK = createMask(PROMOTION_PIECE_IDX_BITS);
 
 	private static final int TARGET_BIT_SHIFT = FROM_IDX_BITS;
-	private static final int TAKE_PIECE_BIT_SHIFT = FROM_IDX_BITS + TARGET_IDX_BITS;
-	private static final int MOVING_PIECE_BIT_SHIFT = FROM_IDX_BITS + TARGET_IDX_BITS + TAKE_PIECE_IDX_BITS;
-	private static final int PROMOTION_PIECE_BIT_SHIFT = FROM_IDX_BITS + TARGET_IDX_BITS + TAKE_PIECE_IDX_BITS + MOVING_PIECE_IDX_BITS;
+	private static final int TAKE_PIECE_BIT_SHIFT = TARGET_BIT_SHIFT + TARGET_IDX_BITS;
+	private static final int MOVING_PIECE_BIT_SHIFT = TAKE_PIECE_BIT_SHIFT + TAKE_PIECE_IDX_BITS;
+	private static final int PROMOTION_PIECE_BIT_SHIFT = MOVING_PIECE_BIT_SHIFT + MOVING_PIECE_IDX_BITS;
 
 	private UnapplyableMove() {
 		throw new RuntimeException("Can't create this");

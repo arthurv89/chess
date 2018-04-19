@@ -75,7 +75,7 @@ public class AceMoveGenerator {
 				moves.addAll(moves(sq, twoFieldMove, engineBoard, true));
 			}
 			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.occupiedSquares[opponent(engineBoard.toMove)];
-			moves.addAll(moves(sq, twoFieldsMove, engineBoard, true));
+			moves.addAll(moves(sq, twoFieldsMove, engineBoard, false));
 		}
 		return moves;
 	}
@@ -223,14 +223,14 @@ public class AceMoveGenerator {
 				&& (xRay & engineBoard.occupied_board) == 0L;
 	}
 
-	private static List<Integer> moves(byte fromIdx, long bitboard, final ACEBoard engineBoard, final boolean isPawnMove) {
+	private static List<Integer> moves(byte fromIdx, long bitboard, final ACEBoard engineBoard, final boolean couldBePromotionMove) {
 		List<Integer> moves = new ArrayList<>();
 
 		while(bitboard != 0) {
 			byte targetIdx = (byte) Long.numberOfTrailingZeros(bitboard);
 			// TODO: Change into array
 			// TODO: Move this log to the pawn move so it's only executed there
-			if(isPawnMove && (targetIdx >= a8FieldIdx || targetIdx <= h1FieldIdx)) {
+			if(couldBePromotionMove && (targetIdx >= a8FieldIdx || targetIdx <= h1FieldIdx)) {
 				for(final byte pieceType : promotionTypes[engineBoard.toMove]) {
 					Integer move = UnapplyableMoveUtils.createMove(fromIdx, targetIdx, pieceType, engineBoard);
 					moves.add(move);

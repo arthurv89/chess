@@ -77,7 +77,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 		if(coloredPieceOption.isPresent()) {
 			final int fieldCenterX = (int) (xField * fieldSize() + 0.9 * fieldSize());
 			final int fieldCenterY = (int) ((7 - yField) * fieldSize() + 0.75 * fieldSize());
-			final String pieceString = chessFont.pieceString(coloredPieceOption);
+			final String pieceString = chessFont.pieceString(coloredPieceOption.get());
 			final Font font = calculateFont();
 			final Coordinates coordinates = calculatePosition(pieceString, font, fieldCenterX, fieldCenterY, g2);
 

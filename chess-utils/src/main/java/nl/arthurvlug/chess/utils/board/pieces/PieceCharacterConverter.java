@@ -1,36 +1,20 @@
 package nl.arthurvlug.chess.utils.board.pieces;
 
-import java.util.Map;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 
-import com.google.common.collect.ImmutableMap;
-
-public class PieceCharacterConverter extends PieceConverter<Character> {
-	private static Map<PieceType, Character> map = ImmutableMap.<PieceType, Character> builder()
-			.put(PieceType.PAWN, 'p')
-			.put(PieceType.KNIGHT, 'n')
-			.put(PieceType.BISHOP, 'l')
-			.put(PieceType.ROOK, 'r')
-			.put(PieceType.QUEEN, 'q')
-			.put(PieceType.KING, 'k')
+class PieceCharacterConverter extends PieceConverter {
+	private static BiMap<PieceType, PieceSymbol> map = ImmutableBiMap.<PieceType, PieceSymbol> builder()
+			.put(PieceType.PAWN, new PieceSymbol('P', 'p'))
+			.put(PieceType.KNIGHT, new PieceSymbol('N', 'n'))
+			.put(PieceType.BISHOP, new PieceSymbol('L', 'l'))
+			.put(PieceType.ROOK, new PieceSymbol('R', 'r'))
+			.put(PieceType.QUEEN, new PieceSymbol('Q', 'q'))
+			.put(PieceType.KING, new PieceSymbol('K', 'k'))
 			.build();
 
 	@Override
-	boolean isPiece(Character pieceCharater, char inputCharacter) {
-		return pieceCharater.charValue() == Character.toLowerCase(inputCharacter);
-	}
-
-	@Override
-	Map<PieceType, Character> getMap() {
+	BiMap<PieceType, PieceSymbol> getMap() {
 		return map;
-	}
-
-	@Override
-	char whiteChar(Character c) {
-		return Character.toUpperCase(c);
-	}
-
-	@Override
-	char blackChar(Character c) {
-		return c;
 	}
 }

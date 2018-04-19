@@ -21,8 +21,7 @@ public class UnapplyableMoveUtils {
 		// TODO: Change to pieceType(..)
 		int movingPiece = aceBoard.coloredPiece(fromIdx);
 		int takePiece = aceBoard.coloredPiece(targetIdx);
-		int move = UnapplyableMove.create(fromIdx, targetIdx, movingPiece, takePiece, promotionPiece);
-		return move;
+		return UnapplyableMove.create(fromIdx, targetIdx, movingPiece, takePiece, promotionPiece);
 	}
 
 	public static String toString(final int move) {

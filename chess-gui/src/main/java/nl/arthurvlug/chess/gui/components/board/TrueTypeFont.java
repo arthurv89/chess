@@ -2,7 +2,6 @@ package nl.arthurvlug.chess.gui.components.board;
 
 import java.awt.FontFormatException;
 import java.io.IOException;
-import java.util.Optional;
 import nl.arthurvlug.chess.gui.board.AbstractChessFont;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils;
@@ -13,7 +12,7 @@ public class TrueTypeFont extends AbstractChessFont {
 	}
 
 	@Override
-	public String pieceString(Optional<ColoredPiece> coloredPieceOption) {
-		return PieceStringUtils.toCharacterString(coloredPieceOption.get(), PieceStringUtils.pieceToCharacterConverter);
+	public String pieceString(ColoredPiece coloredPieceOption) {
+		return PieceStringUtils.toCharacterString(coloredPieceOption, PieceStringUtils.pieceToCharacterConverter);
 	}
 }

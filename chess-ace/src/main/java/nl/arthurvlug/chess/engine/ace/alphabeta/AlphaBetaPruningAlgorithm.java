@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ColorUtils;
+import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
@@ -16,9 +17,11 @@ import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.HashElement;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.game.Move;
 
 import static java.util.Collections.swap;
+import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
 import static nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable.*;
 
 @Slf4j
@@ -67,11 +70,20 @@ public class AlphaBetaPruningAlgorithm {
 			}
 			priorityMove = Optional.of(bestMove);
 		}
-		Integer unapplyableMove = priorityMove.get();
+		final int unapplyableMove = priorityMove.get();
+		final Optional<PieceType> promotionType = promotionType(unapplyableMove);
 		return new Move(
 				FieldUtils.coordinates(UnapplyableMove.fromIdx(unapplyableMove)),
 				FieldUtils.coordinates(UnapplyableMove.targetIdx(unapplyableMove)),
-				Optional.empty());
+				promotionType);
+	}
+
+	private Optional<PieceType> promotionType(final int unapplyableMove) {
+		byte promotionPiece = UnapplyableMove.promotionPiece(unapplyableMove);
+		if(promotionPiece == NO_PIECE) {
+			return Optional.empty();
+		}
+		return Optional.of(ColoredPieceType.from(promotionPiece).getPieceType());
 	}
 
 	private Integer alphaBetaRoot(final int depth, final Optional<Integer> priorityMove) {
@@ -189,6 +201,9 @@ public class AlphaBetaPruningAlgorithm {
 			return stand_pat;
 		}
 
+		if(engineBoard.hasNoKing()) {
+			return OTHER_PLAYER_WINS;
+		}
 		if (stand_pat >= beta) {
 			return beta;
 		}
@@ -198,9 +213,6 @@ public class AlphaBetaPruningAlgorithm {
 //		// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
 //
 //
-		if(engineBoard.hasNoKing()) {
-			return OTHER_PLAYER_WINS;
-		}
 
 		final List<Integer> takeMoves = engineBoard.generateTakeMoves();
 		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;

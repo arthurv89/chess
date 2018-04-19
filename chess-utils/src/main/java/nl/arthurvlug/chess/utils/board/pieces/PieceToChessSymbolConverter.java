@@ -1,12 +1,10 @@
 package nl.arthurvlug.chess.utils.board.pieces;
 
-import java.util.Map;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.Optional;
-
-public class PieceToChessSymbolConverter extends PieceConverter<PieceSymbol> {
-	private static final Map<PieceType, PieceSymbol> map = ImmutableMap.<PieceType, PieceSymbol> builder()
+public class PieceToChessSymbolConverter extends PieceConverter {
+	private static final BiMap<PieceType, PieceSymbol> map = ImmutableBiMap.<PieceType, PieceSymbol> builder()
 			.put(PieceType.PAWN, new PieceSymbol('♙', '♟'))
 			.put(PieceType.KNIGHT, new PieceSymbol('♘', '♞'))
 			.put(PieceType.BISHOP, new PieceSymbol('♗', '♝'))
@@ -16,22 +14,7 @@ public class PieceToChessSymbolConverter extends PieceConverter<PieceSymbol> {
 			.build();
 
 	@Override
-	boolean isPiece(PieceSymbol symbol, char character) {
-		return whiteChar(symbol) == character || blackChar(symbol) == character;
-	}
-
-	@Override
-	public Map<PieceType, PieceSymbol> getMap() {
+	public BiMap<PieceType, PieceSymbol> getMap() {
 		return map;
-	}
-
-	@Override
-	char whiteChar(PieceSymbol symbol) {
-		return symbol.getWhite();
-	}
-
-	@Override
-	char blackChar(PieceSymbol symbol) {
-		return symbol.getBlack();
 	}
 }
