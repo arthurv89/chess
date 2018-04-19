@@ -13,7 +13,7 @@ import nl.arthurvlug.chess.utils.board.FieldUtils;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
-import static nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove.NO_PROMOTION;
+import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.*;
 
 public class AceMoveGenerator {
@@ -51,7 +51,7 @@ public class AceMoveGenerator {
 		list.addAll(queenMoves(engineBoard));
 		list.addAll(kingMoves(engineBoard));
 		list.addAll(castlingMoves(engineBoard));
-		// TODO: Implement en passent, promotions
+		// TODO: Implement en passent
 		return list;
 	}
 
@@ -192,22 +192,22 @@ public class AceMoveGenerator {
 			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.white_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
 			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.white_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
 			if(canCastleQueenSide) {
-				Integer move = UnapplyableMoveUtils.createMove((byte) 4, (byte) 2, NO_PROMOTION, engineBoard);
+				Integer move = UnapplyableMoveUtils.createMove((byte) 4, (byte) 2, NO_PIECE, engineBoard);
 				moves.add(move);
 			}
 			if(canCastleKingSide) {
-				Integer move = UnapplyableMoveUtils.createMove((byte) 4, (byte) 6, NO_PROMOTION, engineBoard);
+				Integer move = UnapplyableMoveUtils.createMove((byte) 4, (byte) 6, NO_PIECE, engineBoard);
 				moves.add(move);
 			}
 		} else {
 			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.black_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
 			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.black_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
 			if(canCastleQueenSide) {
-				Integer move = UnapplyableMoveUtils.createMove((byte) 60, (byte) 58, NO_PROMOTION, engineBoard);
+				Integer move = UnapplyableMoveUtils.createMove((byte) 60, (byte) 58, NO_PIECE, engineBoard);
 				moves.add(move);
 			}
 			if(canCastleKingSide) {
-				Integer move = UnapplyableMoveUtils.createMove((byte) 60, (byte) 62, NO_PROMOTION, engineBoard);
+				Integer move = UnapplyableMoveUtils.createMove((byte) 60, (byte) 62, NO_PIECE, engineBoard);
 				moves.add(move);
 			}
 		}
@@ -236,7 +236,7 @@ public class AceMoveGenerator {
 					moves.add(move);
 				}
 			} else {
-				Integer move = UnapplyableMoveUtils.createMove(fromIdx, targetIdx, NO_PROMOTION, engineBoard);
+				Integer move = UnapplyableMoveUtils.createMove(fromIdx, targetIdx, NO_PIECE, engineBoard);
 				moves.add(move);
 			}
 

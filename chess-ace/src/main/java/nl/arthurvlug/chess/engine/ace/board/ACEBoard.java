@@ -81,7 +81,7 @@ public class ACEBoard {
 	static {
 		final Random random = new Random(1);
 		for (int fieldIndex = 0; fieldIndex<64; fieldIndex++) {
-			for (byte coloredPieceType = 0; coloredPieceType< values().length; coloredPieceType++) {
+			for (byte coloredPieceType = 0; coloredPieceType<ColoredPieceType.values().length; coloredPieceType++) {
 				for (int color = 0; color<2; color++) {
 					zobristRandomTable[fieldIndex][coloredPieceType] = random.nextInt();
 				}
@@ -106,6 +106,8 @@ public class ACEBoard {
 			int move = UnapplyableMoveUtils.createMove(sMove, this);
 			byte movingPiece = UnapplyableMove.movingPiece(move);
 			if(DEBUG && movingPiece == NO_PIECE) {
+				System.out.println(UnapplyableMoveUtils.toString(move));
+				final String x = string();
 				throw new RuntimeException("Could not determine moving piece while executing " + UnapplyableMoveUtils.toString(move));
 			}
 			apply(move);
@@ -137,6 +139,26 @@ public class ACEBoard {
 		return NO_PIECE;
 	}
 
+	public int pieceType(final byte fieldIdx) {
+		long bitboard = 1L << fieldIdx;
+
+		if((white_pawns & bitboard) != 0)   return PieceType.PAWN_BYTE;
+		if((white_knights & bitboard) != 0) return PieceType.KNIGHT_BYTE;
+		if((white_bishops & bitboard) != 0) return PieceType.BISHOP_BYTE;
+		if((white_rooks & bitboard) != 0)   return PieceType.ROOK_BYTE;
+		if((white_queens & bitboard) != 0)  return PieceType.QUEEN_BYTE;
+		if((white_kings & bitboard) != 0)   return PieceType.KING_BYTE;
+
+		if((black_pawns & bitboard) != 0)   return PieceType.PAWN_BYTE;
+		if((black_knights & bitboard) != 0) return PieceType.KNIGHT_BYTE;
+		if((black_bishops & bitboard) != 0) return PieceType.BISHOP_BYTE;
+		if((black_rooks & bitboard) != 0)   return PieceType.ROOK_BYTE;
+		if((black_queens & bitboard) != 0)  return PieceType.QUEEN_BYTE;
+		if((black_kings & bitboard) != 0)   return PieceType.KING_BYTE;
+
+		return NO_PIECE;
+	}
+
 	public void apply(int move) {
 		// TODO: Fix this by creating a more efficient Move object
 		byte fromIdx = UnapplyableMove.fromIdx(move);
@@ -150,11 +172,17 @@ public class ACEBoard {
 		}
 		byte movingPiece = UnapplyableMove.movingPiece(move);
 
-		xorMove(targetBitboard, fromBitboard, movingPiece, true);
+		xorMove(targetBitboard, fromBitboard, movingPiece, move, true);
 		xorTakePiece(move, targetBitboard);
 
 		toMove = opponent(toMove);
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, movingPiece, UnapplyableMove.takePiece(move));
+
+		if(DEBUG) {
+			Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
+			Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
+			Preconditions.checkArgument((occupiedSquares[WHITE] & occupiedSquares[BLACK]) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toString((occupiedSquares[WHITE] & occupiedSquares[BLACK])));
+		}
 	}
 
 	public void unapply(final int move, final boolean white_king_or_rook_queen_side_moved, final boolean white_king_or_rook_king_side_moved, final boolean black_king_or_rook_queen_side_moved, final boolean black_king_or_rook_king_side_moved) {
@@ -168,7 +196,7 @@ public class ACEBoard {
 		long fromBitboard = 1L << fromIdx;
 
 		// This is a reverse move
-		xorMove(fromBitboard, targetBitboard, movingPiece, false);
+		xorMove(fromBitboard, targetBitboard, movingPiece, move, false);
 		xorTakePiece(move, targetBitboard);
 
 		this.white_king_or_rook_queen_side_moved = white_king_or_rook_queen_side_moved;
@@ -179,11 +207,11 @@ public class ACEBoard {
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, movingPiece, UnapplyableMove.takePiece(move));
 	}
 
-	private void xorMove(final long targetBitboard, final long fromBitboard, final short movingPiece, final boolean isApply) {
+	private void xorMove(final long targetBitboard, final long fromBitboard, final short movingPiece, final int move, final boolean isApply) {
 		// TODO: Remove if statement
 		if(isWhite(toMove)) {
 			switch (movingPiece) {
-				case WHITE_PAWN_BYTE:   moveWhitePawn  (fromBitboard, targetBitboard, isApply); break;
+				case WHITE_PAWN_BYTE:   moveWhitePawn  (fromBitboard, targetBitboard, move, isApply); break;
 				case WHITE_KNIGHT_BYTE: moveWhiteKnight(fromBitboard, targetBitboard); break;
 				case WHITE_BISHOP_BYTE: moveWhiteBishop(fromBitboard, targetBitboard); break;
 				case WHITE_ROOK_BYTE:   moveWhiteRook  (fromBitboard, targetBitboard); break;
@@ -193,7 +221,7 @@ public class ACEBoard {
 			recalculateWhiteOccupiedSquares();
 		} else {
 			switch (movingPiece) {
-				case BLACK_PAWN_BYTE:   moveBlackPawn  (fromBitboard, targetBitboard, isApply); break;
+				case BLACK_PAWN_BYTE:   moveBlackPawn  (fromBitboard, targetBitboard, move, isApply); break;
 				case BLACK_KNIGHT_BYTE: moveBlackKnight(fromBitboard, targetBitboard); break;
 				case BLACK_BISHOP_BYTE: moveBlackBishop(fromBitboard, targetBitboard); break;
 				case BLACK_ROOK_BYTE:   moveBlackRook  (fromBitboard, targetBitboard); break;
@@ -240,7 +268,7 @@ public class ACEBoard {
 		}
 	}
 
-	private void moveWhitePawn(final long fromBitboard, final long targetBitboard, boolean isApply) {
+	private void moveWhitePawn(final long fromBitboard, final long targetBitboard, final int move, boolean isApply) {
 		if(isApply) {
 			if ((targetBitboard & last_row) != 0L) {
 				white_queens ^= targetBitboard;
@@ -258,9 +286,10 @@ public class ACEBoard {
 		}
 	}
 
-	private void moveBlackPawn(final long fromBitboard, final long targetBitboard, final boolean isApply) {
+	private void moveBlackPawn(final long fromBitboard, final long targetBitboard, final int move, final boolean isApply) {
 		if(isApply) {
 			if((targetBitboard & first_row) != 0L) {
+				final byte promotionPiece = UnapplyableMove.promotionPiece(move);
 				black_queens ^= targetBitboard;
 			} else {
 				black_pawns ^= targetBitboard;
