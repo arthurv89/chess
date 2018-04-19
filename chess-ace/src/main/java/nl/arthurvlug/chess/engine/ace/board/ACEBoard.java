@@ -91,6 +91,8 @@ public class ACEBoard {
 
 	private byte[] piecesArray;
 	public byte castleBits;
+	private final static long first_row = bitboardFromFieldName("a1 b1 c1 d1 e1 f1 g1 h1");
+	private final static long last_row = bitboardFromFieldName("a8 b8 c8 d8 e8 f8 g8 h8");
 
 
 	protected ACEBoard() { }
@@ -167,7 +169,6 @@ public class ACEBoard {
 
 		// This is a reverse move
 		xorMove(fromBitboard, targetBitboard, movingPiece, false);
-
 		xorTakePiece(move, targetBitboard);
 
 		this.white_king_or_rook_queen_side_moved = white_king_or_rook_queen_side_moved;
@@ -182,20 +183,20 @@ public class ACEBoard {
 		// TODO: Remove if statement
 		if(isWhite(toMove)) {
 			switch (movingPiece) {
-				case WHITE_PAWN_BYTE:   moveWhitePawn  (fromBitboard, targetBitboard); break;
+				case WHITE_PAWN_BYTE:   moveWhitePawn  (fromBitboard, targetBitboard, isApply); break;
 				case WHITE_KNIGHT_BYTE: moveWhiteKnight(fromBitboard, targetBitboard); break;
 				case WHITE_BISHOP_BYTE: moveWhiteBishop(fromBitboard, targetBitboard); break;
-				case WHITE_ROOK_BYTE:   moveWhiteRook  (fromBitboard, targetBitboard, isApply); break;
+				case WHITE_ROOK_BYTE:   moveWhiteRook  (fromBitboard, targetBitboard); break;
 				case WHITE_QUEEN_BYTE:  moveWhiteQueen (fromBitboard, targetBitboard); break;
 				case WHITE_KING_BYTE:   moveWhiteKing  (fromBitboard, targetBitboard, isApply); break;
 			}
 			recalculateWhiteOccupiedSquares();
 		} else {
 			switch (movingPiece) {
-				case BLACK_PAWN_BYTE:   moveBlackPawn  (fromBitboard, targetBitboard); break;
+				case BLACK_PAWN_BYTE:   moveBlackPawn  (fromBitboard, targetBitboard, isApply); break;
 				case BLACK_KNIGHT_BYTE: moveBlackKnight(fromBitboard, targetBitboard); break;
 				case BLACK_BISHOP_BYTE: moveBlackBishop(fromBitboard, targetBitboard); break;
-				case BLACK_ROOK_BYTE:   moveBlackRook  (fromBitboard, targetBitboard, isApply); break;
+				case BLACK_ROOK_BYTE:   moveBlackRook  (fromBitboard, targetBitboard); break;
 				case BLACK_QUEEN_BYTE:  moveBlackQueen (fromBitboard, targetBitboard); break;
 				case BLACK_KING_BYTE:   moveBlackKing  (fromBitboard, targetBitboard, isApply); break;
 			}
@@ -239,14 +240,40 @@ public class ACEBoard {
 		}
 	}
 
-	private void moveWhitePawn(final long fromBitboard, final long targetBitboard) {
-		white_pawns ^= fromBitboard;
-		white_pawns ^= targetBitboard;
+	private void moveWhitePawn(final long fromBitboard, final long targetBitboard, boolean isApply) {
+		if(isApply) {
+			if ((targetBitboard & last_row) != 0L) {
+				white_queens ^= targetBitboard;
+			} else {
+				white_pawns ^= targetBitboard;
+			}
+			white_pawns ^= fromBitboard;
+		} else {
+			if ((fromBitboard & last_row) != 0L) {
+				white_queens ^= fromBitboard;
+			} else {
+				white_pawns ^= fromBitboard;
+			}
+			white_pawns ^= targetBitboard;
+		}
 	}
 
-	private void moveBlackPawn(final long fromBitboard, final long targetBitboard) {
-		black_pawns ^= fromBitboard;
-		black_pawns ^= targetBitboard;
+	private void moveBlackPawn(final long fromBitboard, final long targetBitboard, final boolean isApply) {
+		if(isApply) {
+			if((targetBitboard & first_row) != 0L) {
+				black_queens ^= targetBitboard;
+			} else {
+				black_pawns ^= targetBitboard;
+			}
+			black_pawns ^= fromBitboard;
+		} else {
+			if ((fromBitboard & first_row) != 0L) {
+				black_queens ^= fromBitboard;
+			} else {
+				black_pawns ^= fromBitboard;
+			}
+			black_pawns ^= targetBitboard;
+		}
 	}
 
 	private void moveWhiteBishop(final long fromBitboard, final long targetBitboard) {
@@ -269,23 +296,23 @@ public class ACEBoard {
 		white_knights ^= targetBitboard;
 	}
 
-	private void moveWhiteRook(final long fromBitboard, final long targetBitboard, final boolean isApply) {
+	private void moveWhiteRook(final long fromBitboard, final long targetBitboard) {
 		if(fromBitboard == a1Bitboard) {
-			white_king_or_rook_queen_side_moved = isApply;
+			white_king_or_rook_queen_side_moved = true;
 		}
 		else if(fromBitboard == h1Bitboard) {
-			white_king_or_rook_king_side_moved = isApply;
+			white_king_or_rook_king_side_moved = true;
 		}
 		white_rooks ^= fromBitboard;
 		white_rooks ^= targetBitboard;
 	}
 
-	private void moveBlackRook(final long fromBitboard, final long targetBitboard, final boolean isApply) {
+	private void moveBlackRook(final long fromBitboard, final long targetBitboard) {
 		if(fromBitboard == a8Bitboard) {
-			black_king_or_rook_queen_side_moved = isApply;
+			black_king_or_rook_queen_side_moved = true;
 		}
 		else if(fromBitboard == h8Bitboard) {
-			black_king_or_rook_king_side_moved = isApply;
+			black_king_or_rook_king_side_moved = true;
 		}
 		black_rooks ^= fromBitboard;
 		black_rooks ^= targetBitboard;
@@ -335,6 +362,7 @@ public class ACEBoard {
 		black_kings ^= fromBitboard;
 		black_kings ^= targetBitboard;
 
+		// Handle castling
 		if(isApply) {
 			if (fromBitboard == e8Bitboard) {
 				if (targetBitboard == c8Bitboard) {
@@ -420,7 +448,7 @@ public class ACEBoard {
 	public String string() {
 		Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
 		Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
-		Preconditions.checkArgument((occupiedSquares[WHITE] & occupiedSquares[BLACK]) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.targetBitboardString((occupiedSquares[WHITE] & occupiedSquares[BLACK])));
+		Preconditions.checkArgument((occupiedSquares[WHITE] & occupiedSquares[BLACK]) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toString((occupiedSquares[WHITE] & occupiedSquares[BLACK])));
 		
 		StringBuilder sb = new StringBuilder();
 		for (byte fieldIdx = 0; fieldIdx < 64; fieldIdx++) {

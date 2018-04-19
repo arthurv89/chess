@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import nl.arthurvlug.chess.engine.ColorUtils;
+import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.utils.board.FieldUtils;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
@@ -17,6 +19,21 @@ import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.*;
 public class AceMoveGenerator {
 	private static final int CASTLE_QUEEN_SIZE = 0;
 	private static final int CASTLE_KING_SIZE = 1;
+
+	private static final byte a8FieldIdx = FieldUtils.fieldIdx("a8");
+	private static final byte h1FieldIdx = FieldUtils.fieldIdx("h1");
+	private static byte[][] promotionTypes = new byte[2][4];
+	static {
+		promotionTypes[ColorUtils.WHITE][0] = ColoredPieceType.WHITE_QUEEN_BYTE;
+		promotionTypes[ColorUtils.WHITE][1] = ColoredPieceType.WHITE_ROOK_BYTE;
+		promotionTypes[ColorUtils.WHITE][2] = ColoredPieceType.WHITE_BISHOP_BYTE;
+		promotionTypes[ColorUtils.WHITE][3] = ColoredPieceType.WHITE_KNIGHT_BYTE;
+
+		promotionTypes[ColorUtils.BLACK][0] = ColoredPieceType.BLACK_QUEEN_BYTE;
+		promotionTypes[ColorUtils.BLACK][1] = ColoredPieceType.BLACK_ROOK_BYTE;
+		promotionTypes[ColorUtils.BLACK][2] = ColoredPieceType.BLACK_BISHOP_BYTE;
+		promotionTypes[ColorUtils.BLACK][3] = ColoredPieceType.BLACK_KNIGHT_BYTE;
+	}
 
 	/**
 	 * Generates both valid moves and invalid moves
@@ -41,8 +58,8 @@ public class AceMoveGenerator {
 	private static List<Integer> pawnMoves(ACEBoard engineBoard) {
 		// TODO: Convert to arrays
 		long[] pawnXrayOneFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_one_field_move : pawn_xray_black_one_field_move;
-		long[] pawnXrayTwoFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_two_field_move : pawn_xray_black_two_field_move;;
-		long[] pawnXrayTakeFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_take_field_move : pawn_xray_black_take_field_move;;
+		long[] pawnXrayTwoFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_two_field_move : pawn_xray_black_two_field_move;
+		long[] pawnXrayTakeFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_take_field_move : pawn_xray_black_take_field_move;
 
 		List<Integer> moves = new ArrayList<>();
 		long pawns = pawns(engineBoard);
@@ -51,14 +68,14 @@ public class AceMoveGenerator {
 			pawns -= 1L << sq;
 
 			long oneFieldMove = pawnXrayOneFieldMove[sq] & engineBoard.unoccupied_board;
-			moves.addAll(moves(sq, oneFieldMove, engineBoard));
+			moves.addAll(moves(sq, oneFieldMove, engineBoard, true));
 
 			if(oneFieldMove != 0) {
 				long twoFieldMove = pawnXrayTwoFieldMove[sq] & engineBoard.unoccupied_board;
-				moves.addAll(moves(sq, twoFieldMove, engineBoard));
+				moves.addAll(moves(sq, twoFieldMove, engineBoard, true));
 			}
 			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.occupiedSquares[opponent(engineBoard.toMove)];
-			moves.addAll(moves(sq, twoFieldsMove, engineBoard));
+			moves.addAll(moves(sq, twoFieldsMove, engineBoard, true));
 		}
 		return moves;
 	}
@@ -73,8 +90,8 @@ public class AceMoveGenerator {
 			long queen_diagonal_moves = rookMoves(engineBoard, sq);
 
 			queens -= 1L << sq;
-			moves.addAll(moves(sq, queen_perpendicular_moves, engineBoard));
-			moves.addAll(moves(sq, queen_diagonal_moves, engineBoard));
+			moves.addAll(moves(sq, queen_perpendicular_moves, engineBoard, false));
+			moves.addAll(moves(sq, queen_diagonal_moves, engineBoard, false));
 		}
 		return moves;
 	}
@@ -88,7 +105,7 @@ public class AceMoveGenerator {
 			long bishop_moves = bishopMoves(engineBoard, sq);
 
 			bishops -= 1L << sq;
-			moves.addAll(moves(sq, bishop_moves, engineBoard));
+			moves.addAll(moves(sq, bishop_moves, engineBoard, false));
 		}
 		return moves;
 	}
@@ -122,7 +139,7 @@ public class AceMoveGenerator {
 			long rook_moves = rookMoves(engineBoard, sq);
 
 			rooks -= 1L << sq;
-			moves.addAll(moves(sq, rook_moves, engineBoard));
+			moves.addAll(moves(sq, rook_moves, engineBoard, false));
 		}
 		return moves;
 	}
@@ -154,7 +171,7 @@ public class AceMoveGenerator {
 			byte sq = (byte) Long.numberOfTrailingZeros(knights);
 			long destinationBitboard = Xray.knight_xray[sq] & engineBoard.enemy_and_empty_board;
 			knights -= 1L << sq;
-			moves.addAll(moves(sq, destinationBitboard, engineBoard));
+			moves.addAll(moves(sq, destinationBitboard, engineBoard, false));
 		}
 		return moves;
 	}
@@ -166,7 +183,7 @@ public class AceMoveGenerator {
 		}
 
 		long destinationBitboard = Xray.king_xray[sq] & engineBoard.enemy_and_empty_board;
-		return moves(sq, destinationBitboard, engineBoard);
+		return moves(sq, destinationBitboard, engineBoard, false);
 	}
 
 	static List<Integer> castlingMoves(final ACEBoard engineBoard) {
@@ -206,13 +223,22 @@ public class AceMoveGenerator {
 				&& (xRay & engineBoard.occupied_board) == 0L;
 	}
 
-	private static List<Integer> moves(byte fromIdx, long bitboard, final ACEBoard engineBoard) {
+	private static List<Integer> moves(byte fromIdx, long bitboard, final ACEBoard engineBoard, final boolean isPawnMove) {
 		List<Integer> moves = new ArrayList<>();
 
 		while(bitboard != 0) {
 			byte targetIdx = (byte) Long.numberOfTrailingZeros(bitboard);
-			Integer move = UnapplyableMoveUtils.createMove(fromIdx, targetIdx, NO_PROMOTION, engineBoard);
-			moves.add(move);
+			// TODO: Change into array
+			// TODO: Move this log to the pawn move so it's only executed there
+			if(isPawnMove && (targetIdx >= a8FieldIdx || targetIdx <= h1FieldIdx)) {
+				for(final byte pieceType : promotionTypes[engineBoard.toMove]) {
+					Integer move = UnapplyableMoveUtils.createMove(fromIdx, targetIdx, pieceType, engineBoard);
+					moves.add(move);
+				}
+			} else {
+				Integer move = UnapplyableMoveUtils.createMove(fromIdx, targetIdx, NO_PROMOTION, engineBoard);
+				moves.add(move);
+			}
 
 			bitboard -= 1L << targetIdx;
 		}

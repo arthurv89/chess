@@ -271,7 +271,6 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void testStartPosition() {
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
-		engineBoard.finalizeBitboards();
 
 		Move bestMove = algorithm.think(engineBoard);
 		// Expect d2d4 because pawns are found first, and they come in order of fieldIdx

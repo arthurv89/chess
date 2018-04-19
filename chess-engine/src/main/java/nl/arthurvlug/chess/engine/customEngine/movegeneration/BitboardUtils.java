@@ -16,7 +16,7 @@ public class BitboardUtils {
 		return new Move(coordinates(from), coordinates(to), Optional.empty());
 	}
 
-	public static String targetBitboardString(long bitboard) {
+	public static String toString(long bitboard) {
 		StringBuilder paddedBinaryString = new StringBuilder();
 		String binaryString = Long.toBinaryString(bitboard);
 		for (int i = 0; i < 64 - binaryString.length(); i++) {
