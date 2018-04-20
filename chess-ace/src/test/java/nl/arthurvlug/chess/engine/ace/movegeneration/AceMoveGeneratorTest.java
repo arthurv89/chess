@@ -6,14 +6,17 @@ import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
+import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator.castlingMoves;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator.generateMoves;
 import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
+import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -321,6 +324,18 @@ public class AceMoveGeneratorTest {
 		assertTrue(blackMoves.contains(UnapplyableMoveUtils.createMove("h8g7", engineBoard)));
 	}
 
+	@Test
+	@Ignore
+	public void testShouldNotCastle() {
+		final ACEBoard board = ACEBoardUtils.initializedBoard(BLACK, "" +
+				"♜..♛♚..♜\n" +
+				"♟.♟♗.♟♟♟\n" +
+				"....♟...\n" +
+				"..♝.♙...\n" +
+				"........\n" +
+				"....♙♕..\n" +
+				".♙...♙♙♙\n" +
+				"♖.♗..♖♔.\n");
 
-	// TODO: Write for pawn moves
+	}
 }

@@ -107,8 +107,6 @@ public class ACEBoard {
 			int move = UnapplyableMoveUtils.createMove(sMove, this);
 			byte movingPiece = UnapplyableMove.movingPiece(move);
 			if(DEBUG && movingPiece == NO_PIECE) {
-				System.out.println(UnapplyableMoveUtils.toString(move));
-				final String x = string();
 				throw new RuntimeException("Could not determine moving piece while executing " + UnapplyableMoveUtils.toString(move));
 			}
 			apply(move);
@@ -168,15 +166,13 @@ public class ACEBoard {
 		byte targetIdx = UnapplyableMove.targetIdx(move);
 		long targetBitboard = 1L << targetIdx;
 
-		if(DEBUG) {
-			Preconditions.checkNotNull(FieldUtils.fieldToString(fromIdx), String.format("Can't apply move %s: the from field is empty:\n%s", move, this.toString()));
-		}
 		byte movingPiece = UnapplyableMove.movingPiece(move);
 
 		xorMove(targetBitboard, fromBitboard, movingPiece, move, true);
 		xorTakePiece(move, targetBitboard);
 
 		toMove = opponent(toMove);
+
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, movingPiece, UnapplyableMove.takePiece(move));
 
 		if(DEBUG) {
@@ -186,7 +182,11 @@ public class ACEBoard {
 		}
 	}
 
-	public void unapply(final int move, final boolean white_king_or_rook_queen_side_moved, final boolean white_king_or_rook_king_side_moved, final boolean black_king_or_rook_queen_side_moved, final boolean black_king_or_rook_king_side_moved) {
+	public void unapply(final int move,
+						final boolean white_king_or_rook_queen_side_moved,
+						final boolean white_king_or_rook_king_side_moved,
+						final boolean black_king_or_rook_queen_side_moved,
+						final boolean black_king_or_rook_king_side_moved) {
 		toMove = opponent(toMove);
 
 		byte targetIdx = UnapplyableMove.targetIdx(move);
@@ -206,6 +206,12 @@ public class ACEBoard {
 		this.black_king_or_rook_king_side_moved = black_king_or_rook_king_side_moved;
 
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, movingPiece, UnapplyableMove.takePiece(move));
+
+		if(DEBUG) {
+			Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
+			Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
+			Preconditions.checkArgument((occupiedSquares[WHITE] & occupiedSquares[BLACK]) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toString((occupiedSquares[WHITE] & occupiedSquares[BLACK])));
+		}
 	}
 
 	private void xorMove(final long targetBitboard, final long fromBitboard, final short movingPiece, final int move, final boolean isApply) {
@@ -249,7 +255,7 @@ public class ACEBoard {
 				case BLACK_PAWN_BYTE:   black_pawns   ^= targetBitboard; break;
 				case BLACK_KNIGHT_BYTE: black_knights ^= targetBitboard; break;
 				case BLACK_BISHOP_BYTE: black_bishops ^= targetBitboard; break;
-				case BLACK_ROOK_BYTE:   black_rooks   ^= targetBitboard; break;
+				case BLACK_ROOK_BYTE:   takeBlackRook(targetBitboard); break;
 				case BLACK_QUEEN_BYTE:  black_queens  ^= targetBitboard; break;
 				case BLACK_KING_BYTE:   black_kings   ^= targetBitboard; break;
 			}
@@ -261,12 +267,31 @@ public class ACEBoard {
 				case WHITE_PAWN_BYTE:   white_pawns   ^= targetBitboard; break;
 				case WHITE_KNIGHT_BYTE: white_knights ^= targetBitboard; break;
 				case WHITE_BISHOP_BYTE: white_bishops ^= targetBitboard; break;
-				case WHITE_ROOK_BYTE:   white_rooks   ^= targetBitboard; break;
+				case WHITE_ROOK_BYTE:   takeWhiteRook(targetBitboard); break;
 				case WHITE_QUEEN_BYTE:  white_queens  ^= targetBitboard; break;
 				case WHITE_KING_BYTE:   white_kings   ^= targetBitboard; break;
 			}
 			recalculateWhiteOccupiedSquares();
 		}
+	}
+
+	private void takeWhiteRook(final long targetBitboard) {
+		if(targetBitboard == a1Bitboard) {
+			white_king_or_rook_queen_side_moved = true;
+		} else if(targetBitboard == h1Bitboard) {
+			white_king_or_rook_king_side_moved = true;
+		}
+		white_rooks   ^= targetBitboard;
+
+	}
+
+	private void takeBlackRook(final long targetBitboard) {
+		if(targetBitboard == a8Bitboard) {
+			black_king_or_rook_queen_side_moved = true;
+		} else if(targetBitboard == h8Bitboard) {
+			black_king_or_rook_king_side_moved = true;
+		}
+		black_rooks   ^= targetBitboard;
 	}
 
 	private void moveWhitePawn(final long fromBitboard, final long targetBitboard, final int move, boolean isApply) {
@@ -488,6 +513,8 @@ public class ACEBoard {
 		return zobristRandomTable[fieldIdx][coloredPiece];
 	}
 
+	// TODO: Replace with inverted Xrays.
+	// For each occupied field by the current player,it should calculate which fields can attack them
 	public List<Integer> generateTakeMoves() {
 		return AceMoveGenerator.generateMoves(this)
 				.stream()

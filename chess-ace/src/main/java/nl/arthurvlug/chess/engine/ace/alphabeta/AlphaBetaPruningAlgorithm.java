@@ -106,7 +106,11 @@ public class AlphaBetaPruningAlgorithm {
 			engineBoard.apply(move);
 //			int score = 0;
 			final int score = -alphaBeta(-beta, -alpha, depth - 1);
-			engineBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved);
+			engineBoard.unapply(move,
+					white_king_or_rook_queen_side_moved,
+					white_king_or_rook_king_side_moved,
+					black_king_or_rook_queen_side_moved,
+					black_king_or_rook_king_side_moved);
 
 			if (score >= beta) {
 				cutoffs++;
@@ -173,7 +177,11 @@ public class AlphaBetaPruningAlgorithm {
 			// Do a recursive search
 			engineBoard.apply(move);
 			int score = -alphaBeta(-beta, -alpha, depth-1);
-			engineBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved);
+			engineBoard.unapply(move,
+					white_king_or_rook_queen_side_moved,
+					white_king_or_rook_king_side_moved,
+					black_king_or_rook_queen_side_moved,
+					black_king_or_rook_king_side_moved);
 
 			if (score >= beta) {
 				cutoffs++;
@@ -227,14 +235,14 @@ public class AlphaBetaPruningAlgorithm {
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
 					black_king_or_rook_king_side_moved);
-//			log.debug("Evaluating board\n{}Score: {}\n", successorBoard, value);
+//			log.debug("Evaluating board\n{}Score: {}\n", engineBoard.string(), score);
 
 			if (score >= beta) {
 				// Beta cut-off
 				cutoffs++;
 				debug();
 //				log.debug("Beta cut-off");
-				return beta;
+				return score;
 			} else if (score > alpha) {
 				alpha = score;
 			}

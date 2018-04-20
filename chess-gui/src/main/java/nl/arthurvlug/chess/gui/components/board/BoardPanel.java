@@ -197,8 +197,8 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
 
 	private void move(final Move move) {
-		HumanPlayer whitePlayer = (HumanPlayer) game.getWhitePlayer();
-		for (Subscriber<? super Move> moveSubscriber : whitePlayer.getMoveSubscribers()) {
+		HumanPlayer blackPlayer = (HumanPlayer) game.getWhitePlayer();
+		for (Subscriber<? super Move> moveSubscriber : blackPlayer.getMoveSubscribers()) {
 			moveSubscriber.onNext(move);
 		}
 	}

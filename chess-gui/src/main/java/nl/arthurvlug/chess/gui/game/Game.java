@@ -1,14 +1,14 @@
 package nl.arthurvlug.chess.gui.game;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.game.Clock;
-import nl.arthurvlug.chess.utils.board.InitialBoard;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
 import nl.arthurvlug.chess.gui.events.EventHandler;
 import nl.arthurvlug.chess.gui.events.GameFinishedEvent;
@@ -20,15 +20,13 @@ import nl.arthurvlug.chess.utils.Markers;
 import nl.arthurvlug.chess.utils.MyEmptyObserver;
 import nl.arthurvlug.chess.utils.NamedThread;
 import nl.arthurvlug.chess.utils.board.Board;
+import nl.arthurvlug.chess.utils.board.InitialBoard;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.game.GameFinished;
 import nl.arthurvlug.chess.utils.game.Move;
 import rx.Observable;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
-import com.google.inject.Inject;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @EventHandler
 @Slf4j

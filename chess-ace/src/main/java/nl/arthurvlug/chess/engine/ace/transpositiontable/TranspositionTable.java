@@ -19,14 +19,14 @@ public class TranspositionTable {
 	}
 
 	public HashElement get(final int zobristHash) {
-		int hashKey = hashKey(zobristHash);
-		final HashElement hashElement = hash_table[hashKey];
-		if (hashElement != null && hashElement.key == zobristHash) {
-			return hashElement;
+//		int hashKey = hashKey(zobristHash);
+//		final HashElement hashElement = hash_table[hashKey];
+//		if (hashElement != null && hashElement.key == zobristHash) {
+//			return hashElement;
 
 			// TODO: Find out what this means
 //			RememberBestMove();
-		}
+//		}
 		return null;
 	}
 

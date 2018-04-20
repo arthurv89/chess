@@ -58,7 +58,7 @@ public abstract class CustomEngine extends UCIEngine {
 
 	private void startEngineInputParseThread() throws IOException {
 		new NamedThread(new Runnable() {
-			private Object newMoveWaitObject = new Object();
+			private final Object newMoveWaitObject = new Object();
 			
 			private ThinkingParams thinkingParams;
 			private ImmutableList<String> moveList;
@@ -71,6 +71,7 @@ public abstract class CustomEngine extends UCIEngine {
 					while(true) {
 						try {
 							synchronized (newMoveWaitObject) {
+								log.debug("Waiting for new move");
 								newMoveWaitObject.wait();
 								log.info(moveList.toString());
 								Move move = think(moveList, thinkingParams);
