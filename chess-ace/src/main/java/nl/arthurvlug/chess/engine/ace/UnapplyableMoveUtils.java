@@ -3,6 +3,8 @@ package nl.arthurvlug.chess.engine.ace;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
+import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
 
@@ -10,8 +12,13 @@ public class UnapplyableMoveUtils {
 	public static int createMove(final String sMove, final ACEBoard aceBoard) {
 		byte fromIdx = FieldUtils.fieldIdx(sMove.substring(0, 2));
 		byte targetIdx = FieldUtils.fieldIdx(sMove.substring(2, 4));
-		// TODO: Put the promotion piece correctly
-		return createMove(fromIdx, targetIdx, NO_PIECE, aceBoard);
+		byte promotionPiece = NO_PIECE;
+		if(sMove.length() > 4) {
+			final char c = sMove.charAt(4);
+			final PieceType pieceType = PieceStringUtils.fromChar(c, PieceStringUtils.pieceToCharacterConverter).get();
+			promotionPiece = ColoredPieceType.getColoredByte(pieceType, aceBoard.toMove);
+		}
+		return createMove(fromIdx, targetIdx, promotionPiece, aceBoard);
 	}
 
 	public static int createMove(final byte fromIdx,

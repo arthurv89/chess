@@ -14,6 +14,7 @@ import org.junit.Test;
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromBoard;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
+import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -214,6 +215,35 @@ public class ACEBoardTest {
 	@Test
 	public void testUnapplyTakeMove() throws Exception {
 		verifyBitboards(startPositionBoard);
+	}
+
+	@Test
+	public void testPromotion() {
+		final ACEBoard board = ACEBoardUtils.initializedBoard(BLACK, "" +
+				"......♚.\n" +
+				"......♟♟\n" +
+				".♙......\n" +
+				"....♟...\n" +
+				".♙......\n" +
+				"......♜.\n" +
+				"♔....♟..\n" +
+				"........");
+		final ACEBoard clonedBoard = board.cloneBoard();
+		int move = UnapplyableMoveUtils.createMove("f2f1q", board);
+		board.apply(move);
+
+		assertThat(board.string()).isEqualTo("" +
+				"......♚.\n" +
+				"......♟♟\n" +
+				".♙......\n" +
+				"....♟...\n" +
+				".♙......\n" +
+				"......♜.\n" +
+				"♔.......\n" +
+				".....♛..\n");
+
+		board.unapply(move, true, true, true, true);
+		assertThat(ACEBoardUtils.dump(clonedBoard)).isEqualTo(ACEBoardUtils.dump(board));
 	}
 
 }

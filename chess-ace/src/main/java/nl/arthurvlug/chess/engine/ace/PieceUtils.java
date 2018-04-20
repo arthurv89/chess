@@ -1,8 +1,6 @@
 package nl.arthurvlug.chess.engine.ace;
 
-import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
-import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.WHITE_KING_BYTE;
-import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
+import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
 
 public class PieceUtils {
 	public static boolean isWhitePiece(final short coloredPiece) {
@@ -15,12 +13,12 @@ public class PieceUtils {
 
 	public static String type(final byte movingPiece) {
 		switch (movingPiece) {
-			case PAWN_BYTE: return "p";
-			case KNIGHT_BYTE: return "N";
-			case BISHOP_BYTE: return "B";
-			case ROOK_BYTE: return "R";
-			case QUEEN_BYTE: return "Q";
-			case KING_BYTE: return "K";
+			case WHITE_PAWN_BYTE: case BLACK_PAWN_BYTE: return "p";
+			case WHITE_KNIGHT_BYTE: case BLACK_KNIGHT_BYTE: return "N";
+			case WHITE_BISHOP_BYTE: case BLACK_BISHOP_BYTE: return "B";
+			case WHITE_ROOK_BYTE: case BLACK_ROOK_BYTE: return "R";
+			case WHITE_QUEEN_BYTE: case BLACK_QUEEN_BYTE: return "Q";
+			case WHITE_KING_BYTE: case BLACK_KING_BYTE: return "K";
 			case NO_PIECE: return "";
 		}
 		throw new RuntimeException("Could not determine moving piece type");

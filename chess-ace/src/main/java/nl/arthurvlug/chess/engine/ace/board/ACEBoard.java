@@ -16,6 +16,7 @@ import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
+import nl.arthurvlug.chess.utils.board.pieces.PieceTypeBytes;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.*;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
@@ -142,19 +143,19 @@ public class ACEBoard {
 	public int pieceType(final byte fieldIdx) {
 		long bitboard = 1L << fieldIdx;
 
-		if((white_pawns & bitboard) != 0)   return PieceType.PAWN_BYTE;
-		if((white_knights & bitboard) != 0) return PieceType.KNIGHT_BYTE;
-		if((white_bishops & bitboard) != 0) return PieceType.BISHOP_BYTE;
-		if((white_rooks & bitboard) != 0)   return PieceType.ROOK_BYTE;
-		if((white_queens & bitboard) != 0)  return PieceType.QUEEN_BYTE;
-		if((white_kings & bitboard) != 0)   return PieceType.KING_BYTE;
+		if((white_pawns & bitboard) != 0)   return PieceTypeBytes.PAWN_BYTE;
+		if((white_knights & bitboard) != 0) return PieceTypeBytes.KNIGHT_BYTE;
+		if((white_bishops & bitboard) != 0) return PieceTypeBytes.BISHOP_BYTE;
+		if((white_rooks & bitboard) != 0)   return PieceTypeBytes.ROOK_BYTE;
+		if((white_queens & bitboard) != 0)  return PieceTypeBytes.QUEEN_BYTE;
+		if((white_kings & bitboard) != 0)   return PieceTypeBytes.KING_BYTE;
 
-		if((black_pawns & bitboard) != 0)   return PieceType.PAWN_BYTE;
-		if((black_knights & bitboard) != 0) return PieceType.KNIGHT_BYTE;
-		if((black_bishops & bitboard) != 0) return PieceType.BISHOP_BYTE;
-		if((black_rooks & bitboard) != 0)   return PieceType.ROOK_BYTE;
-		if((black_queens & bitboard) != 0)  return PieceType.QUEEN_BYTE;
-		if((black_kings & bitboard) != 0)   return PieceType.KING_BYTE;
+		if((black_pawns & bitboard) != 0)   return PieceTypeBytes.PAWN_BYTE;
+		if((black_knights & bitboard) != 0) return PieceTypeBytes.KNIGHT_BYTE;
+		if((black_bishops & bitboard) != 0) return PieceTypeBytes.BISHOP_BYTE;
+		if((black_rooks & bitboard) != 0)   return PieceTypeBytes.ROOK_BYTE;
+		if((black_queens & bitboard) != 0)  return PieceTypeBytes.QUEEN_BYTE;
+		if((black_kings & bitboard) != 0)   return PieceTypeBytes.KING_BYTE;
 
 		return NO_PIECE;
 	}

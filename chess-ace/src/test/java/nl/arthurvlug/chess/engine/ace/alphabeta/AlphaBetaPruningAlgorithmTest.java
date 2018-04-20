@@ -366,6 +366,13 @@ public class AlphaBetaPruningAlgorithmTest {
 		checkMove("g1f3 e7e5 b2b3 e5e4", movesPiece("f3"), 2);
 	}
 
+	@Test
+	public void testShouldNotPutKingInCheckAfterPromotion() {
+		checkMove("d2d4 d7d5 b1c3 b8c6 c1f4 c8f5 c3b5 a8c8 g1f3 e7e6 b5c7 c8c7 f4c7 d8c7 e2e3 c7b6 d1c1 c6b4 f1d3 f5d3 e1d2 d3e4 c2c4 b4c2 a1b1 f8b4 d2d1 c2e3 f2e3 e4b1 c4c5 b6a5 c1b1 g8f6 a2a3 a5a4 d1c1 b4a5 b1a2 e8g8 c1b1 a4b5 f3e5 a5d2 a3a4 b5e2 b2b3 e2g2 h1c1 g2e4 a2c2 d2c1 c2e4 d5e4 b1c1 f6d5 e5c4 b7b6 c5b6 a7b6 c1b2 f8b8 c4d2 d5e3 d2e4 b8d8 b2c3 e3f5 c3b2 d8d4 e4g3 f5g3 h2g3 d4g4 b2b1 g4g3 b1a2 e6e5 a2b2 f7f5 b2a2 f5f4 b3b4 f4f3 a4a5 f3f2 a5b6 f2f1q b6b7 g3g2",
+				  not(is("a2a1")), 1);
+
+	}
+
 	@Ignore
 	@Test
 	public void testShouldPlayWinningMove() { // e6 fxe6 Ne5 Bxc3 bxc3 [...] Nxd7
