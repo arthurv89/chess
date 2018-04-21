@@ -20,14 +20,16 @@ public class ApplicationModule extends AbstractModule {
 //		Player whitePlayer = new ComputerPlayer(new ACE(1));
 //		Player whitePlayer = new ComputerPlayer(new ACE(2));
 //		Player whitePlayer = new ComputerPlayer(new ACE(3));
-		Player whitePlayer = new ComputerPlayer(new ACE(4));
-//		Player whitePlayer = new HumanPlayer();
+//		Player whitePlayer = new ComputerPlayer(new ACE(4));
+//		Player whitePlayer = new ComputerPlayer(new ACE(5));
+		Player whitePlayer = new HumanPlayer();
 
 //		Player blackPlayer = new ComputerPlayer(new ACE(1));
 //		Player blackPlayer = new ComputerPlayer(new ACE(2));
 //		Player blackPlayer = new ComputerPlayer(new ACE(3));
 //		Player blackPlayer = new ComputerPlayer(new ACE(4));
-		Player blackPlayer = new HumanPlayer();
+		Player blackPlayer = new ComputerPlayer(new ACE(5));
+//		Player blackPlayer = new HumanPlayer();
 
 		Game game = new Game.GameBuilder()
 			.whitePlayer(whitePlayer)

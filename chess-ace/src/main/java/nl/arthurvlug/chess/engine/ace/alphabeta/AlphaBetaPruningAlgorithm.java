@@ -140,10 +140,6 @@ public class AlphaBetaPruningAlgorithm {
 		return bestMove;
 	}
 
-	private boolean shouldPause() {
-		return moveListContainsAll("f1e1", "g7g6");
-	}
-
 	private int alphaBeta(int alpha, final int beta, final int depth) {
 		if (engineBoard.getFiftyMove() >= 50 || engineBoard.getRepeatedMove() >= 3) {
 			return 0;
@@ -333,6 +329,10 @@ public class AlphaBetaPruningAlgorithm {
 			return Stream.of(i);
 		}
 		return Stream.empty();
+	}
+
+	private boolean shouldPause() {
+		return moveListContainsAll("f1e1", "g7g6");
 	}
 
 	public void setDepth(final int depth) {

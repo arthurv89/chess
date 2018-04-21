@@ -36,7 +36,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Before
 	public void before() {
 		algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
-		MoveUtils.DEBUG = false;
+		MoveUtils.DEBUG = true;
 	}
 
 //	@Ignore
@@ -332,6 +332,77 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n");
 		Move bestMove = algorithm.think(engineBoard);
 		assertEquals(MoveUtils.toMove("g7g8n"), bestMove);
+	}
+
+
+
+//	@Test
+//	public void shouldNotStalemate() {
+//		// e2e4, d7d5, g1f3, d5e4, f1b5, c7c6, b5e2, e4f3, e2f3, e7e5, e1g1, g8f6, d2d3, c8f5, c1g5, f8c5, f1e1, b8d7, b1c3, e8g8, c3e4, d8e7, e4f6, d7f6, d1e2, a8e8, f3h5, c5d4, c2c3, d4c5, d3d4, c5d6, d4e5, e7e5, f2f4, e5c5, e2f2, e8e1, a1e1, c5f2, g1f2, f6h5, g2g4, f5g4, h2h3, g4h3, e1d1, d6f4, g5f4, h5f4, f2g3, g7g5, d1h1, h3e6, h1f1, e6a2, g3g4, h7h6, f1h1, a2e6, g4g3, h6h5, h1e1, f4d3, e1e2, d3f4, e2e5, f7f6, e5e1, f6f5, c3c4, e6c4, b2b4, f4d5, e1e5, d5b4, e5e1, b4d3, e1h1, f5f4, g3f3, c4d5, f3e2, d5h1, e2d3, h1d5, d3d4, g5g4, d4e5, g4g3, e5d6, g3g2, d6c7, f8f7, c7b8, g2g1q, b8c8, h5h4, c8d8, h4h3, d8e8
+//		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.BLACK, "" +
+//				"....♔.♚.\n" +
+//				"♟♟...♜..\n" +
+//				"..♟.....\n" +
+//				"...♝....\n" +
+//				".....♟..\n" +
+//				".......♟\n" +
+//				"........\n" +
+//				"......♛.");
+//
+//		algorithm.setDepth(3);
+//		Move bestMove = algorithm.think(engineBoard);
+//		assertThat(bestMove.toString()).isNotEqualTo("g1b6");
+//	}
+
+	@Test
+	public void checkStalemate() {
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.BLACK, "" +
+				"....♚..\n" +
+				"....♙...\n" +
+				"....♔...\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n");
+
+		algorithm.setDepth(2);
+		Move bestMove = algorithm.think(engineBoard);
+		assertThat(bestMove).isNull();
+	}
+
+	@Test
+	public void checkCanStalemateButShouldNot() {
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
+				"....♚..\n" +
+				"....♙...\n" +
+				"........\n" +
+				".....♔..\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n");
+
+		algorithm.setDepth(2);
+		Move bestMove = algorithm.think(engineBoard);
+		assertThat(bestMove.toString()).isNotEqualTo("f5e6");
+	}
+
+	@Test
+	public void checkWhiteMated() {
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
+				"♔.......\n" +
+				".♛......\n" +
+				"..♚.....\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n");
+
+		algorithm.setDepth(3);
+		Move bestMove = algorithm.think(engineBoard);
+		assertThat(bestMove).isNull();
 	}
 
 
