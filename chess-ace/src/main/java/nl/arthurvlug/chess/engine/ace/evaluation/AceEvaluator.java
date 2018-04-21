@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import nl.arthurvlug.chess.engine.ace.PieceUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.game.Move;
@@ -18,8 +17,8 @@ public class AceEvaluator extends BoardEvaluator {
 
 	@Override
 	public Integer evaluate(final ACEBoard aceBoard) {
-		final List<Integer> moves = AceMoveGenerator.generateMoves(aceBoard);
-		LinkedHashMultimap<Byte, Integer> byFromPositionMap = byFromPosition(moves);
+//		final List<Integer> moves = AceMoveGenerator.generateMoves(aceBoard);
+//		LinkedHashMultimap<Byte, Integer> byFromPositionMap = byFromPosition(moves);
 		int score = 0;
 
 		long occupiedBoard = aceBoard.occupied_board;
@@ -27,7 +26,7 @@ public class AceEvaluator extends BoardEvaluator {
 			final byte fieldIdx = (byte) Long.numberOfTrailingZeros(occupiedBoard);
 
 			final short coloredPiece = aceBoard.coloredPiece(fieldIdx);
-			score += pieceScore(fieldIdx, coloredPiece, byFromPositionMap.get(fieldIdx));
+			score += pieceScore(fieldIdx, coloredPiece);
 			occupiedBoard ^= 1L << fieldIdx;
 		}
 		return score;
@@ -45,7 +44,7 @@ public class AceEvaluator extends BoardEvaluator {
 	}
 
 
-	private int pieceScore(final int fieldIdx, final short coloredPiece, final Set<Integer> moves) {
+	private int pieceScore(final int fieldIdx, final short coloredPiece) {
 		int totalScore = 0;
 
 		final int pieceValue = ACEConstants.pieceValues[coloredPiece];

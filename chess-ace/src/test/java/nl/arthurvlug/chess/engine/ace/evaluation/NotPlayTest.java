@@ -5,6 +5,7 @@ import java.util.List;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -17,7 +18,7 @@ public class NotPlayTest {
 
 	@Before
 	public void before() {
-		AceConfiguration.DEBUG = true;
+		MoveUtils.DEBUG = true;
 	}
 
 	@Ignore

@@ -1,7 +1,7 @@
 package nl.arthurvlug.chess.engine.ace.evaluation;
 
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,7 @@ public class SimplePieceEvaluatorTest {
 	private SimplePieceEvaluator evaluator;
 	@Before
 	public void before() {
-		AceConfiguration.DEBUG = true;
+		MoveUtils.DEBUG = true;
 		evaluator = new SimplePieceEvaluator();
 	}
 	

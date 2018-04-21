@@ -12,7 +12,6 @@ import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
 @Builder
 @AllArgsConstructor
 public class AceConfiguration {
-	public static boolean DEBUG = false;
 	public static final int DEFAULT_SEARCH_DEPTH = 2;
 	public static final BoardEvaluator DEFAULT_EVALUATOR = new AceEvaluator();
 	public static final int DEFAULT_QUIESCE_MAX_DEPTH = 6;

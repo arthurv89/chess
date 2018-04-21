@@ -1,6 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
-import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import org.junit.Before;
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 public class XRayTest {
 	@Before
 	public void before() {
-		AceConfiguration.DEBUG = true;
+		MoveUtils.DEBUG = true;
 	}
 
 	@Test

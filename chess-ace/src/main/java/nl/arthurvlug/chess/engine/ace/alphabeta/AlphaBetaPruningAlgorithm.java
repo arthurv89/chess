@@ -1,14 +1,19 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Stack;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
+import nl.arthurvlug.chess.engine.ace.KingEatingException;
+import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
@@ -16,6 +21,7 @@ import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.HashElement;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.game.Move;
@@ -39,9 +45,10 @@ public class AlphaBetaPruningAlgorithm {
 	private BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
 	private int depth;
-//	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
-	private static final int HASH_TABLE_LENGTH = 1048576; // Must be a power or 2
+	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
+//	private static final int HASH_TABLE_LENGTH = 1048576; // Must be a power or 2
 
+	private Stack<Integer> stack;
 
 	private static final TranspositionTable transpositionTable = new TranspositionTable(HASH_TABLE_LENGTH);
 	private boolean quiesceEnabled = true;
@@ -57,13 +64,16 @@ public class AlphaBetaPruningAlgorithm {
 	public Move think(final ACEBoard engineBoard) {
 		Preconditions.checkArgument(depth > 0);
 		this.engineBoard = engineBoard;
+		stack = new Stack<>();
 
 		cutoffs = 0;
 		nodesEvaluated = 0;
 		hashHits = 0;
 
+//		Optional<Integer> priorityMove = Optional.of(UnapplyableMoveUtils.createMove("c7e6", engineBoard));
 		Optional<Integer> priorityMove = Optional.empty();
 		for (int depthNow = 1; depthNow <= depth; depthNow++) {
+			logDebug("Start thinking on depth " + depthNow + ". PriorityMove: " + priorityMove.map(move -> UnapplyableMoveUtils.toString(move)).orElse(""));
 			final Integer bestMove = alphaBetaRoot(depthNow, priorityMove);
 			if(bestMove == null) {
 				return null;
@@ -78,45 +88,51 @@ public class AlphaBetaPruningAlgorithm {
 				promotionType);
 	}
 
-	private Optional<PieceType> promotionType(final int unapplyableMove) {
-		byte promotionPiece = UnapplyableMove.promotionPiece(unapplyableMove);
-		if(promotionPiece == NO_PIECE) {
-			return Optional.empty();
-		}
-		return Optional.of(ColoredPieceType.from(promotionPiece).getPieceType());
-	}
-
 	private Integer alphaBetaRoot(final int depth, final Optional<Integer> priorityMove) {
-		final List<Integer> generatedMoves = engineBoard.generateMoves();
+		List<Integer> generatedMoves;
+		try {
+			generatedMoves = engineBoard.generateMoves();
+		} catch (KingEatingException e) {
+			return null;
+		}
+
+//		final List<Integer> generatedMoves = Lists.newArrayList(priorityMove.get());
 		reorder(generatedMoves, priorityMove);
 
 		// TODO: Remove
 		// TODO: Check for stalemate in the unit test
 		Preconditions.checkState(generatedMoves.size() > 0);
 
-		int alpha = OTHER_PLAYER_WINS;
+		int alpha = OTHER_PLAYER_WINS/2;
 		int beta = CURRENT_PLAYER_WINS;
 		Integer bestMove = null;
 		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
 		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
 		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
+		int score = alpha;
 		for(int move : generatedMoves) {
 			// Do a recursive search
 			engineBoard.apply(move);
+			stack.push(move);
 //			int score = 0;
-			final int score = -alphaBeta(-beta, -alpha, depth - 1);
+			final int val = -alphaBeta(-beta, -alpha, depth - 1);
+			debugMoveStack(val);
+			sysout("");
 			engineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
 					black_king_or_rook_king_side_moved);
+			stack.pop();
 
-			if (score >= beta) {
-				cutoffs++;
-				return move;
-			}
+			score = Math.max(val, score);
 			if (score > alpha) {
+				if (score >= beta) {
+					cutoffs++;
+					logDebug("BETA cut off");
+					return move;
+				}
 				alpha = score;
 				bestMove = move;
 			}
@@ -124,21 +140,8 @@ public class AlphaBetaPruningAlgorithm {
 		return bestMove;
 	}
 
-	private void reorder(final List<Integer> moves, final Optional<Integer> priorityMove) {
-		priorityMove.flatMap(prioMove -> {
-			Stream<Integer> range = IntStream.range(0, moves.size()).boxed();
-			return range
-				.flatMap((Integer i) -> findPrioPosition(moves, prioMove, i))
-				.findFirst();
-		})
-		.ifPresent(pos -> swap(moves, 0, pos));
-	}
-
-	private Stream<Integer> findPrioPosition(final List<Integer> generatedMoves, final Integer prioMove, final Integer i) {
-		if (generatedMoves.get(i).equals(prioMove)) {
-			return Stream.of(i);
-		}
-		return Stream.empty();
+	private boolean shouldPause() {
+		return moveListContainsAll("f1e1", "g7g6");
 	}
 
 	private int alphaBeta(int alpha, final int beta, final int depth) {
@@ -165,30 +168,42 @@ public class AlphaBetaPruningAlgorithm {
 			// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
 			return quiesceSearch(alpha, beta, quiesceMaxDepth);
 		}
-		
-		List<Integer> generatedMoves = engineBoard.generateMoves();
+
+		List<Integer> generatedMoves;
+		try {
+			generatedMoves = engineBoard.generateMoves();
+		} catch (KingEatingException e) {
+			return CURRENT_PLAYER_WINS;
+		}
 
 		Integer bestMove = null;
 		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
 		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
 		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
+
+		int score = OTHER_PLAYER_WINS;
 		for(final Integer move : generatedMoves) {
 			// Do a recursive search
 			engineBoard.apply(move);
-			int score = -alphaBeta(-beta, -alpha, depth-1);
+			stack.push(move);
+			int val = -alphaBeta(-beta, -alpha, depth-1);
+			debugMoveStack(val);
+			stack.pop();
 			engineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
 					black_king_or_rook_king_side_moved);
 
-			if (score >= beta) {
-				cutoffs++;
-				transpositionTable.set(depth, score, hashfBETA, move, zobristHash);
-				return beta;
-			}
+			score = Math.max(score, val);
 			if (score > alpha) {
+				if (score >= beta) {
+					cutoffs++;
+					transpositionTable.set(depth, score, hashfBETA, move, zobristHash);
+					logDebug("BETA CUT OFF. " + score + " >= " + beta);
+					return score;
+				}
 				bestMove = move;
 				alpha = score;
 				hashf = TranspositionTable.hashfEXACT;
@@ -196,58 +211,93 @@ public class AlphaBetaPruningAlgorithm {
 		}
 
 		transpositionTable.set(depth, alpha, hashf, bestMove, zobristHash);
-		return alpha;
+		return score;
 	}
 
-	private void debug() {
-//		System.out.println(cutoffs + "/" + nodesEvaluated);
+	private int losingScore() {
+		return OTHER_PLAYER_WINS - stack.size();
 	}
 
 	private int quiesceSearch(int alpha, final int beta, final int depth) {
-		int stand_pat = calculateScore(engineBoard);
+		int score = calculateScore(engineBoard);
 		if(depth == 0 || !quiesceEnabled) {
-			return stand_pat;
+			return score;
 		}
 
-		if(engineBoard.hasNoKing()) {
-			return OTHER_PLAYER_WINS;
+		if (score >= beta) {
+			return score;
 		}
-		if (stand_pat >= beta) {
-			return beta;
-		}
-		if( alpha < stand_pat )
-			alpha = stand_pat;
+		if( score > alpha )
+			alpha = score;
 
 //		// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
 //
 //
 
-		final List<Integer> takeMoves = engineBoard.generateTakeMoves();
+		final List<Integer> takeMoves;
+		try {
+			takeMoves = engineBoard.generateTakeMoves();
+		} catch (KingEatingException e) {
+			return CURRENT_PLAYER_WINS;
+		}
 		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
 		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
 		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
 		for(Integer takeMove : takeMoves) {
 			engineBoard.apply(takeMove);
-			final int score = -quiesceSearch(-beta, -alpha, depth-1);
+			stack.push(takeMove);
+			int val = -quiesceSearch(-beta, -alpha, depth-1);
+			debugMoveStack(val);
+			stack.pop();
 			engineBoard.unapply(takeMove,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
 					black_king_or_rook_king_side_moved);
-//			log.debug("Evaluating board\n{}Score: {}\n", engineBoard.string(), score);
+//			debugMoveStack("Evaluating board\n{}Score: {}\n", engineBoard.string(), val);
 
-			if (score >= beta) {
-				// Beta cut-off
-				cutoffs++;
-				debug();
-//				log.debug("Beta cut-off");
-				return score;
-			} else if (score > alpha) {
+			score = Math.max(score, val);
+			if (score > alpha) {
+				if (val >= beta) {
+					// Beta cut-off
+					cutoffs++;
+					logDebug("Beta cut-off");
+					return beta;
+				}
+
 				alpha = score;
 			}
 		}
-		return alpha;
+		return score;
+	}
+
+	private void logDebug(final String message) {
+		if(MoveUtils.DEBUG) {
+			log.debug(message);
+		}
+	}
+
+	private void sysout(final String message) {
+		if(MoveUtils.DEBUG) {
+			System.out.println(message);
+		}
+	}
+
+	private void debugMoveStack(final int score) {
+		if(MoveUtils.DEBUG) {
+			final List<String> moveList = moveListStrings();
+			System.out.printf("%s = %d%n", moveList, score);
+		}
+	}
+
+	private boolean moveListContainsAll(String... moves) {
+		ImmutableList<String> c = ImmutableList.copyOf(moves);
+		return moveListStrings().containsAll(c);
+	}
+
+	private List<String> moveListStrings() {
+		return stack.stream().map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList());
 	}
 
 	private int calculateScore(final ACEBoard board) {
@@ -260,11 +310,36 @@ public class AlphaBetaPruningAlgorithm {
 		return score;
 	}
 
+	private Optional<PieceType> promotionType(final int unapplyableMove) {
+		byte promotionPiece = UnapplyableMove.promotionPiece(unapplyableMove);
+		if(promotionPiece == NO_PIECE) {
+			return Optional.empty();
+		}
+		return Optional.of(ColoredPieceType.from(promotionPiece).getPieceType());
+	}
+
+	private void reorder(final List<Integer> moves, final Optional<Integer> priorityMove) {
+		priorityMove.flatMap(prioMove -> {
+			Stream<Integer> range = IntStream.range(0, moves.size()).boxed();
+			return range
+					.flatMap((Integer i) -> findPrioPosition(moves, prioMove, i))
+					.findFirst();
+		})
+				.ifPresent(pos -> swap(moves, 0, pos));
+	}
+
+	private Stream<Integer> findPrioPosition(final List<Integer> generatedMoves, final Integer prioMove, final Integer i) {
+		if (generatedMoves.get(i).equals(prioMove)) {
+			return Stream.of(i);
+		}
+		return Stream.empty();
+	}
+
 	public void setDepth(final int depth) {
 		this.depth = depth;
 	}
 
-	public void disableQuesce() {
+	public void disableQuiesce() {
 		this.quiesceEnabled = false;
 	}
 

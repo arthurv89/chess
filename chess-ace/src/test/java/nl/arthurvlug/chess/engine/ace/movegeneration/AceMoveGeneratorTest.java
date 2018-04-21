@@ -5,8 +5,8 @@ import java.util.List;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 public class AceMoveGeneratorTest {
 	@Before
 	public void before() {
-		AceConfiguration.DEBUG = true;
+		MoveUtils.DEBUG = true;
 	}
 
 	@Test

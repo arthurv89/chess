@@ -32,12 +32,11 @@ public class AlphaBetaPruningAlgorithmTest {
 //	private static final int M = 4;
 
 	private AlphaBetaPruningAlgorithm algorithm;
-	private AceConfiguration aceConfiguration;
 
 	@Before
 	public void before() {
 		algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
-		AceConfiguration.DEBUG = true;
+		MoveUtils.DEBUG = false;
 	}
 
 //	@Ignore
@@ -45,7 +44,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void testNodesSearched1() {
 		algorithm.setDepth(1);
 		algorithm.useSimplePieceEvaluator();
-		algorithm.disableQuesce();
+		algorithm.disableQuiesce();
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
 		algorithm.think(engineBoard);
@@ -57,7 +56,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void testNodesSearched2() {
 		algorithm.setDepth(2);
 		algorithm.useSimplePieceEvaluator();
-		algorithm.disableQuesce();
+		algorithm.disableQuiesce();
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
 		algorithm.think(engineBoard);
@@ -69,7 +68,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void testNodesSearched3() {
 		algorithm.setDepth(3);
 		algorithm.useSimplePieceEvaluator();
-		algorithm.disableQuesce();
+		algorithm.disableQuiesce();
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
 		algorithm.think(engineBoard);
@@ -79,26 +78,19 @@ public class AlphaBetaPruningAlgorithmTest {
 
 	@Test
 	public void testSelfCheckmate() {
-		ACEBoard engineBoard = ACEBoard.emptyBoard(BLACK, false);
-		engineBoard.addPiece(WHITE, KING, FieldUtils.fieldIdx("a1"));
-		engineBoard.addPiece(WHITE, PAWN, FieldUtils.fieldIdx("a2"));
-		engineBoard.addPiece(WHITE, PAWN, FieldUtils.fieldIdx("b2"));
-		engineBoard.addPiece(WHITE, ROOK, FieldUtils.fieldIdx("b1"));
-		engineBoard.addPiece(WHITE, ROOK, FieldUtils.fieldIdx("b8"));
-		engineBoard.addPiece(WHITE, ROOK, FieldUtils.fieldIdx("b7"));
-		engineBoard.addPiece(BLACK, KNIGHT, FieldUtils.fieldIdx("b4"));
-		engineBoard.addPiece(BLACK, KING, FieldUtils.fieldIdx("a8"));
-		engineBoard.finalizeBitboards();
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.BLACK, "" +
+				"♚♖......\n" +
+				".♖......\n" +
+				"........\n" +
+				"........\n" +
+				".♞......\n" +
+				"........\n" +
+				"♙♙......\n" +
+				"♔♖......");
 
-		/*  ♚♖......
-			.♖......
-			........
-			........
-			.♞......
-			........
-			♙♙......
-			♔♖......  */
+		/*    */
 		final Move move = algorithm.think(engineBoard);
+		System.out.println(move);
 		assertNull(move);
 	}
 
@@ -143,8 +135,10 @@ public class AlphaBetaPruningAlgorithmTest {
 			........
 			♔.......  */
 		algorithm.setDepth(3);
+		algorithm.disableQuiesce();
 		final Move move = algorithm.think(engineBoard);
-		assertNull(move);
+
+		assertThat(move.toString()).isEqualTo("a8b8");
 	}
 
 	@Test
@@ -319,6 +313,8 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n" +
 				"........\n" +
 				".....♔..\n");
+//		algorithm.useSimplePieceEvaluator();
+//		algorithm.disableQuiesce();
 		Move bestMove = algorithm.think(engineBoard);
 		assertEquals(MoveUtils.toMove("d7d8q"), bestMove);
 	}
@@ -392,6 +388,24 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void shouldTakeBackQueen() {
 		checkMove("e2e4 d7d5 e4d5 d8d5 b1c3 d5e6 d1e2 b8c6 b2b3 c6d4 e2e6",
 				not(is("a8b8")), 3, new AceEvaluator(), 0);
+	}
+
+	@Test
+	public void whiteShouldMate() {
+		checkMove("d2d4 d7d5 b1c3 b8c6 c1f4 g8f6 c3b5 g7g6 b5c7 e8d7 c7a8 d8a5 c2c3 f6e8 g1f3 e8d6 e2e3 f8g7 f1d3 b7b6 f3e5 c6e5 d4e5 d6f5 b2b4 a5a3 d3b5 d7e6",
+				is("a8c7"), 4, new AceEvaluator(), 6);
+	}
+
+	@Test
+	public void blackShouldNotMoveBecauseItsCheckmate() {
+		checkMove("d2d4 d7d5 b1c3 b8c6 c1f4 g8f6 c3b5 g7g6 b5c7 e8d7 c7a8 d8a5 c2c3 f6e8 g1f3 e8d6 e2e3 f8g7 f1d3 b7b6 f3e5 c6e5 d4e5 d6f5 b2b4 a5a3 d3b5 d7e6 a8c7",
+				m -> m == null, 4, new AceEvaluator(), 6);
+	}
+
+	@Test
+	public void shouldNotMoveBecauseTheKingCanBeEaten() {
+		checkMove("d2d4 d7d5 b1c3 b8c6 c1f4 g8f6 c3b5 g7g6 b5c7 e8d7 c7a8 d8a5 c2c3 f6e8 g1f3 e8d6 e2e3 f8g7 f1d3 b7b6 f3e5 c6e5 d4e5 d6f5 b2b4 a5a3 d3b5 d7e6 a8c7 a3c3",
+				m -> m == null, 4, new AceEvaluator(), 6);
 	}
 
 	@Ignore

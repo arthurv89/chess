@@ -6,7 +6,9 @@ import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 
+import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.BLACK_KING_BYTE;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
+import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.WHITE_KING_BYTE;
 
 public class UnapplyableMoveUtils {
 	public static int createMove(final String sMove, final ACEBoard aceBoard) {
@@ -18,17 +20,25 @@ public class UnapplyableMoveUtils {
 			final PieceType pieceType = PieceStringUtils.fromChar(c, PieceStringUtils.pieceToCharacterConverter).get();
 			promotionPiece = ColoredPieceType.getColoredByte(pieceType, aceBoard.toMove);
 		}
-		return createMove(fromIdx, targetIdx, promotionPiece, aceBoard);
+		try {
+			return createMove(fromIdx, targetIdx, promotionPiece, aceBoard);
+		} catch (KingEatingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static int createMove(final byte fromIdx,
 								 final byte targetIdx,
 								 final byte promotionPiece,
-								 final ACEBoard aceBoard) {
+								 final ACEBoard aceBoard) throws KingEatingException {
 		// TODO: Change to pieceType(..)
 		int movingPiece = aceBoard.coloredPiece(fromIdx);
 		int takePiece = aceBoard.coloredPiece(targetIdx);
-		return UnapplyableMove.create(fromIdx, targetIdx, movingPiece, takePiece, promotionPiece);
+		int move = UnapplyableMove.create(fromIdx, targetIdx, movingPiece, takePiece, promotionPiece);
+		if(takePiece == BLACK_KING_BYTE || takePiece == WHITE_KING_BYTE) {
+			throw new KingEatingException(move);
+		}
+		return move;
 	}
 
 	public static String toString(final int move) {
@@ -43,5 +53,15 @@ public class UnapplyableMoveUtils {
 				FieldUtils.fieldToString(toIdx),
 				PieceUtils.type(promotionPiece),
 				PieceUtils.type(takePiece));
+	}
+
+	public static String toShortString(final int move) {
+		byte fromIdx = UnapplyableMove.fromIdx(move);
+		byte toIdx = UnapplyableMove.targetIdx(move);
+		byte promotionPiece = UnapplyableMove.promotionPiece(move);
+		return String.format("%s%s%s",
+				FieldUtils.fieldToString(fromIdx),
+				FieldUtils.fieldToString(toIdx),
+				PieceUtils.type(promotionPiece));
 	}
 }

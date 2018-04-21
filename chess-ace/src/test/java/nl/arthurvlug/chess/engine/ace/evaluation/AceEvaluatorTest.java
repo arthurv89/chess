@@ -2,7 +2,7 @@ package nl.arthurvlug.chess.engine.ace.evaluation;
 
 import java.util.Arrays;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
-import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,7 +13,7 @@ public class AceEvaluatorTest {
 
 	@Before
 	public void before() {
-		AceConfiguration.DEBUG = true;
+		MoveUtils.DEBUG = true;
 		this.aceEvaluator = new AceEvaluator();
 	}
 	

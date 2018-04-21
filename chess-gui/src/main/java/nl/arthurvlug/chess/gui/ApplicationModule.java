@@ -8,6 +8,7 @@ import nl.arthurvlug.chess.gui.components.board.ClockPane;
 import nl.arthurvlug.chess.gui.components.board.MovesPane;
 import nl.arthurvlug.chess.gui.game.Game;
 import nl.arthurvlug.chess.gui.game.player.ComputerPlayer;
+import nl.arthurvlug.chess.gui.game.player.HumanPlayer;
 import nl.arthurvlug.chess.gui.game.player.Player;
 
 public class ApplicationModule extends AbstractModule {
@@ -25,8 +26,8 @@ public class ApplicationModule extends AbstractModule {
 //		Player blackPlayer = new ComputerPlayer(new ACE(1));
 //		Player blackPlayer = new ComputerPlayer(new ACE(2));
 //		Player blackPlayer = new ComputerPlayer(new ACE(3));
-		Player blackPlayer = new ComputerPlayer(new ACE(4));
-//		Player blackPlayer = new HumanPlayer();
+//		Player blackPlayer = new ComputerPlayer(new ACE(4));
+		Player blackPlayer = new HumanPlayer();
 
 		Game game = new Game.GameBuilder()
 			.whitePlayer(whitePlayer)

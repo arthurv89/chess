@@ -7,6 +7,7 @@ import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
+import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class ACEBoardTest {
 
 	@Before
 	public void before() {
-		AceConfiguration.DEBUG = true;
+		MoveUtils.DEBUG = true;
 	}
 
 	@Test

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
+import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
@@ -39,7 +40,7 @@ public class AceMoveGenerator {
 	 * Generates both valid moves and invalid moves
 	 */
 	// TODO: Change this to a generator/lazy iterator
-	public static List<Integer> generateMoves(ACEBoard engineBoard) {
+	public static List<Integer> generateMoves(ACEBoard engineBoard) throws KingEatingException {
 		Preconditions.checkArgument(engineBoard.occupied_board != 0L);
 		Preconditions.checkArgument(engineBoard.enemy_and_empty_board != 0L);
 
@@ -55,7 +56,7 @@ public class AceMoveGenerator {
 		return list;
 	}
 
-	private static List<Integer> pawnMoves(ACEBoard engineBoard) {
+	private static List<Integer> pawnMoves(ACEBoard engineBoard) throws KingEatingException {
 		// TODO: Convert to arrays
 		long[] pawnXrayOneFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_one_field_move : pawn_xray_black_one_field_move;
 		long[] pawnXrayTwoFieldMove = engineBoard.toMove == WHITE ? pawn_xray_white_two_field_move : pawn_xray_black_two_field_move;
@@ -80,7 +81,7 @@ public class AceMoveGenerator {
 		return moves;
 	}
 
-	private static List<Integer> queenMoves(ACEBoard engineBoard) {
+	private static List<Integer> queenMoves(ACEBoard engineBoard) throws KingEatingException {
 		List<Integer> moves = new ArrayList<>();
 		long queens = queens(engineBoard);
 		while(queens != 0L) {
@@ -96,7 +97,7 @@ public class AceMoveGenerator {
 		return moves;
 	}
 
-	private static List<Integer> bishopMoves(ACEBoard engineBoard) {
+	private static List<Integer> bishopMoves(ACEBoard engineBoard) throws KingEatingException {
 		List<Integer> moves = new ArrayList<>();
 		long bishops = bishops(engineBoard);
 		while(bishops != 0L) {
@@ -130,7 +131,7 @@ public class AceMoveGenerator {
 		return deg45_moves | deg225_moves | deg135_moves | deg315_moves;
 	}
 
-	private static List<Integer> rookMoves(ACEBoard engineBoard) {
+	private static List<Integer> rookMoves(ACEBoard engineBoard) throws KingEatingException {
 		List<Integer> moves = new ArrayList<>();
 		long rooks = rooks(engineBoard);
 		while(rooks != 0L) {
@@ -164,7 +165,7 @@ public class AceMoveGenerator {
 		return right_moves | left_moves | up_moves | down_moves;
 	}
 
-	private static List<Integer> knightMoves(ACEBoard engineBoard) {
+	private static List<Integer> knightMoves(ACEBoard engineBoard) throws KingEatingException {
 		List<Integer> moves = new ArrayList<>();
 		long knights = knights(engineBoard);
 		while(knights != 0L) {
@@ -176,7 +177,7 @@ public class AceMoveGenerator {
 		return moves;
 	}
 
-	private static List<Integer> kingMoves(ACEBoard engineBoard) {
+	private static List<Integer> kingMoves(ACEBoard engineBoard) throws KingEatingException {
 		byte sq = (byte) Long.numberOfTrailingZeros(kings(engineBoard));
 		if(sq == 64) {
 			return Collections.emptyList();
@@ -186,7 +187,7 @@ public class AceMoveGenerator {
 		return moves(sq, destinationBitboard, engineBoard, false);
 	}
 
-	static List<Integer> castlingMoves(final ACEBoard engineBoard) {
+	static List<Integer> castlingMoves(final ACEBoard engineBoard) throws KingEatingException {
 		final List<Integer> moves = new ArrayList<>();
 		if(ColorUtils.isWhite(engineBoard.toMove)) {
 			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.white_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
@@ -223,7 +224,7 @@ public class AceMoveGenerator {
 				&& (xRay & engineBoard.occupied_board) == 0L;
 	}
 
-	private static List<Integer> moves(byte fromIdx, long bitboard, final ACEBoard engineBoard, final boolean couldBePromotionMove) {
+	private static List<Integer> moves(byte fromIdx, long bitboard, final ACEBoard engineBoard, final boolean couldBePromotionMove) throws KingEatingException {
 		List<Integer> moves = new ArrayList<>();
 
 		while(bitboard != 0) {

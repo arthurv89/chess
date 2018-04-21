@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
+import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
@@ -20,8 +21,8 @@ import nl.arthurvlug.chess.utils.board.pieces.PieceTypeBytes;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.*;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
-import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.DEBUG;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
+import static nl.arthurvlug.chess.utils.MoveUtils.DEBUG;
 
 public class ACEBoard {
 	public byte toMove;
@@ -515,7 +516,7 @@ public class ACEBoard {
 
 	// TODO: Replace with inverted Xrays.
 	// For each occupied field by the current player,it should calculate which fields can attack them
-	public List<Integer> generateTakeMoves() {
+	public List<Integer> generateTakeMoves() throws KingEatingException {
 		return AceMoveGenerator.generateMoves(this)
 				.stream()
 				.filter(move -> {
@@ -656,7 +657,7 @@ public class ACEBoard {
 		return clonedBoard;
 	}
 
-	public List<Integer> generateMoves() {
+	public List<Integer> generateMoves() throws KingEatingException {
 		return AceMoveGenerator.generateMoves(this);
 	}
 
