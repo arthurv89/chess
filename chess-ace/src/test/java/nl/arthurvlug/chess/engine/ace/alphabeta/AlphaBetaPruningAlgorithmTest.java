@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.BLACK;
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
+import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
@@ -47,7 +48,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.disableQuiesce();
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
-		algorithm.think(engineBoard);
+		algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals(0, algorithm.getCutoffs());
 		assertEquals(M, algorithm.getNodesEvaluated());
 	}
@@ -59,7 +60,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.disableQuiesce();
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
-		algorithm.think(engineBoard);
+		algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals(19, algorithm.getCutoffs());
 		assertEquals(59, algorithm.getNodesEvaluated());
 	}
@@ -71,7 +72,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.disableQuiesce();
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
-		algorithm.think(engineBoard);
+		algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals(57, algorithm.getCutoffs());
 		assertEquals(583, algorithm.getNodesEvaluated());
 	}
@@ -89,7 +90,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"♔♖......");
 
 		/*    */
-		final Move move = algorithm.think(engineBoard);
+		final Move move = algorithm.think(engineBoard, new ThinkingParams());
 		System.out.println(move);
 		assertNull(move);
 	}
@@ -113,7 +114,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			........
 			♙♙......
 			♔♖......  */
-		final Move move = algorithm.think(engineBoard);
+		final Move move = algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals("b4c2", move.toString());
 	}
 
@@ -136,7 +137,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			♔.......  */
 		algorithm.setDepth(3);
 		algorithm.disableQuiesce();
-		final Move move = algorithm.think(engineBoard);
+		final Move move = algorithm.think(engineBoard, new ThinkingParams());
 
 		assertThat(move.toString()).isEqualTo("a8b8");
 	}
@@ -168,7 +169,7 @@ public class AlphaBetaPruningAlgorithmTest {
 
 		*/
 		algorithm.setDepth(5);
-		final Move move = algorithm.think(engineBoard);
+		final Move move = algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals("a5a6", move.toString());
 	}
 
@@ -180,7 +181,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(BLACK, KING, FieldUtils.fieldIdx("h8"));
 		engineBoard.finalizeBitboards();
 
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals(MoveUtils.toMove("a1b2"), bestMove);
 	}
 
@@ -192,7 +193,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(WHITE, KING, FieldUtils.fieldIdx("h8"));
 		engineBoard.finalizeBitboards();
 
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals(MoveUtils.toMove("a1b2"), bestMove);
 	}
 
@@ -213,7 +214,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			.♔......
 			........  */
 
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertThat(bestMove).isNotEqualTo(MoveUtils.toMove("b2c3"));
 	}
 
@@ -238,7 +239,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			♔♘♜.....
 			..♙.....  */
 
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertThat(bestMove);
 	}
 
@@ -263,7 +264,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			.♘♜.....
 			♔.♙.....  */
 
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals(MoveUtils.toMove("b2c4"), bestMove);
 	}
 
@@ -271,7 +272,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void testStartPosition() {
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		// Expect d2d4 because pawns are found first, and they come in order of fieldIdx
 		// Moves with the same score are: e2e4, b1c3 and g1f3
 		assertEquals(MoveUtils.toMove("d2d4"), bestMove);
@@ -298,7 +299,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			...♕....
 			...♗.♔..
 		 */
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals(MoveUtils.toMove("d8d2"), bestMove);
 	}
 
@@ -315,7 +316,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				".....♔..\n");
 //		algorithm.useSimplePieceEvaluator();
 //		algorithm.disableQuiesce();
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals(MoveUtils.toMove("d7d8q"), bestMove);
 	}
 
@@ -330,7 +331,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n" +
 				"........\n" +
 				"........\n");
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertEquals(MoveUtils.toMove("g7g8n"), bestMove);
 	}
 
@@ -367,7 +368,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n");
 
 		algorithm.setDepth(2);
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertThat(bestMove).isNull();
 	}
 
@@ -384,7 +385,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n");
 
 		algorithm.setDepth(2);
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertThat(bestMove.toString()).isNotEqualTo("f5e6");
 	}
 
@@ -401,58 +402,64 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n");
 
 		algorithm.setDepth(3);
-		Move bestMove = algorithm.think(engineBoard);
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
 		assertThat(bestMove).isNull();
 	}
 
 
 	@Test
 	public void testTrap_Depth1() {
-		checkMove("b1c3 b8c6 g1f3 e7e5", not(is("f3e5")), 1, new SimplePieceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH); // After taking a piece, we should do another move
+		checkMove("b1c3 b8c6 g1f3 e7e5", not(is("f3e5")), 1, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH); // After taking a piece, we should do another move
 	}
 
 	@Test
 	public void testTrap_Depth2() {
-		checkMove("b1c3 b8c6 g1f3 e7e5", not(is("f3e5")), 2, new SimplePieceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH);
+		checkMove("b1c3 b8c6 g1f3 e7e5", not(is("f3e5")), 2, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
 	@Test
 	public void testTrap_Depth1_black() {
-		checkMove("e2e4 g8f6 b1c3", not(is("f6e4")), 1, new SimplePieceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH); // After taking a piece, we should do another move
+		checkMove("e2e4 g8f6 b1c3", not(is("f6e4")), 1, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH); // After taking a piece, we should do another move
 	}
 
 	@Test
 	public void testTrap_Depth2_black() {
-		checkMove("e2e4 g8f6 b1c3", not(is("f6e4")), 2, new SimplePieceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH);
+		checkMove("e2e4 g8f6 b1c3", not(is("f6e4")), 2, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
 	@Test
 	public void testDontLetOpponentTakeKnight() {
-		checkMove("e2e4 g8f6 e4e5", movesPiece("f6"), 2, new SimplePieceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH);
+		checkMove("e2e4 g8f6 e4e5", movesPiece("f6"), 2, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
 	@Test
 	public void testShouldMoveKnight_white() {
-		checkMove("g1f3 e7e5 b2b3 e5e4", movesPiece("f3"), 2, new SimplePieceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH);
+		checkMove("g1f3 e7e5 b2b3 e5e4", movesPiece("f3"), 2, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
 	@Test
 	public void testShouldNotPutKingInCheckAfterPromotion() {
 		checkMove("d2d4 d7d5 b1c3 b8c6 c1f4 c8f5 c3b5 a8c8 g1f3 e7e6 b5c7 c8c7 f4c7 d8c7 e2e3 c7b6 d1c1 c6b4 f1d3 f5d3 e1d2 d3e4 c2c4 b4c2 a1b1 f8b4 d2d1 c2e3 f2e3 e4b1 c4c5 b6a5 c1b1 g8f6 a2a3 a5a4 d1c1 b4a5 b1a2 e8g8 c1b1 a4b5 f3e5 a5d2 a3a4 b5e2 b2b3 e2g2 h1c1 g2e4 a2c2 d2c1 c2e4 d5e4 b1c1 f6d5 e5c4 b7b6 c5b6 a7b6 c1b2 f8b8 c4d2 d5e3 d2e4 b8d8 b2c3 e3f5 c3b2 d8d4 e4g3 f5g3 h2g3 d4g4 b2b1 g4g3 b1a2 e6e5 a2b2 f7f5 b2a2 f5f4 b3b4 f4f3 a4a5 f3f2 a5b6 f2f1q b6b7 g3g2",
-				  not(is("a2a1")), 1, new SimplePieceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH);
+				  not(is("a2a1")), 1, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 
 	}
 
 	@Test
 	public void shouldNotGetStuck() {
 		checkMove("d2d4 d7d5 b1c3 b8c6 c1f4 c8f5 c3b5 a8c8 g1f3 e7e6 b5c7 c8c7 f4c7 d8c7 e2e3 c7b6 d1c1 c6b4 f1d3 f5d3 e1d2 d3e4 c2c4 b4c2 a1b1 f8b4 d2d1 c2e3 f2e3 e4b1 c4c5 b6a5 c1b1 g8f6 a2a3 a5a4 d1c1 b4a5 b1a2 e8g8 c1b1 a4b5 f3e5 a5d2 a3a4 b5e2 b2b3 e2g2 h1c1 g2e4 a2c2 d2c1 c2e4 d5e4 b1c1 f6d5 e5c4 b7b6 c5b6 a7b6 c1b2 f8b8 c4d2 d5e3 d2e4 b8d8 b2c3 e3f5 c3b2 d8d4 e4g3 f5g3 h2g3 d4g4 b2b1 g4g3 b1a2",
-				not(is("a1a1")), 4, new AceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH);
+				not(is("a1a1")), 4, new AceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
 	@Test
-	public void shouldNotCastleWhenInCheck() {
+	public void blackShouldNotCastleWhenInCheck() {
 		checkMove("d2d4 d7d5 c2c4 d5c4 e2e3 b7b5 a2a4 c8a6 a4b5 a6b5 b1a3 b5c6 a3c4 g8f6 g1f3 b8d7 c4e5 c6f3 d1f3 d7e5 d4e5 f6d7 f1b5 e7e6 e1g1 f8c5 b5d7",
-				not(is("e8g8")), 3, new SimplePieceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH);
+				not(is("e8g8")), 3, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
+	}
+
+	@Test
+	public void whiteShouldNotCastleWhenInCheck() {
+		checkMove("d2d4 d7d5 b1c3 g8f6 g1f3 c8g4 c1f4 c7c6 e2e3 d8b6 a1b1 e7e6 f1d3 f8b4 a2a3 b4c3 b2c3 b6a5 b1b7 a5c3",
+				not(is("e1g1")), 1, new AceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
 	@Test
@@ -493,7 +500,7 @@ public class AlphaBetaPruningAlgorithmTest {
 
 		// Expect to play e5e6
 		checkMove("d2d4 b8c6 b1c3 g8f6 g1f3 d7d5 e2e3 c8f5 c1d2 e7e6 f1d3 f5d3 c2d3 f8d6 d1b3 a8b8 e3e4 d5e4 d3e4 e6e5 d4e5 c6e5 b3a4 e5c6 d2e3 a7a5 e4e5 b7b5 c3b5 d6b4 e1c1 f6d7 b5c3 c6e7",
-				movesPiece("e5"), 6, new SimplePieceEvaluator(), AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH);
+				movesPiece("e5"), 6, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
 	private void checkMove(String sMoves, Function<Move, Boolean> expect, int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {

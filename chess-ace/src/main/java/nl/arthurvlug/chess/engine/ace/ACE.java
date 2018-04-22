@@ -52,7 +52,7 @@ public class ACE extends CustomEngine {
 		engineBoard.apply(moveList);
 		log.debug("\n{}", engineBoard.string());
 
-		Move think = searchAlgorithm.think(engineBoard);
+		Move think = searchAlgorithm.think(engineBoard, thinkingParams);
 
 		log.debug("Nodes evaluated: {}", searchAlgorithm.getNodesEvaluated());
 		log.debug("Cut-offs: {}", searchAlgorithm.getCutoffs());

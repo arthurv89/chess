@@ -5,6 +5,7 @@ import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 
+import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import org.joda.time.DateTime;
 
 @Slf4j
@@ -23,7 +24,7 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
 		
 		final DateTime start = DateTime.now();
-		algorithm.think(board);
+		algorithm.think(board, new ThinkingParams());
 		final DateTime end = DateTime.now();
 		
 		final int nodesSearched = algorithm.getNodesEvaluated();

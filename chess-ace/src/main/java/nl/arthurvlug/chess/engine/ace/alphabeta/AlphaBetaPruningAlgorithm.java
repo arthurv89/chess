@@ -1,10 +1,12 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -21,6 +23,7 @@ import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.HashElement;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable;
+import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
@@ -61,7 +64,7 @@ public class AlphaBetaPruningAlgorithm {
 		this.depth = configuration.getSearchDepth();
 	}
 
-	public Move think(final ACEBoard engineBoard) {
+	public Move think(final ACEBoard engineBoard, final ThinkingParams thinkingParams) {
 		Preconditions.checkArgument(depth > 0);
 		this.engineBoard = engineBoard;
 		stack = new Stack<>();
@@ -72,13 +75,25 @@ public class AlphaBetaPruningAlgorithm {
 
 //		Optional<Integer> priorityMove = Optional.of(UnapplyableMoveUtils.createMove("c7e6", engineBoard));
 		Optional<Integer> priorityMove = Optional.empty();
+		final int timeLeft = engineBoard.toMove == ColorUtils.WHITE
+				? thinkingParams.getWhiteTime()
+				: thinkingParams.getBlackTime();
+		final int maxThinkingTime = thinkingTime(timeLeft);
+		final Stopwatch timer = Stopwatch.createStarted();
+
 		for (int depthNow = 1; depthNow <= depth; depthNow++) {
-			logDebug("Start thinking on depth " + depthNow + ". PriorityMove: " + priorityMove.map(move -> UnapplyableMoveUtils.toString(move)).orElse(""));
-			final Integer bestMove = alphaBetaRoot(depthNow, priorityMove);
-			if(bestMove == null) {
-				return null;
+			try {
+				logDebug("Start thinking on depth " + depthNow + ". PriorityMove: " + priorityMove.map(move -> UnapplyableMoveUtils.toString(move)).orElse(""));
+				final Integer bestMove = alphaBetaRoot(depthNow, priorityMove, maxThinkingTime, timer);
+				if (bestMove == null) {
+					return null;
+				}
+				priorityMove = Optional.of(bestMove);
+			} catch (OutOfThinkingTimeException e) {
+				// Out of time: just play the move
+				System.err.println("Out of time. Playing depth " + (depthNow-1));
+				break;
 			}
-			priorityMove = Optional.of(bestMove);
 		}
 		final int unapplyableMove = priorityMove.get();
 		final Optional<PieceType> promotionType = promotionType(unapplyableMove);
@@ -88,7 +103,11 @@ public class AlphaBetaPruningAlgorithm {
 				promotionType);
 	}
 
-	private Integer alphaBetaRoot(final int depth, final Optional<Integer> priorityMove) {
+	private int thinkingTime(final int timeLeft) {
+		return timeLeft/30;
+	}
+
+	private Integer alphaBetaRoot(final int depth, final Optional<Integer> priorityMove, final int maxThinkingTime, final Stopwatch timer) throws OutOfThinkingTimeException {
 		List<Integer> generatedMoves;
 		try {
 			generatedMoves = engineBoard.generateMoves();
@@ -112,6 +131,11 @@ public class AlphaBetaPruningAlgorithm {
 		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
 		int score = alpha;
 		for(int move : generatedMoves) {
+			if(depth > 1 && timer.elapsed(TimeUnit.MILLISECONDS) > maxThinkingTime) {
+				// We should already have a move in iteration currentDepth-1.
+				// Just throw an exception and make it return the previous iteration's move
+				throw new OutOfThinkingTimeException();
+			}
 			// Do a recursive search
 			engineBoard.apply(move);
 			stack.push(move);

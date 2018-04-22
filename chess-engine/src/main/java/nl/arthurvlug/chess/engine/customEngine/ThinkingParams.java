@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class ThinkingParams {
-	private int whiteTime = 1000;
-	private int blackTime = 1000;
+	private int whiteTime = 1000000;
+	private int blackTime = 1000000;
 }

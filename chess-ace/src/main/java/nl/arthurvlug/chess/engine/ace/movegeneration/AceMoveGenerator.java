@@ -221,7 +221,18 @@ public class AceMoveGenerator {
 	 */
 	private static boolean canCastle(final ACEBoard engineBoard, final boolean piecesMoved, final long xRay) {
 		return !piecesMoved
-				&& (xRay & engineBoard.occupied_board) == 0L;
+				&& (xRay & engineBoard.occupied_board) == 0L
+				& !inCheck(engineBoard);
+	}
+
+	private static boolean inCheck(final ACEBoard engineBoard) {
+		try {
+			final ACEBoard boardForOtherPlayer = engineBoard.cloneBoard(ColorUtils.opponent(engineBoard.toMove), false);
+			boardForOtherPlayer.generateTakeMoves();
+			return false;
+		} catch (KingEatingException e) {
+			return true;
+		}
 	}
 
 	private static List<Integer> moves(byte fromIdx, long bitboard, final ACEBoard engineBoard, final boolean couldBePromotionMove) throws KingEatingException {

@@ -6,6 +6,7 @@ import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
+import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.game.Move;
@@ -52,7 +53,7 @@ public class ACEBoardTest {
 		AceConfiguration configuration = new AceConfiguration();
 		configuration.setSearchDepth(2);
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
-		algorithm.think(engineBoard);
+		algorithm.think(engineBoard, new ThinkingParams());
 
 		// Check that after considering a castling move, the engine board is the same as before because we haven't moved yet
 		assertThat(ACEBoardUtils.dump(engineBoard)).isEqualTo(ACEBoardUtils.dump(copyEngineBoard));
@@ -73,7 +74,7 @@ public class ACEBoardTest {
 		AceConfiguration configuration = new AceConfiguration();
 		configuration.setSearchDepth(2);
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
-		final Move move = algorithm.think(engineBoard);
+		final Move move = algorithm.think(engineBoard, new ThinkingParams());
 
 		// Check that the rook moves back to h8 after considering castling king-side
 		assertThat(move.toString()).isNotEqualTo("f8f4");
