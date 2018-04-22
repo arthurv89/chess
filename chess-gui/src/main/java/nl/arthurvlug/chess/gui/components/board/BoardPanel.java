@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess.gui.components.board;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -8,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.Optional;
 import javax.swing.JPanel;
@@ -30,6 +32,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 	private final Game game;
 	private Board board;
 	private Optional<Drag> drag = Optional.empty();
+	private Optional<Move> lastMove = Optional.empty();
 
 	public BoardPanel(Game game) throws FontFormatException, IOException {
 		this.game = game;
@@ -55,7 +58,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 		drawBoard(board, g2);
 
 		drag.ifPresent(d -> {
-			drawOnLocation(d.getCurrentMouseLocation(), d.getPieceString(), g2);
+			drawStringOnLocation(d.getCurrentMouseLocation(), d.getPieceString(), g2);
 		});
 	}
 
@@ -81,7 +84,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 			final Font font = calculateFont();
 			final Coordinates coordinates = calculatePosition(pieceString, font, fieldCenterX, fieldCenterY, g2);
 
-			drawOnLocation(coordinates, pieceString, g2);
+			drawStringOnLocation(coordinates, pieceString, g2);
 		}
 	}
 
@@ -101,6 +104,16 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 	}
 
 	private void drawSquare(int x, int y, final Graphics2D g2) {
+		lastMove.ifPresent(move -> {
+			final Point2D from = fieldCenterPoint(move.getFrom());
+			final Point2D to = fieldCenterPoint(move.getTo());
+			drawArrow(g2,
+					(int) from.getX(),
+					(int) from.getY(),
+					(int) to.getX(),
+					(int) to.getY());
+		});
+		g2.setStroke(new BasicStroke(1.0f));
 		drag.ifPresent(d -> {
 			if(d.getCurrentField().getX() == x && d.getCurrentField().getY() == y) {
 				g2.setColor(Color.LIGHT_GRAY);
@@ -111,6 +124,12 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 		g2.drawRect(x * fieldSize(), BOARD_OFFSET + (7-y) * fieldSize(), fieldSize(), fieldSize());
 	}
 
+	private Point2D fieldCenterPoint(final Coordinates coordinates) {
+		final int fieldCenterX = (int) (coordinates.getX() * fieldSize() + 0.5 * fieldSize());
+		final int fieldCenterY = (int) ((7 - coordinates.getY()) * fieldSize() + 2*fieldSize());
+		return new Point2D.Float(fieldCenterX, fieldCenterY);
+	}
+
 	private int fieldSize() {
 		return 50;
 	}
@@ -119,9 +138,9 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 		return (int) Math.round(0.8 * fieldSize());
 	}
 
-	private void drawOnLocation(final Coordinates coordinates,
-								final String pieceString,
-								final Graphics2D g2) {
+	private void drawStringOnLocation(final Coordinates coordinates,
+									  final String pieceString,
+									  final Graphics2D g2) {
 		g2.setColor(Color.BLACK);
 		g2.setFont(calculateFont());
 		g2.drawString(pieceString,
@@ -211,7 +230,27 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 		}
 	}
 
-	public void setBoard(final Board board) {
+	public void setBoard(final Board board, final Move move) {
 		this.board = board;
+		this.lastMove = Optional.of(move);
 	}
+
+	private void drawArrow(Graphics2D g2, int node1X, int node1Y, int node2X, int node2Y) {
+		double arrowAngle = Math.toRadians(45.0);
+		double arrowLength = 10.0;
+		double dx = node1X - node2X;
+		double dy = node1Y - node2Y;
+		double angle = Math.atan2(dy, dx);
+		int x1 = (int) (Math.cos(angle + arrowAngle) * arrowLength + node2X);
+		int y1 = (int) (Math.sin(angle + arrowAngle) * arrowLength + node2Y);
+
+		int x2 = (int) (Math.cos(angle - arrowAngle) * arrowLength + node2X);
+		int y2 = (int) (Math.sin(angle - arrowAngle) * arrowLength + node2Y);
+		g2.setStroke(new BasicStroke(5.0f));
+		g2.setColor(Color.RED);
+		g2.drawLine(node1X, node1Y, node2X, node2Y);
+		g2.drawLine(node2X, node2Y, x1, y1);
+		g2.drawLine(node2X, node2Y, x2, y2);
+	}
+
 }

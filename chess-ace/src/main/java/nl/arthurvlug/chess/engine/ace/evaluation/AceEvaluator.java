@@ -1,10 +1,15 @@
 package nl.arthurvlug.chess.engine.ace.evaluation;
 
 import com.google.common.collect.LinkedHashMultimap;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import nl.arthurvlug.chess.engine.ace.PieceUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils;
+import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.game.Move;
@@ -16,20 +21,57 @@ public class AceEvaluator extends BoardEvaluator {
 	private int blackBishopCount;
 
 	@Override
-	public Integer evaluate(final ACEBoard aceBoard) {
-//		final List<Integer> moves = AceMoveGenerator.generateMoves(aceBoard);
+	public Integer evaluate(final ACEBoard engineBoard) {
+//		final List<Integer> moves = AceMoveGenerator.generateMoves(engineBoard);
 //		LinkedHashMultimap<Byte, Integer> byFromPositionMap = byFromPosition(moves);
 		int score = 0;
 
-		long occupiedBoard = aceBoard.occupied_board;
+		long occupiedBoard = engineBoard.occupied_board;
 		while(occupiedBoard != 0L) {
 			final byte fieldIdx = (byte) Long.numberOfTrailingZeros(occupiedBoard);
 
-			final short coloredPiece = aceBoard.coloredPiece(fieldIdx);
+			final short coloredPiece = engineBoard.coloredPiece(fieldIdx);
 			score += pieceScore(fieldIdx, coloredPiece);
 			occupiedBoard ^= 1L << fieldIdx;
 		}
+		if(engineBoard.getFiftyMoveClock() >= 8) {
+			if(engineBoard.getFiftyMoveClock() >= 50) {
+				return 0;
+			}
+			if(isThreeFoldRepetition(engineBoard)) {
+				return 0;
+			}
+		}
+
 		return score;
+	}
+
+	private boolean isThreeFoldRepetition(final ACEBoard engineBoard) {
+		// TODO: Make this a bit nicer: we can use zobrist keys, and if they match we can check out the board itself
+		final ACEBoard newAceBoard = InitialACEBoard.createInitialACEBoard();
+		final List<Integer> moves = stackToList(engineBoard.moveStack);
+		final HashMap<String, Integer> dumps = new HashMap<>();
+		final String dump = ACEBoardUtils.dump(newAceBoard);
+		dumps.put(dump, 1);
+		for(int move : moves) {
+			newAceBoard.apply(move);
+			final String newDump = ACEBoardUtils.dump(newAceBoard);
+			if(!dumps.containsKey(newDump)) {
+				dumps.put(newDump, 0);
+			}
+			int dumpsCount = dumps.get(newDump) + 1;
+			if(dumpsCount == 2) {
+				return true;
+			}
+			dumps.put(newDump, dumpsCount);
+		}
+		return false;
+	}
+
+	private List<Integer> stackToList(final Stack<Integer> moveStack) {
+		final Integer[] rev = new Integer[moveStack.size()];
+		moveStack.copyInto(rev);
+		return Arrays.asList(rev);
 	}
 
 

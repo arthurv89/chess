@@ -1,5 +1,7 @@
 package nl.arthurvlug.chess.engine.ace;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
@@ -11,17 +13,17 @@ import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.WHITE_KING_BYTE;
 
 public class UnapplyableMoveUtils {
-	public static int createMove(final String sMove, final ACEBoard aceBoard) {
+	public static int createMove(final String sMove, final ACEBoard engineBoard) {
 		byte fromIdx = FieldUtils.fieldIdx(sMove.substring(0, 2));
 		byte targetIdx = FieldUtils.fieldIdx(sMove.substring(2, 4));
 		byte promotionPiece = NO_PIECE;
 		if(sMove.length() > 4) {
 			final char c = sMove.charAt(4);
 			final PieceType pieceType = PieceStringUtils.fromChar(c, PieceStringUtils.pieceToCharacterConverter).get();
-			promotionPiece = ColoredPieceType.getColoredByte(pieceType, aceBoard.toMove);
+			promotionPiece = ColoredPieceType.getColoredByte(pieceType, engineBoard.toMove);
 		}
 		try {
-			return createMove(fromIdx, targetIdx, promotionPiece, aceBoard);
+			return createMove(fromIdx, targetIdx, promotionPiece, engineBoard);
 		} catch (KingEatingException e) {
 			throw new RuntimeException(e);
 		}
@@ -30,10 +32,10 @@ public class UnapplyableMoveUtils {
 	public static int createMove(final byte fromIdx,
 								 final byte targetIdx,
 								 final byte promotionPiece,
-								 final ACEBoard aceBoard) throws KingEatingException {
+								 final ACEBoard engineBoard) throws KingEatingException {
 		// TODO: Change to pieceType(..)
-		int movingPiece = aceBoard.coloredPiece(fromIdx);
-		int takePiece = aceBoard.coloredPiece(targetIdx);
+		int movingPiece = engineBoard.coloredPiece(fromIdx);
+		int takePiece = engineBoard.coloredPiece(targetIdx);
 		int move = UnapplyableMove.create(fromIdx, targetIdx, movingPiece, takePiece, promotionPiece);
 		if(takePiece == BLACK_KING_BYTE || takePiece == WHITE_KING_BYTE) {
 			throw new KingEatingException(move);
@@ -63,5 +65,9 @@ public class UnapplyableMoveUtils {
 				FieldUtils.fieldToString(fromIdx),
 				FieldUtils.fieldToString(toIdx),
 				PieceUtils.type(promotionPiece));
+	}
+
+	public static List<String> listToString(final List<Integer> moves) {
+		return moves.stream().map(m -> UnapplyableMoveUtils.toString(m)).collect(Collectors.toList());
 	}
 }

@@ -11,7 +11,7 @@ import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
-import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
@@ -33,11 +33,15 @@ public class AlphaBetaPruningAlgorithmTest {
 //	private static final int M = 4;
 
 	private AlphaBetaPruningAlgorithm algorithm;
+	private int whiteTime;
+	private int blackTime;
 
 	@Before
 	public void before() {
+		whiteTime = 100_000_000;
+		blackTime = 100_000_000;
 		algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
-		MoveUtils.DEBUG = true;
+		MoveUtils.DEBUG = false;
 	}
 
 //	@Ignore
@@ -48,7 +52,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.disableQuiesce();
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
-		algorithm.think(engineBoard, new ThinkingParams());
+		algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals(0, algorithm.getCutoffs());
 		assertEquals(M, algorithm.getNodesEvaluated());
 	}
@@ -60,7 +64,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.disableQuiesce();
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
-		algorithm.think(engineBoard, new ThinkingParams());
+		algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals(19, algorithm.getCutoffs());
 		assertEquals(59, algorithm.getNodesEvaluated());
 	}
@@ -72,7 +76,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.disableQuiesce();
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
-		algorithm.think(engineBoard, new ThinkingParams());
+		algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals(57, algorithm.getCutoffs());
 		assertEquals(583, algorithm.getNodesEvaluated());
 	}
@@ -90,7 +94,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"♔♖......");
 
 		/*    */
-		final Move move = algorithm.think(engineBoard, new ThinkingParams());
+		final Move move = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		System.out.println(move);
 		assertNull(move);
 	}
@@ -114,7 +118,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			........
 			♙♙......
 			♔♖......  */
-		final Move move = algorithm.think(engineBoard, new ThinkingParams());
+		final Move move = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals("b4c2", move.toString());
 	}
 
@@ -137,7 +141,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			♔.......  */
 		algorithm.setDepth(3);
 		algorithm.disableQuiesce();
-		final Move move = algorithm.think(engineBoard, new ThinkingParams());
+		final Move move = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 
 		assertThat(move.toString()).isEqualTo("a8b8");
 	}
@@ -169,7 +173,7 @@ public class AlphaBetaPruningAlgorithmTest {
 
 		*/
 		algorithm.setDepth(5);
-		final Move move = algorithm.think(engineBoard, new ThinkingParams());
+		final Move move = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals("a5a6", move.toString());
 	}
 
@@ -181,7 +185,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(BLACK, KING, FieldUtils.fieldIdx("h8"));
 		engineBoard.finalizeBitboards();
 
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals(MoveUtils.toMove("a1b2"), bestMove);
 	}
 
@@ -193,7 +197,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.addPiece(WHITE, KING, FieldUtils.fieldIdx("h8"));
 		engineBoard.finalizeBitboards();
 
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals(MoveUtils.toMove("a1b2"), bestMove);
 	}
 
@@ -214,7 +218,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			.♔......
 			........  */
 
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertThat(bestMove).isNotEqualTo(MoveUtils.toMove("b2c3"));
 	}
 
@@ -239,7 +243,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			♔♘♜.....
 			..♙.....  */
 
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertThat(bestMove);
 	}
 
@@ -264,7 +268,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			.♘♜.....
 			♔.♙.....  */
 
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals(MoveUtils.toMove("b2c4"), bestMove);
 	}
 
@@ -272,7 +276,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void testStartPosition() {
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		// Expect d2d4 because pawns are found first, and they come in order of fieldIdx
 		// Moves with the same score are: e2e4, b1c3 and g1f3
 		assertEquals(MoveUtils.toMove("d2d4"), bestMove);
@@ -299,7 +303,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			...♕....
 			...♗.♔..
 		 */
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals(MoveUtils.toMove("d8d2"), bestMove);
 	}
 
@@ -316,7 +320,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				".....♔..\n");
 //		algorithm.useSimplePieceEvaluator();
 //		algorithm.disableQuiesce();
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals(MoveUtils.toMove("d7d8q"), bestMove);
 	}
 
@@ -331,7 +335,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n" +
 				"........\n" +
 				"........\n");
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertEquals(MoveUtils.toMove("g7g8n"), bestMove);
 	}
 
@@ -368,7 +372,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n");
 
 		algorithm.setDepth(2);
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertThat(bestMove).isNull();
 	}
 
@@ -385,7 +389,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n");
 
 		algorithm.setDepth(2);
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertThat(bestMove.toString()).isNotEqualTo("f5e6");
 	}
 
@@ -402,7 +406,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n");
 
 		algorithm.setDepth(3);
-		Move bestMove = algorithm.think(engineBoard, new ThinkingParams());
+		Move bestMove = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 		assertThat(bestMove).isNull();
 	}
 
@@ -503,14 +507,32 @@ public class AlphaBetaPruningAlgorithmTest {
 				movesPiece("e5"), 6, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
+	@Test
+	public void shouldNotPerformRepetition1() {
+		checkMove("d2d4 g8f6 b1c3 c7c6 e2e4 d7d5 e4e5 f6g8 g1f3 e7e6 f1d3 a7a6 c1e3 b8d7 f3g5 h7h6 d1h5 d8e7 e1g1 e8d8 g5f7 d8c7 f7h8 g7g5 h8g6 e7f7 h2h4 f8g7 h4g5 g8e7 g5h6 g7h8 h5g4 e7g6 d3g6 f7g8 h6h7 g8g7 g4e6 d7f8 e6d6 c7b6 d6c5 b6c7 c5d6 c7b6 d6c5 b6c7",
+				(Move move) -> !move.toString().equals("c5d6"),
+				4,
+				new AceEvaluator(),
+				2);
+	}
+
+	@Test
+	public void shouldNotPerformRepetition2() {
+		checkMove("d2d4 g8f6 b1c3 c7c6 e2e4 d7d5 e4e5 f6g8 g1f3 e7e6 f1d3 a7a6 c1e3 b8d7 f3g5 h7h6 d1h5 d8e7 e1g1 e8d8 g5f7 d8c7 f7h8 g7g5 h8g6 e7f7 h2h4 f8g7 h4g5 g8e7 g5h6 g7h8 h5g4 e7g6 d3g6 f7g8 h6h7 g8g7 g4e6 d7f8 e6d6 c7b6 d6c5 b6c7 c5d6 c7b6",
+				(Move move) -> !move.toString().equals("d6c5"),
+				4,
+				new AceEvaluator(),
+				0);
+	}
+
 	private void checkMove(String sMoves, Function<Move, Boolean> expect, int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
 		List<String> moves = Splitter.on(' ').splitToList(sMoves);
 		checkMove(moves, expect, depth, evaluator, quiesceMaxDepth);
 	}
 
 	private void checkMove(final List<String> moves, final Function<Move, Boolean> expect, final int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
-		ACE ace = new ACE(depth, evaluator, quiesceMaxDepth);
-		Move move = ace.think(moves, new ThinkingParams());
+		ACE ace = new ACE(depth, evaluator, quiesceMaxDepth, Integer.MAX_VALUE);
+		Move move = ace.think(moves, new ThinkingParams(whiteTime, blackTime));
 		System.out.println("Move is: " + move);
 		assertTrue(expect.apply(move));
 	}

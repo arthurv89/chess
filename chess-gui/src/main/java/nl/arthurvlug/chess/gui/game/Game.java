@@ -69,6 +69,8 @@ public class Game {
 		Observable<Void> whitePlayingEngineObservable = whitePlayer.initialize(whiteClock, blackClock);
 		Observable<Void> blackPlayingEngineObservable = blackPlayer.initialize(whiteClock, blackClock);
 
+		final long initialWhiteTime = whiteClock.getRemainingTime().getMillis();
+		final long initialClockTime = blackClock.getRemainingTime().getMillis();
 		subscribeToMove(whitePlayer);
 		subscribeToMove(blackPlayer);
 		
@@ -135,7 +137,7 @@ public class Game {
 		board.move(move);
 		moves.add(move);
 		toMove = other(toMove);
-		eventBus.post(new MoveAppliedEvent());
+		eventBus.post(new MoveAppliedEvent(move));
 	}
 
 	private Color color(Player player) {

@@ -24,7 +24,7 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
 		
 		final DateTime start = DateTime.now();
-		algorithm.think(board, new ThinkingParams());
+		algorithm.think(board, new ThinkingParams(), Integer.MAX_VALUE);
 		final DateTime end = DateTime.now();
 		
 		final int nodesSearched = algorithm.getNodesEvaluated();

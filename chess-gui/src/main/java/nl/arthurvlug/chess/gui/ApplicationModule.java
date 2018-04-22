@@ -15,7 +15,8 @@ import nl.arthurvlug.chess.utils.board.pieces.Color;
 public class ApplicationModule extends AbstractModule {
 	@Override
 	protected void configure() {
-		Game game = createOnlineSyncGame(Color.WHITE);
+		Game game = createOnlineSyncGame(Color.BLACK);
+//		Game game = aceVsAceGame();
 
 		bind(EventBus.class).toInstance(new EventBus("Default eventbus"));
 		bind(Game.class).toInstance(game);
@@ -32,27 +33,47 @@ public class ApplicationModule extends AbstractModule {
 	}
 
 	private Game aceWhiteOnlineSyncGame() {
-		Clock whiteClock = new Clock(8, 30);
-		Clock blackClock = new Clock(12, 30);
+		Clock whiteClock = new Clock(20, 0);
+		Clock blackClock = new Clock(100, 30);
 
-		Player whitePlayer = new ComputerPlayer(new ACE(5));
+		Player whitePlayer = createComputerPlayer(whiteClock);
 		Player blackPlayer = new HumanPlayer();
 
 		return new Game.GameBuilder()
-			.whitePlayer(whitePlayer)
-			.blackPlayer(blackPlayer)
-			.whiteClock(whiteClock)
-			.blackClock(blackClock)
-			.toMove(whitePlayer)
-			.build();
+				.whitePlayer(whitePlayer)
+				.blackPlayer(blackPlayer)
+				.whiteClock(whiteClock)
+				.blackClock(blackClock)
+				.toMove(whitePlayer)
+				.build();
+	}
+
+	private ComputerPlayer createComputerPlayer(final Clock clock) {
+		return new ComputerPlayer(new ACE(Integer.MAX_VALUE, (int) clock.getRemainingTime().getMillis()));
 	}
 
 	private Game aceBlackOnlineSyncGame() {
-		Clock whiteClock = new Clock(12, 30);
-		Clock blackClock = new Clock(8, 30);
+		Clock whiteClock = new Clock(100, 30);
+		Clock blackClock = new Clock(20, 0);
 
 		Player whitePlayer = new HumanPlayer();
-		Player blackPlayer = new ComputerPlayer(new ACE(5));
+		Player blackPlayer = createComputerPlayer(blackClock);
+
+		return new Game.GameBuilder()
+				.whitePlayer(whitePlayer)
+				.blackPlayer(blackPlayer)
+				.whiteClock(whiteClock)
+				.blackClock(blackClock)
+				.toMove(whitePlayer)
+				.build();
+	}
+
+	private Game aceVsAceGame() {
+		Clock whiteClock = new Clock(0, 15);
+		Clock blackClock = new Clock(0, 15);
+
+		Player whitePlayer = new ComputerPlayer(new ACE(6, (int) whiteClock.getRemainingTime().getMillis()));
+		Player blackPlayer = new ComputerPlayer(new ACE(6, (int) blackClock.getRemainingTime().getMillis()));
 
 		return new Game.GameBuilder()
 				.whitePlayer(whitePlayer)

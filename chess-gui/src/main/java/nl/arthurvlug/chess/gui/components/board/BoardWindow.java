@@ -5,7 +5,13 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import java.awt.Font;
 import java.awt.FontFormatException;
+import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javax.swing.JOptionPane;
 import nl.arthurvlug.chess.gui.components.Window;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
@@ -18,6 +24,9 @@ import nl.arthurvlug.chess.gui.game.Game;
 @SuppressWarnings("serial")
 @EventHandler
 public class BoardWindow extends Window {
+	private static final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(1);
+	private static final String PIECE_MOVED_MP3 = "./piece_moved.mp3";
+
 	static Font DEFAULT_FONT = new Font("Arial", Font.PLAIN, 11);
 	
 	private Game game;
@@ -63,10 +72,22 @@ public class BoardWindow extends Window {
 	public void on(MoveAppliedEvent event) {
 //		System.out.println(game.getBoard().toString() + "\n");
 
-		boardPanel.setBoard(game.getBoard());
+		playSound(PIECE_MOVED_MP3);
+
+		boardPanel.setBoard(game.getBoard(), event.getMove());
 		repaint();
 	}
-	
+
+	private void playSound(final String url) {
+		final JFXPanel fxPanel = new JFXPanel();
+		new Thread(() -> {
+			Media hit = new Media(new File(url).toURI().toString());
+			MediaPlayer mediaPlayer = new MediaPlayer(hit);
+			mediaPlayer.setOnError(() -> System.out.println("ERROR"));
+			mediaPlayer.play();
+		}).start();
+	}
+
 	@Subscribe
 	public void on(GameFinishedEvent event) {
 		JOptionPane.showMessageDialog(this, "Game finished!");

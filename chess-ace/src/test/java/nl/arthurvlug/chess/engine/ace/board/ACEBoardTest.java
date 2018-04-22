@@ -7,7 +7,6 @@ import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
-import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
@@ -53,7 +52,7 @@ public class ACEBoardTest {
 		AceConfiguration configuration = new AceConfiguration();
 		configuration.setSearchDepth(2);
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
-		algorithm.think(engineBoard, new ThinkingParams());
+		algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 
 		// Check that after considering a castling move, the engine board is the same as before because we haven't moved yet
 		assertThat(ACEBoardUtils.dump(engineBoard)).isEqualTo(ACEBoardUtils.dump(copyEngineBoard));
@@ -74,7 +73,7 @@ public class ACEBoardTest {
 		AceConfiguration configuration = new AceConfiguration();
 		configuration.setSearchDepth(2);
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
-		final Move move = algorithm.think(engineBoard, new ThinkingParams());
+		final Move move = algorithm.think(engineBoard, new ThinkingParams(), Integer.MAX_VALUE);
 
 		// Check that the rook moves back to h8 after considering castling king-side
 		assertThat(move.toString()).isNotEqualTo("f8f4");
@@ -210,7 +209,7 @@ public class ACEBoardTest {
 		boolean black_king_or_rook_queen_side_moved = newBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = newBoard.black_king_or_rook_king_side_moved;
 		newBoard.apply(move);
-		newBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved);
+		newBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved, 0);
 		assertEquals(ACEBoardUtils.dump(oldBoard), ACEBoardUtils.dump(newBoard));
 	}
 
@@ -244,7 +243,7 @@ public class ACEBoardTest {
 				"♔.......\n" +
 				".....♛..\n");
 
-		board.unapply(move, true, true, true, true);
+		board.unapply(move, true, true, true, true, 0);
 		assertThat(ACEBoardUtils.dump(clonedBoard)).isEqualTo(ACEBoardUtils.dump(board));
 	}
 

@@ -16,7 +16,7 @@ public class Main_RunEngine {
 	private static void thinkMoves(String sMoves) {
 		List<String> moves = Splitter.on(' ').splitToList(sMoves);
 		
-		ACE ace = new ACE();
+		ACE ace = new ACE(5, Integer.MAX_VALUE);
 		Move move = ace.think(ImmutableList.<String>copyOf(moves), new ThinkingParams());
 	}
 }

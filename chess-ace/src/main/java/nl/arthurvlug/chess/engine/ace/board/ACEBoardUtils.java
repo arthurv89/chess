@@ -1,9 +1,8 @@
-package nl.arthurvlug.chess.engine.utils;
+package nl.arthurvlug.chess.engine.ace.board;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.utils.StringToBoardConverter;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
@@ -23,19 +22,20 @@ public class ACEBoardUtils {
 		return (byte) (toMoveColor.isWhite() ? 0 : 1);
 	}
 
-	public static String dump(final ACEBoard aceBoard) {
-		final Class<ACEBoard> aceBoardClass = ACEBoard.class;
-		return Arrays.stream(aceBoardClass.getFields())
-				.map(f -> fieldString(aceBoard, aceBoardClass, f))
+	public static String dump(final ACEBoard engineBoard) {
+		final Class<ACEBoard> engineBoardClass = ACEBoard.class;
+		return Arrays.stream(engineBoardClass.getFields())
+				.filter(field -> !field.getName().equals("moveStack"))
+				.map(f -> fieldString(engineBoard, engineBoardClass, f))
 				.collect(Collectors.joining("\n"));
 	}
 
-	private static String fieldString(final ACEBoard aceBoard, final Class<ACEBoard> aceBoardClass, final Field f) {
+	private static String fieldString(final ACEBoard engineBoard, final Class<ACEBoard> engineBoardClass, final Field f) {
 		try {
 			final String fieldName = f.getName();
-			final Field field = aceBoardClass.getDeclaredField(fieldName);
+			final Field field = engineBoardClass.getDeclaredField(fieldName);
 			field.setAccessible(true);
-			final Object o = field.get(aceBoard);
+			final Object o = field.get(engineBoard);
 			String value = o.toString();
 			if(o.getClass().isArray()) {
 				value = Arrays.toString((long[]) o);

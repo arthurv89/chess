@@ -2,6 +2,7 @@ package nl.arthurvlug.chess;
 
 import com.google.common.base.Function;
 import java.util.List;
+import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
@@ -19,9 +20,13 @@ public class Functions {
 		private static final long serialVersionUID = 1L;
 		public void process(final Position position, final Emitter<Position> emitter) {
 			final ACEBoard board = createBoard(position);
-			for(Integer newMove : AceMoveGenerator.generateMoves(board)) {
-				Position childPosition = new Position(newMove.toString(), position);
-				emitter.emit(childPosition);
+			try {
+				for(Integer newMove : AceMoveGenerator.generateMoves(board)) {
+					Position childPosition = new Position(newMove.toString(), position);
+					emitter.emit(childPosition);
+				}
+			} catch (KingEatingException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	};

@@ -5,7 +5,7 @@ import java.util.List;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.engine.utils.ACEBoardUtils;
+import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import org.junit.Before;

@@ -32,7 +32,7 @@ public class NotPlayTest {
 	private Move think(List<String> moveList) {
 		InitialACEBoard board = InitialACEBoard.createInitialACEBoard();
 		board.apply(moveList);
-		Move move = algorithm.think(board, new ThinkingParams());
+		Move move = algorithm.think(board, new ThinkingParams(), Integer.MAX_VALUE);
 		System.out.println(move);
 		return move;
 	}

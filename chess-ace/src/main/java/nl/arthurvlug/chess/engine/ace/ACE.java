@@ -15,29 +15,27 @@ import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.*;
 
 @Slf4j
 public class ACE extends CustomEngine {
+	private final int initialClockTime;
 	private AlphaBetaPruningAlgorithm searchAlgorithm;
 
-	public ACE() {
-		this(DEFAULT_SEARCH_DEPTH, DEFAULT_EVALUATOR, DEFAULT_QUIESCE_MAX_DEPTH);
+	public ACE(final int depth, final int initialClockTime) {
+		this(depth, DEFAULT_EVALUATOR, DEFAULT_QUIESCE_MAX_DEPTH, initialClockTime);
 	}
 
-	public ACE(final int depth) {
-		this(depth, DEFAULT_EVALUATOR, DEFAULT_QUIESCE_MAX_DEPTH);
-	}
-
-	public ACE(final int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
+	public ACE(final int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth, int initialClockTime) {
 		this(builder()
 				.searchDepth(depth)
 				.evaluator(evaluator)
 				.quiesceMaxDepth(quiesceMaxDepth)
-				.build());
+				.build(), initialClockTime);
 	}
 
-	private ACE(final AceConfiguration configuration) {
-		this(new AlphaBetaPruningAlgorithm(configuration));
+	private ACE(final AceConfiguration configuration, final int initialClockTime) {
+		this(new AlphaBetaPruningAlgorithm(configuration), initialClockTime);
 	}
 
-	private ACE(final AlphaBetaPruningAlgorithm algorithm) {
+	private ACE(final AlphaBetaPruningAlgorithm algorithm, final int initialClockTime) {
+		this.initialClockTime = initialClockTime;
 		searchAlgorithm = algorithm;
 	}
 
@@ -52,7 +50,7 @@ public class ACE extends CustomEngine {
 		engineBoard.apply(moveList);
 		log.debug("\n{}", engineBoard.string());
 
-		Move think = searchAlgorithm.think(engineBoard, thinkingParams);
+		Move think = searchAlgorithm.think(engineBoard, thinkingParams, initialClockTime);
 
 		log.debug("Nodes evaluated: {}", searchAlgorithm.getNodesEvaluated());
 		log.debug("Cut-offs: {}", searchAlgorithm.getCutoffs());
