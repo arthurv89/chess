@@ -112,9 +112,9 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	private int thinkingTime(final int timeLeft, final int initialClockTime) {
-		final int timeDueToTimeLeft = (timeLeft - 2000 * engineBoard.moveStack.size()) / 30;
-		final int timeDueToTotal = initialClockTime / 50;
-		return Math.min(timeDueToTotal, timeDueToTimeLeft);
+		final int timeDueToTimeLeft = (timeLeft - 2000 * engineBoard.moveStack.size()) / 50;
+		final int timeDueToInitialTime = initialClockTime / 50;
+		return Math.min(timeDueToInitialTime, timeDueToTimeLeft);
 	}
 
 	private Integer alphaBetaRoot(final int depth, final Optional<Integer> priorityMove, final int maxThinkingTime, final Stopwatch timer) throws OutOfThinkingTimeException {

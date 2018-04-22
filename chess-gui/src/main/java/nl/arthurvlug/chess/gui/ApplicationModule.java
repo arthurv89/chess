@@ -15,7 +15,7 @@ import nl.arthurvlug.chess.utils.board.pieces.Color;
 public class ApplicationModule extends AbstractModule {
 	@Override
 	protected void configure() {
-		Game game = createOnlineSyncGame(Color.BLACK);
+		Game game = createOnlineSyncGame(Color.WHITE);
 //		Game game = aceVsAceGame();
 
 		bind(EventBus.class).toInstance(new EventBus("Default eventbus"));
@@ -33,7 +33,7 @@ public class ApplicationModule extends AbstractModule {
 	}
 
 	private Game aceWhiteOnlineSyncGame() {
-		Clock whiteClock = new Clock(20, 0);
+		Clock whiteClock = new Clock(10, 0);
 		Clock blackClock = new Clock(100, 30);
 
 		Player whitePlayer = createComputerPlayer(whiteClock);
@@ -54,7 +54,7 @@ public class ApplicationModule extends AbstractModule {
 
 	private Game aceBlackOnlineSyncGame() {
 		Clock whiteClock = new Clock(100, 30);
-		Clock blackClock = new Clock(20, 0);
+		Clock blackClock = new Clock(10, 0);
 
 		Player whitePlayer = new HumanPlayer();
 		Player blackPlayer = createComputerPlayer(blackClock);
