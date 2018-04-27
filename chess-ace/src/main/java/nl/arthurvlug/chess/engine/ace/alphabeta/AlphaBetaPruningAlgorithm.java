@@ -3,6 +3,7 @@ package nl.arthurvlug.chess.engine.ace.alphabeta;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.eventbus.EventBus;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -13,20 +14,26 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
+import nl.arthurvlug.chess.engine.ace.IncomingState;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
+import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.HashElement;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable;
-import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
 import nl.arthurvlug.chess.utils.MoveUtils;
+import nl.arthurvlug.chess.utils.ThinkEvent;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.game.Move;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
+import rx.observers.Observers;
 
 import static java.util.Collections.swap;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
@@ -36,6 +43,9 @@ import static nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTab
 public class AlphaBetaPruningAlgorithm {
 	private static final int CURRENT_PLAYER_WINS = 1000000000;
 	private static final int OTHER_PLAYER_WINS = -CURRENT_PLAYER_WINS;
+	private final InitialACEBoard currentEngineBoard;
+	private int maxThinkingTime = Integer.MAX_VALUE;
+	private Stopwatch timer = Stopwatch.createUnstarted();
 
 	@Getter
 	private int nodesEvaluated;
@@ -47,80 +57,165 @@ public class AlphaBetaPruningAlgorithm {
 	private BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
 	private int depth;
-//	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
+	private int initialClockTime;
+	//	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
 	private static final int HASH_TABLE_LENGTH = 1048576; // Must be a power or 2
 
 	private static final TranspositionTable transpositionTable = new TranspositionTable(HASH_TABLE_LENGTH);
 	private boolean quiesceEnabled = true;
 
-	private ACEBoard engineBoard;
+	private ACEBoard thinkingEngineBoard;
 
-	public AlphaBetaPruningAlgorithm(final AceConfiguration configuration) {
+	private volatile Optional<IncomingState> newIncomingState = Optional.empty();
+	private volatile Optional<ACEBoard> newIncomingEngineBoard = Optional.empty();
+
+	@Getter
+	private final Observer<IncomingState> incomingMoves;
+	private String name;
+	private EventBus eventBus;
+	private int iterator = 0;
+	private Optional<Integer> priorityMove;
+	private Subscriber<? super Move> subscriber;
+	private int depthNow;
+
+	public AlphaBetaPruningAlgorithm(final AceConfiguration configuration,
+									 final int initialClockTime) {
 		this.evaluator = configuration.getEvaluator();
 		this.quiesceMaxDepth = configuration.getQuiesceMaxDepth();
 		this.depth = configuration.getSearchDepth();
+		this.initialClockTime = initialClockTime;
+
+		Preconditions.checkArgument(depth > 0);
+
+		this.currentEngineBoard = InitialACEBoard.createInitialACEBoard();
+		this.thinkingEngineBoard = currentEngineBoard.cloneBoard();
+		this.incomingMoves = Observers.create(incomingState -> {
+			final int timeLeft = thinkingEngineBoard.toMove == ColorUtils.WHITE
+					? incomingState.getThinkingParams().getWhiteTime()
+					: incomingState.getThinkingParams().getBlackTime();
+			maxThinkingTime = thinkingTime(incomingState, timeLeft);
+			info("Set max thinking time to " + maxThinkingTime);
+			timer = Stopwatch.createStarted();
+			newIncomingState = Optional.of(incomingState);
+			iterator = 0;
+		});
 	}
 
-	public Move think(final ACEBoard engineBoard, final ThinkingParams thinkingParams, final int initialClockTime) {
-		Preconditions.checkArgument(depth > 0);
-		this.engineBoard = engineBoard;
+	public Observable<Move> startThinking(final ACEBoard engineBoard) {
+		this.newIncomingEngineBoard = Optional.of(engineBoard);
+		return Observable.create(sub -> {
+			this.subscriber = sub;
+			new Thread(() -> think()).start();
+		});
+	}
 
+	public Observable<Move> startThinking() {
+		return Observable.create(sub -> {
+			this.subscriber = sub;
+			new Thread(() -> think()).start();
+		});
+	}
+
+	private void think() {
+		info("New thinking process");
+		newIncomingState = Optional.empty();
 		cutoffs = 0;
 		nodesEvaluated = 0;
 		hashHits = 0;
 
-//		Optional<Integer> priorityMove = Optional.of(UnapplyableMoveUtils.createMove("c7e6", engineBoard));
-		Optional<Integer> priorityMove = Optional.empty();
-		final int timeLeft = engineBoard.toMove == ColorUtils.WHITE
-				? thinkingParams.getWhiteTime()
-				: thinkingParams.getBlackTime();
-		final int maxThinkingTime = thinkingTime(timeLeft, initialClockTime);
-		final Stopwatch timer = Stopwatch.createStarted();
 
-		final int thinkingDepth = thinkingDepth();
-		for (int depthNow = 1; depthNow <= thinkingDepth; depthNow++) {
+		while(true) {
+			priorityMove = Optional.empty();
 			try {
-				logDebug("Start thinking on depth " + depthNow + ". PriorityMove: " + priorityMove.map(move -> UnapplyableMoveUtils.toString(move)).orElse(""));
-				final Integer bestMove = alphaBetaRoot(depthNow, priorityMove, maxThinkingTime, timer);
-				if (bestMove == null) {
-					return null;
+				thinkingEngineBoard = currentEngineBoard.cloneBoard();
+				for (depthNow = 1; ; depthNow++) {
+					info(String.format("Start thinking for %d ms on depth %d. PriorityMove: %s",
+							maxThinkingTime,
+							depthNow,
+							priorityMove.map(move -> UnapplyableMoveUtils.toString(move)).orElse("")));
+					final Integer bestMove = alphaBetaRoot(depthNow, priorityMove);
+					if (bestMove == null) {
+						err("No best move");
+						emitNewMove(null);
+						return;
+					}
+					if (depthNow > 1000) {
+						err("depth is extremely high");
+						return;
+					}
+					priorityMove = Optional.of(bestMove);
 				}
-				if(depthNow > 1000) {
-					break;
+			} catch (NewEngineBoardException e) {
+				// TODO: Update the board and start thinking
+				throw new RuntimeException(e);
+			} catch (OpponentMoveCameInException e) {
+				err("Our turn!");
+				IncomingState incomingState = newIncomingState.get();
+				final Move move = incomingState.getMove();
+				if (move != null) {
+					final String newMove = MoveUtils.toEngineMove(move);
+					err("New move was: " + newMove);
+					info("Applying " + newMove);
+					currentEngineBoard.apply(newMove);
 				}
-				priorityMove = Optional.of(bestMove);
+				newIncomingState = Optional.empty();
+				maxThinkingTime = thinkingTime(incomingState, incomingState.getThinkingParams().getWhiteTime()); // TODO: Also for BLACK
+				timer = Stopwatch.createStarted();
 			} catch (OutOfThinkingTimeException e) {
 				// Out of time: just play the move
-				System.err.println("Out of time. Playing depth " + (depthNow-1));
-				break;
+				final Integer move = priorityMove.get();
+				applyAndEmitMove(move);
 			}
 		}
-		final int unapplyableMove = priorityMove.get();
+	}
+
+	private void applyAndEmitMove(final Integer unapplyableMove) {
 		final Optional<PieceType> promotionType = promotionType(unapplyableMove);
-		return new Move(
+		final Move bestMove = new Move(
 				FieldUtils.coordinates(UnapplyableMove.fromIdx(unapplyableMove)),
 				FieldUtils.coordinates(UnapplyableMove.targetIdx(unapplyableMove)),
 				promotionType);
+
+		info("Applying after emitting: " + UnapplyableMoveUtils.toString(unapplyableMove));
+		currentEngineBoard.apply(unapplyableMove);
+
+		// Start thinking about the next move
+		// Emit the move that we found
+		info("Emitting move " + bestMove);
+		emitNewMove(bestMove);
+	}
+
+	private void err(final String s) {
+		log.error(this.name + " > " + s);
+	}
+
+	private void emitNewMove(final Move move) {
+		info("Emitting new move: " + move);
+		this.maxThinkingTime = Integer.MAX_VALUE;
+		subscriber.onNext(move);
 	}
 
 	private int thinkingDepth() {
-		if(engineBoard.moveStack.size() <= 1) {
+		if(thinkingEngineBoard.moveStack.size() <= 1) {
 			return 4;
 		} else {
-			return depth;
+			return Integer.MAX_VALUE;
 		}
 	}
 
-	private int thinkingTime(final int timeLeft, final int initialClockTime) {
-		final int timeDueToTimeLeft = (timeLeft - 2000 * engineBoard.moveStack.size()) / 50;
+	private int thinkingTime(final IncomingState incomingState, final int timeLeft) {
+		if(incomingState.getMove() == null) {
+			return 1000; // First second should take at most 1 second
+		}
+		final int timeDueToTimeLeft = (timeLeft - 2000 * thinkingEngineBoard.moveStack.size()) / 50;
 		final int timeDueToInitialTime = initialClockTime / 50;
 		return Math.min(timeDueToInitialTime, timeDueToTimeLeft);
 	}
 
-	private Integer alphaBetaRoot(final int depth, final Optional<Integer> priorityMove, final int maxThinkingTime, final Stopwatch timer) throws OutOfThinkingTimeException {
+	private Integer alphaBetaRoot(final int depth, final Optional<Integer> priorityMove) {
 		List<Integer> generatedMoves;
 		try {
-			generatedMoves = engineBoard.generateMoves();
+			generatedMoves = thinkingEngineBoard.generateMoves();
 		} catch (KingEatingException e) {
 			return null;
 		}
@@ -135,25 +230,20 @@ public class AlphaBetaPruningAlgorithm {
 		int alpha = OTHER_PLAYER_WINS/2;
 		int beta = CURRENT_PLAYER_WINS;
 		Integer bestMove = null;
-		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
-		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
-		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
-		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
+		boolean white_king_or_rook_queen_side_moved = thinkingEngineBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
 		int score = alpha;
 		for(int move : generatedMoves) {
-			if(shouldStopThinking(depth, maxThinkingTime, timer)) {
-				// We should already have a move in iteration currentDepth-1.
-				// Just throw an exception and make it return the previous iteration's move
-				throw new OutOfThinkingTimeException();
-			}
+//			info("Investigating " + UnapplyableMoveUtils.toString(move));
+			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
+			thinkingEngineBoard.apply(move);
 			// Do a recursive search
-			final int fiftyMove = engineBoard.getFiftyMoveClock();
-			engineBoard.apply(move);
-//			int score = 0;
-			final int val = -alphaBeta(-beta, -alpha, depth - 1, maxThinkingTime, timer);
+			final int val = -alphaBeta(-beta, -alpha, depth - 1);
 			debugMoveStack(val);
 			sysout("");
-			engineBoard.unapply(move,
+			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
@@ -164,29 +254,49 @@ public class AlphaBetaPruningAlgorithm {
 			if (score > alpha) {
 				if (score >= beta) {
 					cutoffs++;
-					logDebug("BETA cut off");
-					System.out.println("Depth: " + depth + " Best move: " + UnapplyableMoveUtils.toString(move) + ". Score: " + score);
 					return move;
 				}
 				alpha = score;
 				bestMove = move;
 			}
 		}
-		System.out.println("Depth: " + depth + " Best move: " + UnapplyableMoveUtils.toString(bestMove) + ". Score: " + alpha);
+		info("[ABPruning Root] Best move score: " + alpha);
 		return bestMove;
 	}
 
-	private boolean shouldStopThinking(final int depth, final int maxThinkingTime, final Stopwatch timer) {
-		return depth > 1 && timer.elapsed(TimeUnit.MILLISECONDS) > maxThinkingTime;
+	private void info(final String s) {
+		log.info(this.name + " -> " + s);
 	}
 
-	private int alphaBeta(int alpha, final int beta, final int depth, final int maxThinkingTime, final Stopwatch timer) {
-		if (engineBoard.getFiftyMoveClock() >= 50 || engineBoard.getRepeatedMove() >= 3) {
+	private void performBrakeActions() {
+		iterator++;
+
+		if((iterator & 4095) != 0) {
+			 return;
+		}
+
+//		info(String.format("Time spent %d/%d ms", timer.elapsed(TimeUnit.MILLISECONDS), maxThinkingTime));
+		// TODO: Wrap the incoming events into an IncomingEvent object and check here whether is Optional.empty or not
+		if(newIncomingEngineBoard.isPresent()) {
+			err("New incoming engineboard: " + newIncomingEngineBoard);
+			throw new NewEngineBoardException();
+		} else if(newIncomingState.isPresent()) {
+			err("Opponent move came in: " + newIncomingState);
+			throw new OpponentMoveCameInException();
+		} else if(priorityMove.isPresent() && timer.elapsed(TimeUnit.MILLISECONDS) > maxThinkingTime) {
+			err("Out of time. Playing move " + UnapplyableMoveUtils.toString(priorityMove.get()) + " at depth " + (depthNow-1));
+			throw new OutOfThinkingTimeException();
+		}
+	}
+
+	private int alphaBeta(int alpha, final int beta, final int depth) {
+		performBrakeActions();
+		if (thinkingEngineBoard.getFiftyMoveClock() >= 50 || thinkingEngineBoard.getRepeatedMove() >= 3) {
 			return 0;
 		}
 
 		int hashf = hashfALPHA;
-		int zobristHash = engineBoard.getZobristHash();
+		int zobristHash = thinkingEngineBoard.getZobristHash();
 		final HashElement hashElement = transpositionTable.get(zobristHash);
 		if (hashElement != null) {
 			hashHits++;
@@ -202,30 +312,30 @@ public class AlphaBetaPruningAlgorithm {
 
 		if (depth == 0) {
 			// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
-			return quiesceSearch(alpha, beta, quiesceMaxDepth, maxThinkingTime, timer);
+			return quiesceSearch(alpha, beta, quiesceMaxDepth);
 		}
 
 		List<Integer> generatedMoves;
 		try {
-			generatedMoves = engineBoard.generateMoves();
+			generatedMoves = thinkingEngineBoard.generateMoves();
 		} catch (KingEatingException e) {
 			return CURRENT_PLAYER_WINS;
 		}
 
 		Integer bestMove = null;
-		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
-		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
-		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
-		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
+		boolean white_king_or_rook_queen_side_moved = thinkingEngineBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
 
 		int score = OTHER_PLAYER_WINS;
 		for(final Integer move : generatedMoves) {
 			// Do a recursive search
-			final int fiftyMove = engineBoard.getFiftyMoveClock();
-			engineBoard.apply(move);
-			int val = -alphaBeta(-beta, -alpha, depth-1, maxThinkingTime, timer);
+			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
+			thinkingEngineBoard.apply(move);
+			int val = -alphaBeta(-beta, -alpha, depth-1);
 			debugMoveStack(val);
-			engineBoard.unapply(move,
+			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
@@ -251,14 +361,13 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	private int losingScore() {
-		return OTHER_PLAYER_WINS - engineBoard.moveStack.size();
+		return OTHER_PLAYER_WINS - thinkingEngineBoard.moveStack.size();
 	}
 
-	private int quiesceSearch(int alpha, final int beta, final int depth, final int maxThinkingTime, final Stopwatch timer) {
-		if((nodesEvaluated^1023) == 0 && shouldStopThinking(depth, maxThinkingTime, timer)) {
-			throw new OutOfThinkingTimeException();
-		}
-		int score = calculateScore(engineBoard);
+	private int quiesceSearch(int alpha, final int beta, final int depth) {
+		performBrakeActions();
+		int score = calculateScore(thinkingEngineBoard);
+		eventBus.post(new ThinkEvent(iterator));
 		if(depth == 0 || !quiesceEnabled) {
 			return score;
 		}
@@ -275,26 +384,26 @@ public class AlphaBetaPruningAlgorithm {
 
 		final List<Integer> takeMoves;
 		try {
-			takeMoves = engineBoard.generateTakeMoves();
+			takeMoves = thinkingEngineBoard.generateTakeMoves();
 		} catch (KingEatingException e) {
 			return CURRENT_PLAYER_WINS;
 		}
-		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
-		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
-		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
-		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
+		boolean white_king_or_rook_queen_side_moved = thinkingEngineBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
 		for(Integer takeMove : takeMoves) {
-			final int fiftyMove = engineBoard.getFiftyMoveClock();
-			engineBoard.apply(takeMove);
-			int val = -quiesceSearch(-beta, -alpha, depth-1, maxThinkingTime, timer);
+			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
+			thinkingEngineBoard.apply(takeMove);
+			int val = -quiesceSearch(-beta, -alpha, depth-1);
 			debugMoveStack(val);
-			engineBoard.unapply(takeMove,
+			thinkingEngineBoard.unapply(takeMove,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
 					black_king_or_rook_king_side_moved,
 					fiftyMove);
-//			debugMoveStack("Evaluating board\n{}Score: {}\n", engineBoard.string(), val);
+//			debugMoveStack("Evaluating board\n{}Score: {}\n", thinkingEngineBoard.string(), val);
 
 			score = Math.max(score, val);
 			if (score > alpha) {
@@ -313,13 +422,13 @@ public class AlphaBetaPruningAlgorithm {
 
 	private void logDebug(final String message) {
 		if(MoveUtils.DEBUG) {
-			log.debug(message);
+			log.info(message);
 		}
 	}
 
 	private void sysout(final String message) {
 		if(MoveUtils.DEBUG) {
-			System.out.println(message);
+			log.info(message);
 		}
 	}
 
@@ -336,7 +445,7 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	private List<String> moveListStrings() {
-		return engineBoard.moveStack.stream().map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList());
+		return thinkingEngineBoard.moveStack.stream().map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList());
 	}
 
 	private int calculateScore(final ACEBoard board) {
@@ -388,5 +497,13 @@ public class AlphaBetaPruningAlgorithm {
 
 	public void useSimplePieceEvaluator() {
 		this.evaluator = new SimplePieceEvaluator();
+	}
+
+	public void setName(final String name) {
+		this.name = name;
+	}
+
+	public void setEventBus(final EventBus eventBus) {
+		this.eventBus = eventBus;
 	}
 }

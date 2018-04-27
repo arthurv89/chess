@@ -1,11 +1,9 @@
 package nl.arthurvlug.chess.gui.runner;
+
+import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ace.ACE;
-import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
-
 import org.joda.time.DateTime;
-
-import com.google.common.collect.ImmutableList;
 
 @Slf4j
 public class Main_SpeedTest {
@@ -35,11 +33,11 @@ public class Main_SpeedTest {
 
 	public static void main(String[] args) {
 		try {
-			ACE ace = new ACE(5, Integer.MAX_VALUE);
+			ACE ace = new ACE(5, Integer.MAX_VALUE, "BLACK", new EventBus());
 
 			NodeCountMonitor nodeCountMonitor = new NodeCountMonitor(ace);
 			nodeCountMonitor.start();
-			ace.think(ImmutableList.<String>of(), new ThinkingParams());
+			ace.startThinking();
 			nodeCountMonitor.shouldRun = false;
 		} catch(Throwable e) {
 			log.error("Unexpected Exception", e);

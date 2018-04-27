@@ -1,5 +1,8 @@
 package nl.arthurvlug.chess.engine.customEngine;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -11,14 +14,11 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.List;
 import java.util.StringTokenizer;
-
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.UCIEngine;
 import nl.arthurvlug.chess.utils.NamedThread;
 import nl.arthurvlug.chess.utils.game.Move;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
+import rx.Observable;
 
 @Slf4j
 public abstract class CustomEngine extends UCIEngine {
@@ -61,28 +61,17 @@ public abstract class CustomEngine extends UCIEngine {
 			private final Object newMoveWaitObject = new Object();
 			
 			private ThinkingParams thinkingParams;
-			private ImmutableList<String> moveList;
+			private List<String> moveList = Lists.newArrayList();
 
 			private boolean isPonder;
 
 			@Override
 			public void run() {
 				new NamedThread(() -> {
-					while(true) {
-						try {
-							synchronized (newMoveWaitObject) {
-								log.debug("Waiting for new move");
-								newMoveWaitObject.wait();
-								log.info(moveList.toString());
-								Move move = think(moveList, thinkingParams);
-
-								// TODO: Add ponder
-								write("bestmove " + move);
-							}
-						} catch (InterruptedException | IOException e1) {
-							e1.printStackTrace();
-						}
-					}
+//					log.info("Starting engine with move list " + moveList.toString());
+					startThinking().forEach(move -> {
+						write("bestmove " + move);
+					});
 				}, "CustomEngine").start();
 				
 				while(true) {
@@ -98,19 +87,15 @@ public abstract class CustomEngine extends UCIEngine {
 						if("uci".equals(s)) {
 							write("uciok");
 						} else if(s.startsWith("position moves")) {
-							synchronized (newMoveWaitObject) {
-								moveList = parsePosition(s);
-							}
+							moveList = parsePosition(s);
 						} else if(s.startsWith("go")) {
 							thinkingParams = parseParams(s);
-							synchronized (newMoveWaitObject) {
-								isPonder = false;
-								newMoveWaitObject.notify();
-							}
+							isPonder = false;
+							go(moveList, thinkingParams);
 						}
 
 					} catch (IOException e) {
-						e.printStackTrace();
+						throw new RuntimeException(e);
 					}
 				}
 			}
@@ -150,12 +135,15 @@ public abstract class CustomEngine extends UCIEngine {
 			}
 		}, "Custom Engine input parser").start();
 	}
-	
-	
-	private void write(String line) throws IOException {
-		log.debug("Wrote {} as output", line);
-		outputWriter.write(line + "\n");
-		outputWriter.flush();
+
+	private void write(String line) {
+		try {
+			log.debug("Wrote {} as output", line);
+			outputWriter.write(line + "\n");
+			outputWriter.flush();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -174,5 +162,6 @@ public abstract class CustomEngine extends UCIEngine {
 	}
 
 
-	protected abstract Move think(List<String> moveList, ThinkingParams thinkingParams);
+	public abstract Observable<Move> startThinking();
+	protected abstract void go(final List<String> moveList, final ThinkingParams thinkingParams);
 }

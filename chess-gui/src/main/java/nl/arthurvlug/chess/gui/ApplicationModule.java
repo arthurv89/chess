@@ -13,30 +13,34 @@ import nl.arthurvlug.chess.gui.game.player.Player;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 
 public class ApplicationModule extends AbstractModule {
+	private int computerTime = 5; // in minutes
+	private Color computerColor = Color.WHITE;
+
 	@Override
 	protected void configure() {
-		Game game = createOnlineSyncGame(Color.WHITE);
-//		Game game = aceVsAceGame();
+		EventBus eventBus = new EventBus("Default eventbus");
+		Game game = createOnlineSyncGame(computerColor, eventBus);
+//		Game game = aceVsAceGame(eventBus);
 
-		bind(EventBus.class).toInstance(new EventBus("Default eventbus"));
+		bind(EventBus.class).toInstance(eventBus);
 		bind(Game.class).toInstance(game);
 		bind(ClockPane.class).toInstance(new ClockPane());
 		bind(MovesPane.class).toInstance(new MovesPane());
 	}
 
-	private Game createOnlineSyncGame(final Color acePlayer) {
+	private Game createOnlineSyncGame(final Color acePlayer, final EventBus eventBus) {
 		if(acePlayer == Color.WHITE) {
-			return aceWhiteOnlineSyncGame();
+			return aceWhiteOnlineSyncGame(eventBus);
 		} else {
-			return aceBlackOnlineSyncGame();
+			return aceBlackOnlineSyncGame(eventBus);
 		}
 	}
 
-	private Game aceWhiteOnlineSyncGame() {
-		Clock whiteClock = new Clock(10, 0);
-		Clock blackClock = new Clock(100, 30);
+	private Game aceWhiteOnlineSyncGame(final EventBus eventBus) {
+		Clock whiteClock = new Clock(computerTime, 0);
+		Clock blackClock = new Clock(100, 0);
 
-		Player whitePlayer = createComputerPlayer(whiteClock);
+		Player whitePlayer = createComputerPlayer(whiteClock, eventBus);
 		Player blackPlayer = new HumanPlayer();
 
 		return new Game.GameBuilder()
@@ -48,16 +52,16 @@ public class ApplicationModule extends AbstractModule {
 				.build();
 	}
 
-	private ComputerPlayer createComputerPlayer(final Clock clock) {
-		return new ComputerPlayer(new ACE(Integer.MAX_VALUE, (int) clock.getRemainingTime().getMillis()));
+	private ComputerPlayer createComputerPlayer(final Clock clock, final EventBus eventBus) {
+		return new ComputerPlayer(new ACE(Integer.MAX_VALUE, (int) clock.getRemainingTime().getMillis(), "ACE", eventBus));
 	}
 
-	private Game aceBlackOnlineSyncGame() {
-		Clock whiteClock = new Clock(100, 30);
-		Clock blackClock = new Clock(10, 0);
+	private Game aceBlackOnlineSyncGame(final EventBus eventBus) {
+		Clock whiteClock = new Clock(100, 0);
+		Clock blackClock = new Clock(computerTime, 0);
 
 		Player whitePlayer = new HumanPlayer();
-		Player blackPlayer = createComputerPlayer(blackClock);
+		Player blackPlayer = createComputerPlayer(blackClock, eventBus);
 
 		return new Game.GameBuilder()
 				.whitePlayer(whitePlayer)
@@ -68,12 +72,12 @@ public class ApplicationModule extends AbstractModule {
 				.build();
 	}
 
-	private Game aceVsAceGame() {
-		Clock whiteClock = new Clock(0, 15);
-		Clock blackClock = new Clock(0, 15);
+	private Game aceVsAceGame(final EventBus eventBus) {
+		Clock whiteClock = new Clock(computerTime, 0);
+		Clock blackClock = new Clock(computerTime, 0);
 
-		Player whitePlayer = new ComputerPlayer(new ACE(6, (int) whiteClock.getRemainingTime().getMillis()));
-		Player blackPlayer = new ComputerPlayer(new ACE(6, (int) blackClock.getRemainingTime().getMillis()));
+		Player whitePlayer = new ComputerPlayer(new ACE(6, (int) whiteClock.getRemainingTime().getMillis(), "WHITE", eventBus));
+		Player blackPlayer = new ComputerPlayer(new ACE(6, (int) blackClock.getRemainingTime().getMillis(), "BLACK", eventBus));
 
 		return new Game.GameBuilder()
 				.whitePlayer(whitePlayer)

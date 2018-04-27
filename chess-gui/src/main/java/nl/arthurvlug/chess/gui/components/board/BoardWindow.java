@@ -15,11 +15,12 @@ import javafx.scene.media.MediaPlayer;
 import javax.swing.JOptionPane;
 import nl.arthurvlug.chess.gui.components.Window;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
-import nl.arthurvlug.chess.gui.events.EventHandler;
+import nl.arthurvlug.chess.utils.EventHandler;
 import nl.arthurvlug.chess.gui.events.GameFinishedEvent;
 import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.game.Game;
+import nl.arthurvlug.chess.utils.ThinkEvent;
 
 @SuppressWarnings("serial")
 @EventHandler
@@ -35,6 +36,12 @@ public class BoardWindow extends Window {
 
 	@Inject private MovesPane movesPane;
 	private BoardPanel boardPanel;
+
+	@Subscribe
+	public void on(ThinkEvent event) {
+		boardPanel.nodesEvaluated = event.getNodesEvaluated();
+		boardPanel.repaint();
+	}
 
 	@Override
 	public void open() throws FontFormatException, IOException {

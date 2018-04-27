@@ -33,6 +33,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 	private Board board;
 	private Optional<Drag> drag = Optional.empty();
 	private Optional<Move> lastMove = Optional.empty();
+	int nodesEvaluated;
 
 	public BoardPanel(Game game) throws FontFormatException, IOException {
 		this.game = game;
@@ -63,7 +64,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 	}
 
 	private void drawPlayerNames(final Graphics2D g2) {
-		g2.drawString(game.getBlackPlayer().getName(), 0, 20);
+		g2.drawString(game.getBlackPlayer().getName() + " " + nodesEvaluated, 0, 20);
 		g2.drawString(game.getWhitePlayer().getName(), 0, 520);
 	}
 

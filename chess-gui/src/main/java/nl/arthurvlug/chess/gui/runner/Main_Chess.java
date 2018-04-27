@@ -4,7 +4,7 @@ import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.gui.ApplicationModule;
-import nl.arthurvlug.chess.gui.events.EventHandler;
+import nl.arthurvlug.chess.utils.EventHandler;
 import nl.arthurvlug.chess.gui.events.ShutdownEvent;
 import nl.arthurvlug.chess.gui.events.StartupEvent;
 import nl.arthurvlug.chess.utils.NamedThread;

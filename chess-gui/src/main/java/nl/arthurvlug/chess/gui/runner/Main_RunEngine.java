@@ -1,12 +1,8 @@
 package nl.arthurvlug.chess.gui.runner;
-import java.util.List;
-
-import nl.arthurvlug.chess.engine.ace.ACE;
-import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
-import nl.arthurvlug.chess.utils.game.Move;
-
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
+import com.google.common.eventbus.EventBus;
+import java.util.List;
+import nl.arthurvlug.chess.engine.ace.ACE;
 
 public class Main_RunEngine {
 	public static void main(String[] args) {
@@ -16,7 +12,8 @@ public class Main_RunEngine {
 	private static void thinkMoves(String sMoves) {
 		List<String> moves = Splitter.on(' ').splitToList(sMoves);
 		
-		ACE ace = new ACE(5, Integer.MAX_VALUE);
-		Move move = ace.think(ImmutableList.<String>copyOf(moves), new ThinkingParams());
+		ACE ace = new ACE(5, Integer.MAX_VALUE, "BLACK", new EventBus());
+
+		ace.startThinking();
 	}
 }

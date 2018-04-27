@@ -7,7 +7,7 @@ import java.awt.Graphics2D;
 import javax.swing.JPanel;
 
 import nl.arthurvlug.chess.engine.game.Clock;
-import nl.arthurvlug.chess.gui.events.EventHandler;
+import nl.arthurvlug.chess.utils.EventHandler;
 import nl.arthurvlug.chess.gui.events.GameFinishedEvent;
 import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.utils.NamedThread;

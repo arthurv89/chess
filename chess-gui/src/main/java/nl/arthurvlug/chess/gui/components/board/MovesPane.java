@@ -4,7 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import java.awt.Graphics;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import nl.arthurvlug.chess.gui.events.EventHandler;
+import nl.arthurvlug.chess.utils.EventHandler;
 import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.game.Game;
@@ -17,7 +17,7 @@ public class MovesPane extends JPanel {
 	
 	
 	private JTextArea textArea = new JTextArea(6, 20);
-	
+
 	public MovesPane() {
 		textArea.setSize(300, 200);
 		add(textArea);
@@ -33,7 +33,7 @@ public class MovesPane extends JPanel {
 			}
 		}
 	}
-	
+
 	@Subscribe
 	public void on(MoveAppliedEvent event) {
 		repaint();

@@ -107,16 +107,19 @@ public class ACEBoard {
 		if(moveList.isEmpty()) {
 			return;
 		}
-		
+
 		for(String sMove : moveList) {
-			int move = UnapplyableMoveUtils.createMove(sMove, this);
-			byte movingPiece = UnapplyableMove.movingPiece(move);
-			if(DEBUG && movingPiece == NO_PIECE) {
-				throw new RuntimeException("Could not determine moving piece while executing " + UnapplyableMoveUtils.toString(move));
-			}
-			apply(move);
+			apply(sMove);
 		}
-//		throw new UnsupportedOperationException();
+	}
+
+	public void apply(final String sMove) {
+		final int move = UnapplyableMoveUtils.createMove(sMove, this);
+		final byte movingPiece = UnapplyableMove.movingPiece(move);
+		if(DEBUG && movingPiece == NO_PIECE) {
+			throw new RuntimeException("Could not determine moving piece while executing " + UnapplyableMoveUtils.toString(move));
+		}
+		apply(move);
 	}
 
 	public short coloredPiece(String fieldName) {
