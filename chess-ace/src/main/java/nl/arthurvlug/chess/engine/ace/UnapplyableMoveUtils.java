@@ -34,9 +34,9 @@ public class UnapplyableMoveUtils {
 								 final byte promotionPiece,
 								 final ACEBoard engineBoard) throws KingEatingException {
 		// TODO: Change to pieceType(..)
-		int movingPiece = engineBoard.coloredPiece(fromIdx);
+		int coloredMovingPiece = engineBoard.coloredPiece(fromIdx);
 		int takePiece = engineBoard.coloredPiece(targetIdx);
-		int move = UnapplyableMove.create(fromIdx, targetIdx, movingPiece, takePiece, promotionPiece);
+		int move = UnapplyableMove.create(fromIdx, targetIdx, coloredMovingPiece, takePiece, promotionPiece);
 		if(takePiece == BLACK_KING_BYTE || takePiece == WHITE_KING_BYTE) {
 			throw new KingEatingException(move);
 		}
@@ -46,7 +46,7 @@ public class UnapplyableMoveUtils {
 	public static String toString(final int move) {
 		byte fromIdx = UnapplyableMove.fromIdx(move);
 		byte toIdx = UnapplyableMove.targetIdx(move);
-		byte movingPiece = UnapplyableMove.movingPiece(move);
+		byte movingPiece = UnapplyableMove.coloredMovingPiece(move);
 		byte takePiece = UnapplyableMove.takePiece(move);
 		byte promotionPiece = UnapplyableMove.promotionPiece(move);
 		return String.format("%s%s%s%s (took: %s)",

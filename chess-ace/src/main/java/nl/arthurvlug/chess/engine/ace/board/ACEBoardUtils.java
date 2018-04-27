@@ -24,7 +24,7 @@ public class ACEBoardUtils {
 
 	public static String dump(final ACEBoard engineBoard) {
 		final Class<ACEBoard> engineBoardClass = ACEBoard.class;
-		return Arrays.stream(engineBoardClass.getFields())
+		return Arrays.stream(engineBoardClass.getDeclaredFields())
 				.filter(field -> !field.getName().equals("plyStack"))
 				.map(f -> fieldString(engineBoard, engineBoardClass, f))
 				.collect(Collectors.joining("\n"));
@@ -38,7 +38,15 @@ public class ACEBoardUtils {
 			final Object o = field.get(engineBoard);
 			String value = o.toString();
 			if(o.getClass().isArray()) {
-				value = Arrays.toString((long[]) o);
+				if(o instanceof long[]) {
+					value = Arrays.toString((long[]) o);
+				} else if(o instanceof short[]) {
+					value = Arrays.toString((short[]) o);
+				} else if(o instanceof int[][]) {
+					value = Arrays.deepToString((int[][]) o);
+				} else {
+					throw new RuntimeException("Could not convert " + o.getClass());
+				}
 			}
 			return String.format("%s=%s", fieldName, value);
 		} catch (NoSuchFieldException | IllegalAccessException e) {

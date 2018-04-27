@@ -7,11 +7,7 @@ public class PieceUtils {
 		return coloredPiece <= WHITE_KING_BYTE;
 	}
 
-	public static byte pieceColor(final ColoredPieceType coloredPiece) {
-		throw new RuntimeException("");
-	}
-
-	public static String type(final byte movingPiece) {
+	static String type(final byte movingPiece) {
 		switch (movingPiece) {
 			case WHITE_PAWN_BYTE: case BLACK_PAWN_BYTE: return "p";
 			case WHITE_KNIGHT_BYTE: case BLACK_KNIGHT_BYTE: return "N";

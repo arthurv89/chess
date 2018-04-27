@@ -3,7 +3,7 @@ package nl.arthurvlug.chess.engine.ace.board;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import nl.arthurvlug.chess.engine.ColorUtils;
-import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
+import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.utils.MoveUtils;
@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
+import static nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils.createMove;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromBoard;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
@@ -200,7 +201,7 @@ public class ACEBoardTest {
 				"♙♘♗♖♕♔..\n");
 
 
-		Integer move = UnapplyableMoveUtils.createMove("f7e8", oldBoard);
+		Integer move = createMove("f7e8", oldBoard);
 
 		final ACEBoard newBoard = startPositionBoard.cloneBoard();
 		boolean white_king_or_rook_queen_side_moved = newBoard.white_king_or_rook_queen_side_moved;
@@ -210,6 +211,33 @@ public class ACEBoardTest {
 		newBoard.apply(move);
 		newBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved, 0);
 		assertEquals(ACEBoardUtils.dump(oldBoard), ACEBoardUtils.dump(newBoard));
+	}
+
+	@Test
+	public void testPiecesArray() throws KingEatingException {
+		final ACEBoard board = ACEBoardUtils.initializedBoard(WHITE, "" +
+				"♟♞♝♜♛♚..\n" +
+				".....♙..\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"♙♘♗♖♕♔..\n");
+		final ACEBoard oldBoard = board.cloneBoard();
+
+		final List<Integer> takeMoves = board.generateTakeMoves();
+		assertThat(takeMoves).containsExactlyInAnyOrder(
+				createMove("d1d8", board),
+				createMove("e1e8", board),
+				createMove("f7e8", board)
+		);
+
+		int move = createMove("d1d8", board);
+		board.apply(move);
+		board.unapply(move, true, true, true, true, 0);
+
+		assertThat(ACEBoardUtils.dump(board)).isEqualTo(ACEBoardUtils.dump(oldBoard));
 	}
 
 	@Test
@@ -229,7 +257,7 @@ public class ACEBoardTest {
 				"♔....♟..\n" +
 				"........");
 		final ACEBoard clonedBoard = board.cloneBoard();
-		int move = UnapplyableMoveUtils.createMove("f2f1q", board);
+		int move = createMove("f2f1q", board);
 		board.apply(move);
 
 		assertThat(board.string()).isEqualTo("" +

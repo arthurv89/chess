@@ -36,7 +36,7 @@ public class UnapplyableMove extends EngineMove {
 		return (byte) ((move >> TAKE_PIECE_BIT_SHIFT) & TAKE_PIECE_MASK);
 	}
 
-	public static byte movingPiece(final int move) {
+	public static byte coloredMovingPiece(final int move) {
 		return (byte) ((move >> MOVING_PIECE_BIT_SHIFT) & MOVING_PIECE_MASK);
 	}
 

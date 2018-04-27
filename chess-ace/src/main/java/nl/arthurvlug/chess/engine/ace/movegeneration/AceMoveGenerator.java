@@ -227,6 +227,7 @@ public class AceMoveGenerator {
 
 	private static boolean inCheck(final ACEBoard engineBoard) {
 		try {
+			// TODO: Find a solution so we don't have to clone the board
 			final ACEBoard boardForOtherPlayer = engineBoard.cloneBoard(ColorUtils.opponent(engineBoard.toMove), false);
 			boardForOtherPlayer.generateTakeMoves();
 			return false;

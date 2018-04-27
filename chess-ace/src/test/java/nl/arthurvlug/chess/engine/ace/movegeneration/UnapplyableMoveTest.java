@@ -25,7 +25,7 @@ public class UnapplyableMoveTest {
 
 	@Test
 	public void testMovingPiece() {
-		assertThat(UnapplyableMove.movingPiece(move)).isEqualTo(movingPiece);
+		assertThat(UnapplyableMove.coloredMovingPiece(move)).isEqualTo(movingPiece);
 	}
 
 	@Test
