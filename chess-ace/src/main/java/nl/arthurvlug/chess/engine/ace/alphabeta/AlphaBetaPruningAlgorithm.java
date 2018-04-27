@@ -16,6 +16,7 @@ import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
 import nl.arthurvlug.chess.engine.ace.IncomingState;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
+import nl.arthurvlug.chess.engine.ace.ThinkingTime;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
@@ -43,7 +44,7 @@ import static nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTab
 public class AlphaBetaPruningAlgorithm {
 	private static final int CURRENT_PLAYER_WINS = 1000000000;
 	private static final int OTHER_PLAYER_WINS = -CURRENT_PLAYER_WINS;
-	private final InitialACEBoard currentEngineBoard;
+	private ACEBoard currentEngineBoard;
 	private int maxThinkingTime = Integer.MAX_VALUE;
 	private Stopwatch timer = Stopwatch.createUnstarted();
 
@@ -56,8 +57,7 @@ public class AlphaBetaPruningAlgorithm {
 
 	private BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
-	private int depth;
-	private int initialClockTime;
+	private int depth = Integer.MAX_VALUE;
 	//	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
 	private static final int HASH_TABLE_LENGTH = 1048576; // Must be a power or 2
 
@@ -78,16 +78,18 @@ public class AlphaBetaPruningAlgorithm {
 	private Subscriber<? super Move> subscriber;
 	private int depthNow;
 
-	public AlphaBetaPruningAlgorithm(final AceConfiguration configuration,
-									 final int initialClockTime) {
+	public AlphaBetaPruningAlgorithm(final AceConfiguration configuration) {
+		this(configuration, InitialACEBoard.createInitialACEBoard());
+	}
+
+	public AlphaBetaPruningAlgorithm(final AceConfiguration configuration, final ACEBoard initialACEBoard) {
 		this.evaluator = configuration.getEvaluator();
 		this.quiesceMaxDepth = configuration.getQuiesceMaxDepth();
 		this.depth = configuration.getSearchDepth();
-		this.initialClockTime = initialClockTime;
 
 		Preconditions.checkArgument(depth > 0);
 
-		this.currentEngineBoard = InitialACEBoard.createInitialACEBoard();
+		this.currentEngineBoard = initialACEBoard;
 		this.thinkingEngineBoard = currentEngineBoard.cloneBoard();
 		this.incomingMoves = Observers.create(incomingState -> {
 			final int timeLeft = thinkingEngineBoard.toMove == ColorUtils.WHITE
@@ -102,17 +104,20 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	public Observable<Move> startThinking(final ACEBoard engineBoard) {
-		this.newIncomingEngineBoard = Optional.of(engineBoard);
-		return Observable.create(sub -> {
-			this.subscriber = sub;
-			new Thread(() -> think()).start();
-		});
+		this.currentEngineBoard = engineBoard;
+		return startThinking();
 	}
 
 	public Observable<Move> startThinking() {
 		return Observable.create(sub -> {
 			this.subscriber = sub;
-			new Thread(() -> think()).start();
+			new Thread(() -> {
+				try {
+					think();
+				} catch (Exception e) {
+					sub.onError(e);
+				}
+			}).start();
 		});
 	}
 
@@ -128,7 +133,7 @@ public class AlphaBetaPruningAlgorithm {
 			priorityMove = Optional.empty();
 			try {
 				thinkingEngineBoard = currentEngineBoard.cloneBoard();
-				for (depthNow = 1; ; depthNow++) {
+				for (depthNow = 1; depthNow <= depth; depthNow++) {
 					info(String.format("Start thinking for %d ms on depth %d. PriorityMove: %s",
 							maxThinkingTime,
 							depthNow,
@@ -139,6 +144,10 @@ public class AlphaBetaPruningAlgorithm {
 						emitNewMove(null);
 						return;
 					}
+					if(depthNow == depth) {
+						applyAndEmitMove(bestMove);
+						return;
+					}
 					if (depthNow > 1000) {
 						err("depth is extremely high");
 						return;
@@ -146,8 +155,8 @@ public class AlphaBetaPruningAlgorithm {
 					priorityMove = Optional.of(bestMove);
 				}
 			} catch (NewEngineBoardException e) {
-				// TODO: Update the board and start thinking
-				throw new RuntimeException(e);
+				thinkingEngineBoard = newIncomingEngineBoard.get();
+				newIncomingEngineBoard = Optional.empty();
 			} catch (OpponentMoveCameInException e) {
 				err("Our turn!");
 				IncomingState incomingState = newIncomingState.get();
@@ -192,24 +201,23 @@ public class AlphaBetaPruningAlgorithm {
 	private void emitNewMove(final Move move) {
 		info("Emitting new move: " + move);
 		this.maxThinkingTime = Integer.MAX_VALUE;
+		iterator = 0;
 		subscriber.onNext(move);
-	}
-
-	private int thinkingDepth() {
-		if(thinkingEngineBoard.moveStack.size() <= 1) {
-			return 4;
-		} else {
-			return Integer.MAX_VALUE;
-		}
 	}
 
 	private int thinkingTime(final IncomingState incomingState, final int timeLeft) {
 		if(incomingState.getMove() == null) {
 			return 1000; // First second should take at most 1 second
 		}
-		final int timeDueToTimeLeft = (timeLeft - 2000 * thinkingEngineBoard.moveStack.size()) / 50;
-		final int timeDueToInitialTime = initialClockTime / 50;
-		return Math.min(timeDueToInitialTime, timeDueToTimeLeft);
+		int moveNumber = currentEngineBoard.plyStack.size() / 2;
+		if(moveNumber >= ThinkingTime.times.length) {
+			return timeLeft / 20;
+		}
+		double grandmasterThinkingTime = ThinkingTime.times[moveNumber];
+		return (int) (timeLeft * grandmasterThinkingTime);
+//		final int timeDueToTimeLeft = (timeLeft - 2000 * thinkingEngineBoard.plyStack.size()) / 50;
+//		final int timeDueToInitialTime = initialClockTime / 50;
+//		return Math.min(timeDueToInitialTime, timeDueToTimeLeft);
 	}
 
 	private Integer alphaBetaRoot(final int depth, final Optional<Integer> priorityMove) {
@@ -361,7 +369,7 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	private int losingScore() {
-		return OTHER_PLAYER_WINS - thinkingEngineBoard.moveStack.size();
+		return OTHER_PLAYER_WINS - thinkingEngineBoard.plyStack.size();
 	}
 
 	private int quiesceSearch(int alpha, final int beta, final int depth) {
@@ -445,7 +453,7 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	private List<String> moveListStrings() {
-		return thinkingEngineBoard.moveStack.stream().map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList());
+		return thinkingEngineBoard.plyStack.stream().map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList());
 	}
 
 	private int calculateScore(final ACEBoard board) {

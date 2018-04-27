@@ -49,7 +49,7 @@ public class AceEvaluator extends BoardEvaluator {
 	private boolean isThreeFoldRepetition(final ACEBoard engineBoard) {
 		// TODO: Make this a bit nicer: we can use zobrist keys, and if they match we can check out the board itself
 		final ACEBoard newAceBoard = InitialACEBoard.createInitialACEBoard();
-		final List<Integer> moves = stackToList(engineBoard.moveStack);
+		final List<Integer> moves = stackToList(engineBoard.plyStack);
 		final HashMap<String, Integer> dumps = new HashMap<>();
 		final String dump = ACEBoardUtils.dump(newAceBoard);
 		dumps.put(dump, 1);

@@ -13,7 +13,7 @@ import nl.arthurvlug.chess.gui.game.player.Player;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 
 public class ApplicationModule extends AbstractModule {
-	private int computerTime = 5; // in minutes
+	private int computerTime = 8; // in minutes
 	private Color computerColor = Color.WHITE;
 
 	@Override

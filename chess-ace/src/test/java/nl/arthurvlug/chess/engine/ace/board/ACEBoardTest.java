@@ -50,7 +50,7 @@ public class ACEBoardTest {
 		final ACEBoard copyEngineBoard = engineBoard.cloneBoard();
 		AceConfiguration configuration = new AceConfiguration();
 		configuration.setSearchDepth(2);
-		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration, Integer.MAX_VALUE);
+		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
 		algorithm.startThinking(engineBoard).toBlocking().first();
 
 		// Check that after considering a castling move, the engine board is the same as before because we haven't moved yet
@@ -71,7 +71,7 @@ public class ACEBoardTest {
 		engineBoard.apply(moves);
 		AceConfiguration configuration = new AceConfiguration();
 		configuration.setSearchDepth(2);
-		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration, Integer.MAX_VALUE);
+		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
 		final Move move = algorithm.startThinking(engineBoard).toBlocking().first();
 
 		// Check that the rook moves back to h8 after considering castling king-side

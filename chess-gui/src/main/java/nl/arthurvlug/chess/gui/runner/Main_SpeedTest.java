@@ -33,7 +33,7 @@ public class Main_SpeedTest {
 
 	public static void main(String[] args) {
 		try {
-			ACE ace = new ACE(5, Integer.MAX_VALUE, "BLACK", new EventBus());
+			ACE ace = new ACE(5, "BLACK", new EventBus());
 
 			NodeCountMonitor nodeCountMonitor = new NodeCountMonitor(ace);
 			nodeCountMonitor.start();

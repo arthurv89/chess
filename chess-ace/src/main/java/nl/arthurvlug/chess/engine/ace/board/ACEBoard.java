@@ -97,7 +97,7 @@ public class ACEBoard {
 	private final static long first_row = bitboardFromFieldName("a1 b1 c1 d1 e1 f1 g1 h1");
 	private final static long last_row = bitboardFromFieldName("a8 b8 c8 d8 e8 f8 g8 h8");
 
-	public Stack<Integer> moveStack = new Stack<>();
+	public Stack<Integer> plyStack = new Stack<>();
 	private boolean incFiftyClock;
 
 
@@ -168,7 +168,7 @@ public class ACEBoard {
 
 	public void apply(int move) {
 		incFiftyClock = true;
-		moveStack.push(move);
+		plyStack.push(move);
 		// TODO: Fix this by creating a more efficient Move object
 		byte fromIdx = UnapplyableMove.fromIdx(move);
 		long fromBitboard = 1L << fromIdx;
@@ -203,7 +203,7 @@ public class ACEBoard {
 						final boolean black_king_or_rook_queen_side_moved_before,
 						final boolean black_king_or_rook_king_side_moved_before,
 						final int fiftyMove_before) {
-		moveStack.pop();
+		plyStack.pop();
 		toMove = opponent(toMove);
 
 		byte targetIdx = UnapplyableMove.targetIdx(move);

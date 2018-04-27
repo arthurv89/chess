@@ -40,8 +40,9 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void before() {
 		whiteTime = 100_000_000;
 		blackTime = 100_000_000;
-		algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration(), whiteTime);
 		MoveUtils.DEBUG = false;
+		algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
+		algorithm.setEventBus(new EventBus());
 	}
 
 //	@Ignore
@@ -532,7 +533,9 @@ public class AlphaBetaPruningAlgorithmTest {
 	}
 
 	private void checkMove(final List<String> moves, final Function<Move, Boolean> expect, final int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
-		ACE ace = new ACE(depth, evaluator, quiesceMaxDepth, Integer.MAX_VALUE, "ACE", new EventBus());
+		final ACEBoard aceBoard = InitialACEBoard.createInitialACEBoard();
+		aceBoard.apply(moves);
+		final ACE ace = new ACE(depth, evaluator, quiesceMaxDepth, "ACE", new EventBus(), aceBoard);
 		final Move move = ace.startThinking().toBlocking().first();
 		System.out.println("Move is: " + move);
 		assertTrue(expect.apply(move));

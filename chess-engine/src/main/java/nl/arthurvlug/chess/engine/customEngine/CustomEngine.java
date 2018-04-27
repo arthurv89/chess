@@ -58,8 +58,6 @@ public abstract class CustomEngine extends UCIEngine {
 
 	private void startEngineInputParseThread() throws IOException {
 		new NamedThread(new Runnable() {
-			private final Object newMoveWaitObject = new Object();
-			
 			private ThinkingParams thinkingParams;
 			private List<String> moveList = Lists.newArrayList();
 
@@ -161,7 +159,7 @@ public abstract class CustomEngine extends UCIEngine {
 		return outputStream;
 	}
 
-
 	public abstract Observable<Move> startThinking();
+
 	protected abstract void go(final List<String> moveList, final ThinkingParams thinkingParams);
 }
