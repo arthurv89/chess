@@ -337,6 +337,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n" +
 				"........\n" +
 				"........\n");
+		algorithm.setDepth(5);
 		final Move move = algorithm.startThinking(engineBoard).toBlocking().first();
 		assertEquals(MoveUtils.toMove("g7g8n"), move);
 	}
@@ -507,24 +508,6 @@ public class AlphaBetaPruningAlgorithmTest {
 		// Expect to play e5e6
 		checkMove("d2d4 b8c6 b1c3 g8f6 g1f3 d7d5 e2e3 c8f5 c1d2 e7e6 f1d3 f5d3 c2d3 f8d6 d1b3 a8b8 e3e4 d5e4 d3e4 e6e5 d4e5 c6e5 b3a4 e5c6 d2e3 a7a5 e4e5 b7b5 c3b5 d6b4 e1c1 f6d7 b5c3 c6e7",
 				movesPiece("e5"), 6, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
-	}
-
-	@Test
-	public void shouldNotPerformRepetition1() {
-		checkMove("d2d4 g8f6 b1c3 c7c6 e2e4 d7d5 e4e5 f6g8 g1f3 e7e6 f1d3 a7a6 c1e3 b8d7 f3g5 h7h6 d1h5 d8e7 e1g1 e8d8 g5f7 d8c7 f7h8 g7g5 h8g6 e7f7 h2h4 f8g7 h4g5 g8e7 g5h6 g7h8 h5g4 e7g6 d3g6 f7g8 h6h7 g8g7 g4e6 d7f8 e6d6 c7b6 d6c5 b6c7 c5d6 c7b6 d6c5 b6c7",
-				(Move move) -> !move.toString().equals("c5d6"),
-				4,
-				new AceEvaluator(),
-				2);
-	}
-
-	@Test
-	public void shouldNotPerformRepetition2() {
-		checkMove("d2d4 g8f6 b1c3 c7c6 e2e4 d7d5 e4e5 f6g8 g1f3 e7e6 f1d3 a7a6 c1e3 b8d7 f3g5 h7h6 d1h5 d8e7 e1g1 e8d8 g5f7 d8c7 f7h8 g7g5 h8g6 e7f7 h2h4 f8g7 h4g5 g8e7 g5h6 g7h8 h5g4 e7g6 d3g6 f7g8 h6h7 g8g7 g4e6 d7f8 e6d6 c7b6 d6c5 b6c7 c5d6 c7b6",
-				(Move move) -> !move.toString().equals("d6c5"),
-				4,
-				new AceEvaluator(),
-				0);
 	}
 
 	private void checkMove(String sMoves, Function<Move, Boolean> expect, int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {

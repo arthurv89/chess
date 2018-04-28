@@ -10,20 +10,20 @@ import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
-import nl.arthurvlug.chess.utils.board.FieldUtils;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
+import static nl.arthurvlug.chess.engine.ace.board.ACEBoard.first_row;
+import static nl.arthurvlug.chess.engine.ace.board.ACEBoard.last_row;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.*;
+import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldIdx;
 
 public class AceMoveGenerator {
 	private static final int CASTLE_QUEEN_SIZE = 0;
 	private static final int CASTLE_KING_SIZE = 1;
 
-	private static final byte a8FieldIdx = FieldUtils.fieldIdx("a8");
-	private static final byte h1FieldIdx = FieldUtils.fieldIdx("h1");
-	private static byte[][] promotionTypes = new byte[2][4];
+	static byte[][] promotionTypes = new byte[2][4];
 	static {
 		promotionTypes[ColorUtils.WHITE][0] = ColoredPieceType.WHITE_QUEEN_BYTE;
 		promotionTypes[ColorUtils.WHITE][1] = ColoredPieceType.WHITE_ROOK_BYTE;
@@ -36,10 +36,12 @@ public class AceMoveGenerator {
 		promotionTypes[ColorUtils.BLACK][3] = ColoredPieceType.BLACK_KNIGHT_BYTE;
 	}
 
+	private static long promotionRow = first_row | last_row;
+
 	/**
-	 * Generates both valid moves and invalid moves
+	 * Generates both valid createMoves and invalid createMoves
 	 */
-	// TODO: Change this to a generator/lazy iterator
+	// TODO: Change this to a generator/lazy iterator or an array with big size and possibly 0 values
 	public static List<Integer> generateMoves(ACEBoard engineBoard) throws KingEatingException {
 		Preconditions.checkArgument(engineBoard.occupied_board != 0L);
 		Preconditions.checkArgument(engineBoard.enemy_and_empty_board != 0L);
@@ -47,11 +49,11 @@ public class AceMoveGenerator {
 		final List<Integer> list = new ArrayList<>();
 		list.addAll(pawnMoves(engineBoard));
 		list.addAll(knightMoves(engineBoard));
-		list.addAll(rookMoves(engineBoard));
 		list.addAll(bishopMoves(engineBoard));
+		list.addAll(rookMoves(engineBoard));
 		list.addAll(queenMoves(engineBoard));
-		list.addAll(kingMoves(engineBoard));
 		list.addAll(castlingMoves(engineBoard));
+		list.addAll(kingMoves(engineBoard));
 		// TODO: Implement en passent
 		return list;
 	}
@@ -66,19 +68,24 @@ public class AceMoveGenerator {
 		long pawns = pawns(engineBoard);
 		while(pawns != 0L) {
 			byte sq = (byte) Long.numberOfTrailingZeros(pawns);
-			pawns -= 1L << sq;
+			pawns -= bitboardFromFieldIdx(sq);
 
 			long oneFieldMove = pawnXrayOneFieldMove[sq] & engineBoard.unoccupied_board;
-			moves.addAll(moves(sq, oneFieldMove, engineBoard, true));
+			final boolean isPromotionMove = pawnMoveIsPromotionMove(pawnXrayOneFieldMove[sq]);
+			moves.addAll(createMoves(sq, oneFieldMove, engineBoard, isPromotionMove));
 
-			if(oneFieldMove != 0) {
+			if(oneFieldMove != 0L) {
 				long twoFieldMove = pawnXrayTwoFieldMove[sq] & engineBoard.unoccupied_board;
-				moves.addAll(moves(sq, twoFieldMove, engineBoard, true));
+				moves.addAll(createMoves(sq, twoFieldMove, engineBoard, false));
 			}
-			long twoFieldsMove = pawnXrayTakeFieldMove[sq] & engineBoard.occupiedSquares[opponent(engineBoard.toMove)];
-			moves.addAll(moves(sq, twoFieldsMove, engineBoard, false));
+			long takeMove = pawnXrayTakeFieldMove[sq] & engineBoard.occupiedSquares[opponent(engineBoard.toMove)];
+			moves.addAll(createMoves(sq, takeMove, engineBoard, isPromotionMove));
 		}
 		return moves;
+	}
+
+	static boolean pawnMoveIsPromotionMove(final long pawnXrayOneFieldMove) {
+		return (pawnXrayOneFieldMove & promotionRow) != 0L;
 	}
 
 	private static List<Integer> queenMoves(ACEBoard engineBoard) throws KingEatingException {
@@ -90,9 +97,9 @@ public class AceMoveGenerator {
 			long queen_perpendicular_moves = bishopMoves(engineBoard, sq);
 			long queen_diagonal_moves = rookMoves(engineBoard, sq);
 
-			queens -= 1L << sq;
-			moves.addAll(moves(sq, queen_perpendicular_moves, engineBoard, false));
-			moves.addAll(moves(sq, queen_diagonal_moves, engineBoard, false));
+			queens -= bitboardFromFieldIdx(sq);
+			moves.addAll(createMoves(sq, queen_perpendicular_moves, engineBoard, false));
+			moves.addAll(createMoves(sq, queen_diagonal_moves, engineBoard, false));
 		}
 		return moves;
 	}
@@ -105,8 +112,8 @@ public class AceMoveGenerator {
 
 			long bishop_moves = bishopMoves(engineBoard, sq);
 
-			bishops -= 1L << sq;
-			moves.addAll(moves(sq, bishop_moves, engineBoard, false));
+			bishops -= bitboardFromFieldIdx(sq);
+			moves.addAll(createMoves(sq, bishop_moves, engineBoard, false));
 		}
 		return moves;
 	}
@@ -139,8 +146,8 @@ public class AceMoveGenerator {
 
 			long rook_moves = rookMoves(engineBoard, sq);
 
-			rooks -= 1L << sq;
-			moves.addAll(moves(sq, rook_moves, engineBoard, false));
+			rooks -= bitboardFromFieldIdx(sq);
+			moves.addAll(createMoves(sq, rook_moves, engineBoard, false));
 		}
 		return moves;
 	}
@@ -171,8 +178,8 @@ public class AceMoveGenerator {
 		while(knights != 0L) {
 			byte sq = (byte) Long.numberOfTrailingZeros(knights);
 			long destinationBitboard = Xray.knight_xray[sq] & engineBoard.enemy_and_empty_board;
-			knights -= 1L << sq;
-			moves.addAll(moves(sq, destinationBitboard, engineBoard, false));
+			knights -= bitboardFromFieldIdx(sq);
+			moves.addAll(createMoves(sq, destinationBitboard, engineBoard, false));
 		}
 		return moves;
 	}
@@ -184,7 +191,7 @@ public class AceMoveGenerator {
 		}
 
 		long destinationBitboard = Xray.king_xray[sq] & engineBoard.enemy_and_empty_board;
-		return moves(sq, destinationBitboard, engineBoard, false);
+		return createMoves(sq, destinationBitboard, engineBoard, false);
 	}
 
 	static List<Integer> castlingMoves(final ACEBoard engineBoard) throws KingEatingException {
@@ -236,14 +243,14 @@ public class AceMoveGenerator {
 		}
 	}
 
-	private static List<Integer> moves(byte fromIdx, long bitboard, final ACEBoard engineBoard, final boolean couldBePromotionMove) throws KingEatingException {
+	private static List<Integer> createMoves(byte fromIdx, long bitboard, final ACEBoard engineBoard, final boolean isPromotionMove) throws KingEatingException {
 		List<Integer> moves = new ArrayList<>();
 
-		while(bitboard != 0) {
+		while(bitboard != 0L) {
 			byte targetIdx = (byte) Long.numberOfTrailingZeros(bitboard);
 			// TODO: Change into array
 			// TODO: Move this log to the pawn move so it's only executed there
-			if(couldBePromotionMove && (targetIdx >= a8FieldIdx || targetIdx <= h1FieldIdx)) {
+			if(isPromotionMove) {
 				for(final byte pieceType : promotionTypes[engineBoard.toMove]) {
 					Integer move = UnapplyableMoveUtils.createMove(fromIdx, targetIdx, pieceType, engineBoard);
 					moves.add(move);
@@ -253,7 +260,7 @@ public class AceMoveGenerator {
 				moves.add(move);
 			}
 
-			bitboard -= 1L << targetIdx;
+			bitboard -= bitboardFromFieldIdx(targetIdx);
 		}
 		return moves;
 	}
@@ -293,5 +300,4 @@ public class AceMoveGenerator {
 				? engineBoard.white_knights
 				: engineBoard.black_knights;
 	}
-
 }

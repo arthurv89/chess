@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess.engine.utils;
 
+import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
@@ -10,8 +11,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ACEBoardUtilsTest {
 	@Test
 	public void testDump() {
-		final ACEBoard initialACEBoard = InitialACEBoard.createInitialACEBoard();
-		assertThat(ACEBoardUtils.dump(initialACEBoard)).isEqualTo("toMove=0\n" +
+		final ACEBoard aceBoard = InitialACEBoard.createInitialACEBoard();
+		final ACEBoard clone = aceBoard.cloneBoard();
+		assertThat(ACEBoardUtils.dump(aceBoard)).isEqualTo(ACEBoardUtils.dump(clone));
+
+		int move = UnapplyableMoveUtils.createMove("e2e4", aceBoard);
+		aceBoard.apply(move);
+		aceBoard.unapply(move, false, false, false, false, 0);
+		assertThat(ACEBoardUtils.dump(aceBoard)).isEqualTo(ACEBoardUtils.dump(clone));
+
+		assertThat(ACEBoardUtils.dump(aceBoard)).isEqualTo(
+				"toMove=0\n" +
 				"black_kings=1152921504606846976\n" +
 				"white_kings=16\n" +
 				"black_queens=576460752303423488\n" +
@@ -33,7 +43,7 @@ public class ACEBoardUtilsTest {
 				"black_king_or_rook_queen_side_moved=false\n" +
 				"black_king_or_rook_king_side_moved=false\n" +
 				"pieces=[4, 2, 3, 5, 6, 3, 2, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 10, 8, 9, 11, 12, 9, 8, 10]\n" +
-				"fiftyMove=0\n" +
+				//"fiftyMove=0\n" +
 				"repeatedMove=0\n" +
 				"a8Bitboard=72057594037927936\n" +
 				"d8Bitboard=576460752303423488\n" +

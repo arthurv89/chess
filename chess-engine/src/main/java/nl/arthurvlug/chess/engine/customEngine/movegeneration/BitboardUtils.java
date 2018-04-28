@@ -42,7 +42,7 @@ public class BitboardUtils {
 		final String[] fieldNameArray = fieldNames.split(" ");
 		long bitboard = 0L;
 		for(final String fieldName : fieldNameArray) {
-			bitboard |= 1L << FieldUtils.fieldIdx(fieldName);
+			bitboard |= bitboardFromFieldIdx(FieldUtils.fieldIdx(fieldName));
 		}
 		return bitboard;
 	}
@@ -50,9 +50,13 @@ public class BitboardUtils {
 	public static long bitboardFromBoard(final String board) {
 		final long[] bitboard = {0L};
 		conv(board, ((coordinates, coloredPiece) -> {
-			bitboard[0] |= 1L << FieldUtils.fieldIdx(coordinates);
+			bitboard[0] |= bitboardFromFieldIdx(FieldUtils.fieldIdx(coordinates));
 			return null;
 		}));
 		return bitboard[0];
+	}
+
+	public static long bitboardFromFieldIdx(final byte sq) {
+		return 1L << sq;
 	}
 }

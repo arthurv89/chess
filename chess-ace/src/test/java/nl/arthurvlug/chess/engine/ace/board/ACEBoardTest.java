@@ -1,6 +1,7 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.eventbus.EventBus;
 import java.util.List;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
@@ -33,29 +34,7 @@ public class ACEBoardTest {
 
 	@Before
 	public void before() {
-		MoveUtils.DEBUG = true;
-	}
-
-	@Test
-	public void testThinkingDoesNotAlterEngineboard() throws Exception {
-		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
-		final List<String> moves = ImmutableList.of(
-				"d2d4", "d7d5", "b1c3", "b8c6", "c1f4", "c8f5", "c3b5", "a8c8",
-				"g1f3", "e7e6", "b5c7", "c8c7", "f4c7", "d8c7", "e2e3", "c7b6",
-				"d1c1", "c6b4", "f1d3", "f5d3", "e1d2", "d3e4", "c2c4", "b4c2",
-				"a1b1", "f8b4", "d2d1", "c2e3", "f2e3", "e4b1", "c4c5", "b6a5",
-				"c1b1", "g8f6", "a2a3", "a5a4", "d1c1", "b4a5", "b1d3", "f6e4",
-				"h1f1", "a5c7", "c1b1", "b7b6", "c5b6", "c7b6", "f3d2", "f7f5",
-				"d2f3", "f5f4", "e3f4");
-		engineBoard.apply(moves);
-		final ACEBoard copyEngineBoard = engineBoard.cloneBoard();
-		AceConfiguration configuration = new AceConfiguration();
-		configuration.setSearchDepth(2);
-		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
-		algorithm.startThinking(engineBoard).toBlocking().first();
-
-		// Check that after considering a castling move, the engine board is the same as before because we haven't moved yet
-		assertThat(ACEBoardUtils.dump(engineBoard)).isEqualTo(ACEBoardUtils.dump(copyEngineBoard));
+		MoveUtils.DEBUG = false;
 	}
 
 	@Test
@@ -72,11 +51,17 @@ public class ACEBoardTest {
 		engineBoard.apply(moves);
 		AceConfiguration configuration = new AceConfiguration();
 		configuration.setSearchDepth(2);
-		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
+		final AlphaBetaPruningAlgorithm algorithm = createAlgorithm(configuration);
 		final Move move = algorithm.startThinking(engineBoard).toBlocking().first();
 
 		// Check that the rook moves back to h8 after considering castling king-side
 		assertThat(move.toString()).isNotEqualTo("f8f4");
+	}
+
+	private AlphaBetaPruningAlgorithm createAlgorithm(final AceConfiguration configuration) {
+		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(configuration);
+		algorithm.setEventBus(new EventBus());
+		return algorithm;
 	}
 
 	// Check ignored after Nd2
@@ -228,9 +213,12 @@ public class ACEBoardTest {
 
 		final List<Integer> takeMoves = board.generateTakeMoves();
 		assertThat(takeMoves).containsExactlyInAnyOrder(
-				createMove("d1d8", board),
+				createMove("f7e8q", board),
+				createMove("f7e8r", board),
+				createMove("f7e8l", board),
+				createMove("f7e8n", board),
 				createMove("e1e8", board),
-				createMove("f7e8", board)
+				createMove("d1d8", board)
 		);
 
 		int move = createMove("d1d8", board);

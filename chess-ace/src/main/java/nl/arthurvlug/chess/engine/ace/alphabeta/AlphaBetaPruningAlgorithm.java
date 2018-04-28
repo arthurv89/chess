@@ -249,7 +249,7 @@ public class AlphaBetaPruningAlgorithm {
 			thinkingEngineBoard.apply(move);
 			// Do a recursive search
 			final int val = -alphaBeta(-beta, -alpha, depth - 1);
-			debugMoveStack(val);
+//			debugMoveStack(val);
 			sysout("");
 			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
@@ -342,7 +342,7 @@ public class AlphaBetaPruningAlgorithm {
 			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
 			thinkingEngineBoard.apply(move);
 			int val = -alphaBeta(-beta, -alpha, depth-1);
-			debugMoveStack(val);
+//			debugMoveStack(val);
 			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
@@ -404,7 +404,7 @@ public class AlphaBetaPruningAlgorithm {
 			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
 			thinkingEngineBoard.apply(takeMove);
 			int val = -quiesceSearch(-beta, -alpha, depth-1);
-			debugMoveStack(val);
+//			debugMoveStack(val);
 			thinkingEngineBoard.unapply(takeMove,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,

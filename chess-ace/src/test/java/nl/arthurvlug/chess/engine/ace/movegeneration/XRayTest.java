@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 public class XRayTest {
 	@Before
 	public void before() {
-		MoveUtils.DEBUG = true;
+		MoveUtils.DEBUG = false;
 	}
 
 	@Test
@@ -285,7 +285,7 @@ public class XRayTest {
 		assertEquals(h1, xRayBitboard(xray, "h1"));
 	}
 	
-	// TODO: Write for pawn moves
+	// TODO: Write for pawn createMoves
 	@Test
 	public void testWhiteOneFieldMove() {
 		long[] xray = Xray.pawn_xray_white_one_field_move;

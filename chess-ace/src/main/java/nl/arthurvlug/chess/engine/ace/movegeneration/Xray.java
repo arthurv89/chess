@@ -1,12 +1,15 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
-import java.util.function.Function;
-
-import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
-import nl.arthurvlug.chess.utils.board.Coordinates;
-
 import com.atlassian.fugue.Option;
+import java.util.function.Function;
+import nl.arthurvlug.chess.engine.ColorUtils;
+import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
+
+import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldIdx;
+import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
+import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
 
 class Xray {
 	private static Function<Coordinates, Long> kingXrayFunc = coordinates ->
@@ -22,7 +25,7 @@ class Xray {
 	private static Function<Coordinates, Long> queenXRayFunc = new Function<Coordinates, Long>() {
 		@Override
 		public Long apply(Coordinates coordinates) {
-			int i = FieldUtils.fieldIdx(coordinates);
+			int i = fieldIdx(coordinates);
 			return rook_xray[i]
 				 | bishop_xray[i];
 		}
@@ -206,6 +209,31 @@ class Xray {
 	final static long[] pawn_xray_black_take_field_move = xRay(pawnXRayBlackTakeMove);
 	final static long[][] castling_xray = castleXRay();
 
+	private static Function<PieceType, Function<Coordinates, Long>> whiteAttackingXrayFunc = pieceType -> coordinates -> {
+		switch(pieceType) {
+			case PAWN: return board(locate(coordinates, -1, -1)) | board(locate(coordinates, 1, -1));
+			case KNIGHT: return knight_xray[FieldUtils.fieldIdx(coordinates)];
+			case BISHOP: return bishop_xray[FieldUtils.fieldIdx(coordinates)];
+			case ROOK: return rook_xray[FieldUtils.fieldIdx(coordinates)];
+			case QUEEN: return queen_xray[FieldUtils.fieldIdx(coordinates)];
+			case KING: return king_xray[FieldUtils.fieldIdx(coordinates)];
+		}
+		throw new RuntimeException("Piecetype not supported: " + pieceType);
+	};
+
+	private static Function<PieceType, Function<Coordinates, Long>> blackAttackingXrayFunc = pieceType -> coordinates -> {
+		switch(pieceType) {
+			case PAWN: return board(locate(coordinates, -1, 1)) | board(locate(coordinates, 1, 1));
+			case KNIGHT: return knight_xray[FieldUtils.fieldIdx(coordinates)];
+			case BISHOP: return bishop_xray[FieldUtils.fieldIdx(coordinates)];
+			case ROOK: return rook_xray[FieldUtils.fieldIdx(coordinates)];
+			case QUEEN: return queen_xray[FieldUtils.fieldIdx(coordinates)];
+			case KING: return king_xray[FieldUtils.fieldIdx(coordinates)];
+		}
+		throw new RuntimeException("Piecetype not supported: " + pieceType);
+	};
+
+	final static long[][][] attacking_xray = coloredPiecesXray(whiteAttackingXrayFunc, blackAttackingXrayFunc); // [color][pieceTypeByte][sq]
 
 	private static long[] xRay(Function<Coordinates, Long> function) {
 		long[] xray = new long[64];
@@ -215,12 +243,27 @@ class Xray {
 		return xray;
 	}
 
+	private static long[][][] coloredPiecesXray(final Function<PieceType, Function<Coordinates, Long>> whiteFunction,
+												final Function<PieceType, Function<Coordinates, Long>> blackFunction) {
+		// TODO: Remove the +1
+		final long[][][] result = new long[2][PieceType.values().length+1][64];
+		for (final PieceType pieceType : PieceType.values()) {
+			for (byte color = 0; color < 2; color++) {
+				final Function<Coordinates, Long> func = (color == ColorUtils.WHITE)
+						? whiteFunction.apply(pieceType)
+						: blackFunction.apply(pieceType);
+				result[color][pieceType.getPieceByte()] = xRay(func);
+			}
+		}
+		return result;
+	}
+
 	private static long[][] castleXRay() {
 		final long[][] bitboards = new long[2][2];
-		bitboards[0][0] = BitboardUtils.bitboardFromFieldName("c1") | BitboardUtils.bitboardFromFieldName("d1");
-		bitboards[0][1] = BitboardUtils.bitboardFromFieldName("f1") | BitboardUtils.bitboardFromFieldName("g1");
-		bitboards[1][0] = BitboardUtils.bitboardFromFieldName("c8") | BitboardUtils.bitboardFromFieldName("d8");
-		bitboards[1][1] = BitboardUtils.bitboardFromFieldName("f8") | BitboardUtils.bitboardFromFieldName("g8");
+		bitboards[0][0] = bitboardFromFieldName("c1") | bitboardFromFieldName("d1");
+		bitboards[0][1] = bitboardFromFieldName("f1") | bitboardFromFieldName("g1");
+		bitboards[1][0] = bitboardFromFieldName("c8") | bitboardFromFieldName("d8");
+		bitboards[1][1] = bitboardFromFieldName("f8") | bitboardFromFieldName("g8");
 		return bitboards;
 	}
 
@@ -228,7 +271,7 @@ class Xray {
 		if(coordinate.isEmpty()) {
 			return 0;
 		} else {
-			return 1L << FieldUtils.fieldIdx(coordinate.get());
+			return bitboardFromFieldIdx(fieldIdx(coordinate.get()));
 		}
 	}
 

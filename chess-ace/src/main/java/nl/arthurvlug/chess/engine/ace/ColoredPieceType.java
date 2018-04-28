@@ -15,6 +15,7 @@ import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
 public enum ColoredPieceType {
 	;
 
+	// TODO: Put this as the last value
 	public static final byte NO_PIECE = 0;
 
 	public static final byte WHITE_PAWN_BYTE   = 1;

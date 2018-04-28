@@ -6,7 +6,7 @@ import org.junit.Before;
 public class TestDesiredMoves {
 	@Before
 	public void before() {
-		MoveUtils.DEBUG = true;
+		MoveUtils.DEBUG = false;
 	}
 
 }

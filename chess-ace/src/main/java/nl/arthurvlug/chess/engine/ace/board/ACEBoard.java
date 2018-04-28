@@ -9,11 +9,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
-import java.util.stream.Collectors;
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
+import nl.arthurvlug.chess.engine.ace.movegeneration.AceTakeMoveGenerator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
@@ -23,6 +23,7 @@ import nl.arthurvlug.chess.utils.board.pieces.PieceTypeBytes;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.*;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
+import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldIdx;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 import static nl.arthurvlug.chess.utils.MoveUtils.DEBUG;
 
@@ -82,8 +83,8 @@ public class ACEBoard {
 	private static final long c1Bitboard = bitboardFromFieldName("c1");
 	private static final long e1Bitboard = bitboardFromFieldName("e1");
 
-	private final static long first_row = bitboardFromFieldName("a1 b1 c1 d1 e1 f1 g1 h1");
-	private final static long last_row = bitboardFromFieldName("a8 b8 c8 d8 e8 f8 g8 h8");
+	public final static long first_row = bitboardFromFieldName("a1 b1 c1 d1 e1 f1 g1 h1");
+	public final static long last_row = bitboardFromFieldName("a8 b8 c8 d8 e8 f8 g8 h8");
 
 	private final static short d1FieldIdx = FieldUtils.fieldIdx("d1");
 	private final static short f1FieldIdx = FieldUtils.fieldIdx("f1");
@@ -134,41 +135,41 @@ public class ACEBoard {
 	}
 
 	public byte coloredPiece(byte fieldIdx) {
-		long bitboard = 1L << fieldIdx;
+		long bitboard = bitboardFromFieldIdx(fieldIdx);
 
-		if((white_pawns & bitboard) != 0)   return WHITE_PAWN_BYTE;
-		if((white_knights & bitboard) != 0) return WHITE_KNIGHT_BYTE;
-		if((white_bishops & bitboard) != 0) return WHITE_BISHOP_BYTE;
-		if((white_rooks & bitboard) != 0)   return WHITE_ROOK_BYTE;
-		if((white_queens & bitboard) != 0)  return WHITE_QUEEN_BYTE;
-		if((white_kings & bitboard) != 0)   return WHITE_KING_BYTE;
+		if((white_pawns & bitboard) != 0L)   return WHITE_PAWN_BYTE;
+		if((white_knights & bitboard) != 0L) return WHITE_KNIGHT_BYTE;
+		if((white_bishops & bitboard) != 0L) return WHITE_BISHOP_BYTE;
+		if((white_rooks & bitboard) != 0L)   return WHITE_ROOK_BYTE;
+		if((white_queens & bitboard) != 0L)  return WHITE_QUEEN_BYTE;
+		if((white_kings & bitboard) != 0L)   return WHITE_KING_BYTE;
 
-		if((black_pawns & bitboard) != 0)   return BLACK_PAWN_BYTE;
-		if((black_knights & bitboard) != 0) return BLACK_KNIGHT_BYTE;
-		if((black_bishops & bitboard) != 0) return BLACK_BISHOP_BYTE;
-		if((black_rooks & bitboard) != 0)   return BLACK_ROOK_BYTE;
-		if((black_queens & bitboard) != 0)  return BLACK_QUEEN_BYTE;
-		if((black_kings & bitboard) != 0)   return BLACK_KING_BYTE;
+		if((black_pawns & bitboard) != 0L)   return BLACK_PAWN_BYTE;
+		if((black_knights & bitboard) != 0L) return BLACK_KNIGHT_BYTE;
+		if((black_bishops & bitboard) != 0L) return BLACK_BISHOP_BYTE;
+		if((black_rooks & bitboard) != 0L)   return BLACK_ROOK_BYTE;
+		if((black_queens & bitboard) != 0L)  return BLACK_QUEEN_BYTE;
+		if((black_kings & bitboard) != 0L)   return BLACK_KING_BYTE;
 
 		return NO_PIECE;
 	}
 
 	public int pieceType(final byte fieldIdx) {
-		long bitboard = 1L << fieldIdx;
+		long bitboard = bitboardFromFieldIdx(fieldIdx);
 
-		if((white_pawns & bitboard) != 0)   return PieceTypeBytes.PAWN_BYTE;
-		if((white_knights & bitboard) != 0) return PieceTypeBytes.KNIGHT_BYTE;
-		if((white_bishops & bitboard) != 0) return PieceTypeBytes.BISHOP_BYTE;
-		if((white_rooks & bitboard) != 0)   return PieceTypeBytes.ROOK_BYTE;
-		if((white_queens & bitboard) != 0)  return PieceTypeBytes.QUEEN_BYTE;
-		if((white_kings & bitboard) != 0)   return PieceTypeBytes.KING_BYTE;
+		if((white_pawns & bitboard) != 0L)   return PieceTypeBytes.PAWN_BYTE;
+		if((white_knights & bitboard) != 0L) return PieceTypeBytes.KNIGHT_BYTE;
+		if((white_bishops & bitboard) != 0L) return PieceTypeBytes.BISHOP_BYTE;
+		if((white_rooks & bitboard) != 0L)   return PieceTypeBytes.ROOK_BYTE;
+		if((white_queens & bitboard) != 0L)  return PieceTypeBytes.QUEEN_BYTE;
+		if((white_kings & bitboard) != 0L)   return PieceTypeBytes.KING_BYTE;
 
-		if((black_pawns & bitboard) != 0)   return PieceTypeBytes.PAWN_BYTE;
-		if((black_knights & bitboard) != 0) return PieceTypeBytes.KNIGHT_BYTE;
-		if((black_bishops & bitboard) != 0) return PieceTypeBytes.BISHOP_BYTE;
-		if((black_rooks & bitboard) != 0)   return PieceTypeBytes.ROOK_BYTE;
-		if((black_queens & bitboard) != 0)  return PieceTypeBytes.QUEEN_BYTE;
-		if((black_kings & bitboard) != 0)   return PieceTypeBytes.KING_BYTE;
+		if((black_pawns & bitboard) != 0L)   return PieceTypeBytes.PAWN_BYTE;
+		if((black_knights & bitboard) != 0L) return PieceTypeBytes.KNIGHT_BYTE;
+		if((black_bishops & bitboard) != 0L) return PieceTypeBytes.BISHOP_BYTE;
+		if((black_rooks & bitboard) != 0L)   return PieceTypeBytes.ROOK_BYTE;
+		if((black_queens & bitboard) != 0L)  return PieceTypeBytes.QUEEN_BYTE;
+		if((black_kings & bitboard) != 0L)   return PieceTypeBytes.KING_BYTE;
 
 		return NO_PIECE;
 	}
@@ -178,10 +179,10 @@ public class ACEBoard {
 		plyStack.push(move);
 		// TODO: Fix this by creating a more efficient Move object
 		byte fromIdx = UnapplyableMove.fromIdx(move);
-		long fromBitboard = 1L << fromIdx;
+		long fromBitboard = bitboardFromFieldIdx(fromIdx);
 
 		byte targetIdx = UnapplyableMove.targetIdx(move);
-		long targetBitboard = 1L << targetIdx;
+		long targetBitboard = bitboardFromFieldIdx(targetIdx);
 
 		byte coloredMovingPiece = UnapplyableMove.coloredMovingPiece(move);
 
@@ -217,17 +218,18 @@ public class ACEBoard {
 		toMove = opponent(toMove);
 
 		byte targetIdx = UnapplyableMove.targetIdx(move);
-		long targetBitboard = 1L << targetIdx;
+		long targetBitboard = bitboardFromFieldIdx(targetIdx);
 		final byte coloredMovingPiece = UnapplyableMove.coloredMovingPiece(move);
 
 		byte fromIdx = UnapplyableMove.fromIdx(move);
-		long fromBitboard = 1L << fromIdx;
+		long fromBitboard = bitboardFromFieldIdx(fromIdx);
 
 		// This is a reverse move
+		pieces[targetIdx] = NO_PIECE;
+		pieces[fromIdx] = coloredMovingPiece;
+
 		xorMove(fromBitboard, targetBitboard, coloredMovingPiece, move, false);
 		xorTakePiece(move, targetBitboard, targetIdx);
-
-		pieces[fromIdx] = coloredMovingPiece;
 
 		this.white_king_or_rook_queen_side_moved = white_king_or_rook_queen_side_moved_before;
 		this.white_king_or_rook_king_side_moved = white_king_or_rook_king_side_moved_before;
@@ -251,7 +253,7 @@ public class ACEBoard {
 		// TODO: Remove if statement
 		if(isWhite(toMove)) {
 			switch (coloredMovingPiece) {
-				case WHITE_PAWN_BYTE:   incFiftyClock = false; moveWhitePawn  (fromBitboard, targetBitboard, move, isApply); break;
+				case WHITE_PAWN_BYTE:   incFiftyClock = false; moveWhitePawn(fromBitboard, targetBitboard, move, isApply); break;
 				case WHITE_KNIGHT_BYTE: moveWhiteKnight(fromBitboard, targetBitboard); break;
 				case WHITE_BISHOP_BYTE: moveWhiteBishop(fromBitboard, targetBitboard); break;
 				case WHITE_ROOK_BYTE:   moveWhiteRook  (fromBitboard, targetBitboard); break;
@@ -261,7 +263,7 @@ public class ACEBoard {
 			recalculateWhiteOccupiedSquares();
 		} else {
 			switch (coloredMovingPiece) {
-				case BLACK_PAWN_BYTE:   incFiftyClock = false; moveBlackPawn  (fromBitboard, targetBitboard, move, isApply); break;
+				case BLACK_PAWN_BYTE:   incFiftyClock = false; moveBlackPawn(fromBitboard, targetBitboard, move, isApply); break;
 				case BLACK_KNIGHT_BYTE: moveBlackKnight(fromBitboard, targetBitboard); break;
 				case BLACK_BISHOP_BYTE: moveBlackBishop(fromBitboard, targetBitboard); break;
 				case BLACK_ROOK_BYTE:   moveBlackRook  (fromBitboard, targetBitboard); break;
@@ -308,7 +310,8 @@ public class ACEBoard {
 			recalculateBlackOccupiedSquares();
 		} else {
 			switch (takePiece) {
-				case NO_PIECE: return;
+				case NO_PIECE:
+					return;
 				case WHITE_PAWN_BYTE:
 					pieces[targetIdx] = WHITE_PAWN_BYTE;
 					incFiftyClock=false; white_pawns   ^= targetBitboard; break;
@@ -355,6 +358,7 @@ public class ACEBoard {
 		if(isApply) {
 			if ((targetBitboard & last_row) != 0L) {
 				final byte promotionPiece = UnapplyableMove.promotionPiece(move);
+				pieces[Long.numberOfTrailingZeros(fromBitboard)] = NO_PIECE;
 				promoteWhitePawn(targetBitboard, promotionPiece);
 			} else {
 				white_pawns ^= targetBitboard;
@@ -383,6 +387,7 @@ public class ACEBoard {
 		} else {
 			if ((fromBitboard & first_row) != 0L) {
 				final byte promotionPiece = UnapplyableMove.promotionPiece(move);
+				pieces[Long.numberOfTrailingZeros(fromBitboard)] = NO_PIECE;
 				promoteBlackPawn(fromBitboard, promotionPiece);
 			} else {
 				black_pawns ^= fromBitboard;
@@ -578,18 +583,6 @@ public class ACEBoard {
 		return zobristRandomTable[fieldIdx][coloredPiece];
 	}
 
-	// TODO: Replace with inverted Xrays.
-	// For each occupied field by the current player,it should calculate which fields can attack them
-	public List<Integer> generateTakeMoves() throws KingEatingException {
-		return AceMoveGenerator.generateMoves(this)
-				.stream()
-				.filter(move -> {
-					byte idx = UnapplyableMove.targetIdx(move);
-					return coloredPiece(idx) != NO_PIECE;
-				})
-				.collect(Collectors.toList());
-	}
-
 	public String string() {
 		Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
 		Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
@@ -597,8 +590,6 @@ public class ACEBoard {
 		
 		StringBuilder sb = new StringBuilder();
 		for (byte fieldIdx = 0; fieldIdx < 64; fieldIdx++) {
-//			ColoredPiece pieceAt = (fieldIdx);
-			
 			if((fieldIdx)%8 == 0) {
 				sb.append('\n');
 			}
@@ -619,52 +610,52 @@ public class ACEBoard {
 		return Joiner.on('\n').join(l);
 	}
 
-	public void addPiece(byte color, PieceType pieceType, int fieldIndex) {
+	public void addPiece(byte color, PieceType pieceType, byte fieldIndex) {
 		if(PieceType.KING == pieceType) {
 			if(color == WHITE) {
-				white_kings |= 1L << fieldIndex;
+				white_kings |= bitboardFromFieldIdx(fieldIndex);
 			} else {
-				black_kings |= 1L << fieldIndex;
+				black_kings |= bitboardFromFieldIdx(fieldIndex);
 			}
 		}
 
 		if(PieceType.QUEEN == pieceType) {
 			if(color == WHITE) {
-				white_queens |= 1L << fieldIndex;
+				white_queens |= bitboardFromFieldIdx(fieldIndex);
 			} else {
-				black_queens |= 1L << fieldIndex;
+				black_queens |= bitboardFromFieldIdx(fieldIndex);
 			}
 		}
 
 		if(PieceType.ROOK == pieceType) {
 			if(color == WHITE) {
-				white_rooks |= 1L << fieldIndex;
+				white_rooks |= bitboardFromFieldIdx(fieldIndex);
 			} else {
-				black_rooks |= 1L << fieldIndex;
+				black_rooks |= bitboardFromFieldIdx(fieldIndex);
 			}
 		}
 
 		if(PieceType.BISHOP == pieceType) {
 			if(color == WHITE) {
-				white_bishops |= 1L << fieldIndex;
+				white_bishops |= bitboardFromFieldIdx(fieldIndex);
 			} else {
-				black_bishops |= 1L << fieldIndex;
+				black_bishops |= bitboardFromFieldIdx(fieldIndex);
 			}
 		}
 
 		if(PieceType.KNIGHT == pieceType) {
 			if(color == WHITE) {
-				white_knights |= 1L << fieldIndex;
+				white_knights |= bitboardFromFieldIdx(fieldIndex);
 			} else {
-				black_knights |= 1L << fieldIndex;
+				black_knights |= bitboardFromFieldIdx(fieldIndex);
 			}
 		}
 
 		if(PieceType.PAWN == pieceType) {
 			if(color == WHITE) {
-				white_pawns |= 1L << fieldIndex;
+				white_pawns |= bitboardFromFieldIdx(fieldIndex);
 			} else {
-				black_pawns |= 1L << fieldIndex;
+				black_pawns |= bitboardFromFieldIdx(fieldIndex);
 			}
 		}
 
@@ -728,6 +719,10 @@ public class ACEBoard {
 		return AceMoveGenerator.generateMoves(this);
 	}
 
+	public List<Integer> generateTakeMoves() throws KingEatingException {
+		return AceTakeMoveGenerator.generateTakeMoves(this);
+	}
+
 	public int getRepeatedMove() {
 		return repeatedMove;
 	}
@@ -750,5 +745,9 @@ public class ACEBoard {
 
 	public int getZobristHash() {
 		return zobristHash;
+	}
+
+	public short[] getPieces() {
+		return pieces;
 	}
 }

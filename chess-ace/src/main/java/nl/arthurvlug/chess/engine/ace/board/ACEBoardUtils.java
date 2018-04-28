@@ -25,7 +25,9 @@ public class ACEBoardUtils {
 	public static String dump(final ACEBoard engineBoard) {
 		final Class<ACEBoard> engineBoardClass = ACEBoard.class;
 		return Arrays.stream(engineBoardClass.getDeclaredFields())
-				.filter(field -> !field.getName().equals("plyStack"))
+				.filter(field ->
+					   !field.getName().equals("plyStack") &&
+					   !field.getName().equals("fiftyMove"))
 				.map(f -> fieldString(engineBoard, engineBoardClass, f))
 				.collect(Collectors.joining("\n"));
 	}

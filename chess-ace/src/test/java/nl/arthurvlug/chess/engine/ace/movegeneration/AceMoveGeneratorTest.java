@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 public class AceMoveGeneratorTest {
 	@Before
 	public void before() {
-		MoveUtils.DEBUG = true;
+		MoveUtils.DEBUG = false;
 	}
 
 	@Test
@@ -180,7 +180,7 @@ public class AceMoveGeneratorTest {
 		assertTrue(whiteMoves.contains(UnapplyableMoveUtils.createMove("a1e1", engineBoard)));
 		assertTrue(whiteMoves.contains(UnapplyableMoveUtils.createMove("a1f1", engineBoard)));
 		assertTrue(whiteMoves.contains(UnapplyableMoveUtils.createMove("h8g8", engineBoard)));
-		// Illegal moves
+		// Illegal createMoves
 		assertTrue(whiteMoves.contains(UnapplyableMoveUtils.createMove("h8g7", engineBoard)));
 		assertTrue(whiteMoves.contains(UnapplyableMoveUtils.createMove("h8h7", engineBoard)));
 
@@ -203,7 +203,7 @@ public class AceMoveGeneratorTest {
 		assertTrue(blackMoves.contains(UnapplyableMoveUtils.createMove("h6g6", engineBoard)));
 		assertTrue(blackMoves.contains(UnapplyableMoveUtils.createMove("h6g5", engineBoard)));
 		assertTrue(blackMoves.contains(UnapplyableMoveUtils.createMove("h6h5", engineBoard)));
-		// Illegal moves
+		// Illegal createMoves
 		assertTrue(blackMoves.contains(UnapplyableMoveUtils.createMove("h6h7", engineBoard)));
 		assertTrue(blackMoves.contains(UnapplyableMoveUtils.createMove("h6g7", engineBoard)));
 	}
