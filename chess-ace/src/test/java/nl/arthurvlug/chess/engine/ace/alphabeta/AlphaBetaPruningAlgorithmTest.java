@@ -359,6 +359,14 @@ public class AlphaBetaPruningAlgorithmTest {
 		assertThat(move.toString()).isNotEqualTo("e1b1");
 	}
 
+	@Test
+	public void shouldCreateMove() {
+		final List<String> moves = ImmutableList.of("e2e4", "d7d5", "e4d5", "g8f6", "b1c3", "f6d5", "d1f3", "e7e6", "f1c4", "d5b4", "c4b3", "b8c6", "g1e2", "f8c5", "e1g1", "e8g8", "d2d3", "c6a5", "f3g3", "a5b3", "a2b3", "b4c2", "c1h6");
+		final ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
+		engineBoard.apply(moves);
+		algorithm.setDepth(3);
+		algorithm.startThinking(engineBoard).toBlocking().first();// Should not throw an exception
+	}
 
 //	@Test
 //	public void shouldNotStalemate() {

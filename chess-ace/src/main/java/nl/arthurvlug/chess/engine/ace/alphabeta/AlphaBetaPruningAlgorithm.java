@@ -212,7 +212,7 @@ public class AlphaBetaPruningAlgorithm {
 
 		for(int move : generatedMoves) {
 			Integer newHeight = null;
-			if(bestMove == null) {
+			if(move == generatedMoves.get(0)) {
 				newHeight = 1;
 			}
 
@@ -293,13 +293,13 @@ public class AlphaBetaPruningAlgorithm {
 			}
 		}
 
-		for(final Integer move : generatedMoves) {
+		for(final int move : generatedMoves) {
 			// Do a recursive search
 			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
 			thinkingEngineBoard.apply(move);
 
 			Integer newHeight = null;
-			if(height != null && bestMove == null) {
+			if(height != null && move == generatedMoves.get(0)) {
 				newHeight = height + 1;
 			}
 
