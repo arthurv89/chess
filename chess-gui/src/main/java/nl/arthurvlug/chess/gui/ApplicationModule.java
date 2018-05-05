@@ -2,6 +2,7 @@ package nl.arthurvlug.chess.gui;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import nl.arthurvlug.chess.engine.ace.ACE;
 import nl.arthurvlug.chess.engine.game.Clock;
 import nl.arthurvlug.chess.gui.components.board.ClockPane;
@@ -13,23 +14,25 @@ import nl.arthurvlug.chess.gui.game.player.Player;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 
 public class ApplicationModule extends AbstractModule {
-	private int computerTime = 5; // in minutes
+	private int computerTime = 10; // in minutes
 	private Color computerColor = Color.BLACK;
 
 	@Override
 	protected void configure() {
-		EventBus eventBus = new EventBus("Default eventbus");
-		Game game = createOnlineSyncGame(computerColor, eventBus);
-//		Game game = aceVsAceGame(eventBus);
-
-		bind(EventBus.class).toInstance(eventBus);
-		bind(Game.class).toInstance(game);
+		bind(EventBus.class).toInstance(new EventBus("Default eventbus"));
 		bind(ClockPane.class).toInstance(new ClockPane());
 		bind(MovesPane.class).toInstance(new MovesPane());
 	}
 
-	private Game createOnlineSyncGame(final Color acePlayer, final EventBus eventBus) {
-		if(acePlayer == Color.WHITE) {
+	@Provides
+	public Game createGame(final EventBus eventBus) {
+		final Game game = createOnlineSyncGame(eventBus);
+		game.setEventBus(eventBus);
+		return game;
+	}
+
+	private Game createOnlineSyncGame(final EventBus eventBus) {
+		if(computerColor == Color.WHITE) {
 			return aceWhiteOnlineSyncGame(eventBus);
 		} else {
 			return aceBlackOnlineSyncGame(eventBus);
@@ -53,9 +56,7 @@ public class ApplicationModule extends AbstractModule {
 	}
 
 	private ComputerPlayer createComputerPlayer(final Clock whiteClock, final Clock blackClock, final EventBus eventBus) {
-		final ComputerPlayer ace = new ComputerPlayer(new ACE(Integer.MAX_VALUE, "ACE", eventBus));
-		ace.initialize(whiteClock, blackClock);
-		return ace;
+		return new ComputerPlayer(new ACE(Integer.MAX_VALUE, "ACE", eventBus));
 	}
 
 	private Game aceBlackOnlineSyncGame(final EventBus eventBus) {
@@ -89,5 +90,4 @@ public class ApplicationModule extends AbstractModule {
 				.toMove(whitePlayer)
 				.build();
 	}
-
 }

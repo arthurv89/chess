@@ -22,8 +22,6 @@ public class AceEvaluator extends BoardEvaluator {
 
 	@Override
 	public Integer evaluate(final ACEBoard engineBoard) {
-//		final List<Integer> moves = AceMoveGenerator.generateMoves(engineBoard);
-//		LinkedHashMultimap<Byte, Integer> byFromPositionMap = byFromPosition(moves);
 		int score = 0;
 
 		long occupiedBoard = engineBoard.occupied_board;

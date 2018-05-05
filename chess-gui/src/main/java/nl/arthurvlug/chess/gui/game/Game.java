@@ -3,10 +3,10 @@ package nl.arthurvlug.chess.gui.game;
 import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.game.Clock;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
@@ -31,7 +31,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @EventHandler
 @Slf4j
 public class Game {
-	@Inject private EventBus eventBus;
+	@Setter
+	private EventBus eventBus;
 
 	@Getter private final Board board;
 	
@@ -69,8 +70,6 @@ public class Game {
 		Observable<Void> whitePlayingEngineObservable = whitePlayer.initialize(whiteClock, blackClock);
 		Observable<Void> blackPlayingEngineObservable = blackPlayer.initialize(whiteClock, blackClock);
 
-		final long initialWhiteTime = whiteClock.getRemainingTime().getMillis();
-		final long initialClockTime = blackClock.getRemainingTime().getMillis();
 		subscribeToMove(whitePlayer);
 		subscribeToMove(blackPlayer);
 		

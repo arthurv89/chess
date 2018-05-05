@@ -1,13 +1,11 @@
 package nl.arthurvlug.chess.gui.game.player;
 
+import com.google.common.collect.ImmutableList;
 import lombok.AllArgsConstructor;
 import nl.arthurvlug.chess.engine.UCIEngine;
 import nl.arthurvlug.chess.engine.game.Clock;
-import nl.arthurvlug.chess.gui.game.player.Player;
 import nl.arthurvlug.chess.utils.game.Move;
 import rx.Observable;
-
-import com.google.common.collect.ImmutableList;
 
 @AllArgsConstructor
 public class ComputerPlayer extends Player {

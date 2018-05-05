@@ -29,7 +29,7 @@ public class Main_Chess {
 		addShutdownHook();
 
 		eventBus.post(new StartupEvent());
-			Thread.sleep(Long.MAX_VALUE);
+		Thread.sleep(Long.MAX_VALUE);
 	}
 
 	private void addShutdownHook() {
@@ -46,6 +46,7 @@ public class Main_Chess {
 		Set<Class<?>> eventHandlers = reflections.getTypesAnnotatedWith(EventHandler.class);
 		for (Class<?> eventHandlerClass : eventHandlers) {
 			Object eventHandler = injector.getInstance(eventHandlerClass);
+			System.out.println("Registering " + eventHandler.getClass() + " to listen to events");
 			eventBus.register(eventHandler);
 		}
 	}

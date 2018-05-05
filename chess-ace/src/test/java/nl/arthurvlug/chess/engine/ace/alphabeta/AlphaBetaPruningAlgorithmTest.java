@@ -1,6 +1,7 @@
 package nl.arthurvlug.chess.engine.ace.alphabeta;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
 import java.util.List;
 import java.util.function.Function;
@@ -17,7 +18,6 @@ import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.BLACK;
@@ -33,15 +33,13 @@ public class AlphaBetaPruningAlgorithmTest {
 //	private static final int M = 4;
 
 	private AlphaBetaPruningAlgorithm algorithm;
-	private int whiteTime;
-	private int blackTime;
 
 	@Before
 	public void before() {
-		whiteTime = 100_000_000;
-		blackTime = 100_000_000;
 		MoveUtils.DEBUG = false;
-		algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration());
+		AceConfiguration configuration = new AceConfiguration();
+		configuration.setQuiesceMaxDepth(3);
+		algorithm = new AlphaBetaPruningAlgorithm(configuration);
 		algorithm.setEventBus(new EventBus());
 	}
 
@@ -181,6 +179,15 @@ public class AlphaBetaPruningAlgorithmTest {
 
 	@Test
 	public void testTakePieceWhite() {
+		/*  .......♚
+			........
+			........
+			........
+			........
+			........
+			.♝......
+			♔.......
+		*/
 		ACEBoard engineBoard = ACEBoard.emptyBoard(WHITE, false);
 		engineBoard.addPiece(WHITE, KING, FieldUtils.fieldIdx("a1"));
 		engineBoard.addPiece(BLACK, BISHOP, FieldUtils.fieldIdx("b2"));
@@ -342,6 +349,15 @@ public class AlphaBetaPruningAlgorithmTest {
 		assertEquals(MoveUtils.toMove("g7g8n"), move);
 	}
 
+	@Test
+	public void shouldNotGiveAwayRook() {
+		final List<String> moves = ImmutableList.of("e2e4", "d7d5", "e4d5", "g8f6", "d2d4", "f6d5", "g1f3", "b8c6", "c2c4", "d5f6", "b1c3", "c8g4", "d4d5", "g4f3", "d1f3", "c6e5", "f3d1", "e7e6", "c1f4", "f8d6", "f4e5", "d6e5", "d5e6", "d8d1", "a1d1", "f7e6", "f1e2", "e8g8", "e1g1", "e5c3", "b2c3", "f6e4", "e2g4", "e6e5", "d1d7", "a8c8", "d7e7", "c8b8", "e7e5", "e4c3", "e5e7", "c7c5", "e7c7", "c3e4", "f2f3", "e4c3", "f1e1", "g8h8", "e1e7", "b8d8", "e7g7", "d8d1", "g1f2", "c3e4", "f2e2", "e4c3", "e2f2", "c3e4", "f2e3", "d1e1", "e3d3", "f8d8", "c7d7", "d8d7", "g7d7", "e4f6", "d7b7");
+		final ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
+		engineBoard.apply(moves);
+		algorithm.setDepth(5);
+		final Move move = algorithm.startThinking(engineBoard).toBlocking().first();
+		assertThat(move.toString()).isNotEqualTo("e1b1");
+	}
 
 
 //	@Test
@@ -491,23 +507,6 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void shouldNotMoveBecauseTheKingCanBeEaten() {
 		checkMove("d2d4 d7d5 b1c3 b8c6 c1f4 g8f6 c3b5 g7g6 b5c7 e8d7 c7a8 d8a5 c2c3 f6e8 g1f3 e8d6 e2e3 f8g7 f1d3 b7b6 f3e5 c6e5 d4e5 d6f5 b2b4 a5a3 d3b5 d7e6 a8c7 a3c3",
 				m -> m == null, 4, new AceEvaluator(), 6);
-	}
-
-	@Ignore
-	@Test
-	public void testShouldPlayWinningMove() { // e6 fxe6 Ne5 Bxc3 bxc3 [...] Nxd7
-//		.♜.♛♚..♜
-//		..♟♞♞♟♟♟
-//		........
-//		♟...♙...
-//		♕♝......
-//		..♘.♗♘..
-//		♙♙...♙♙♙
-//		..♔♖...♖
-
-		// Expect to play e5e6
-		checkMove("d2d4 b8c6 b1c3 g8f6 g1f3 d7d5 e2e3 c8f5 c1d2 e7e6 f1d3 f5d3 c2d3 f8d6 d1b3 a8b8 e3e4 d5e4 d3e4 e6e5 d4e5 c6e5 b3a4 e5c6 d2e3 a7a5 e4e5 b7b5 c3b5 d6b4 e1c1 f6d7 b5c3 c6e7",
-				movesPiece("e5"), 6, new SimplePieceEvaluator(), DEFAULT_QUIESCE_MAX_DEPTH);
 	}
 
 	private void checkMove(String sMoves, Function<Move, Boolean> expect, int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
