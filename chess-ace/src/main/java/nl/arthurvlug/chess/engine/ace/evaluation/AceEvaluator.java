@@ -25,12 +25,15 @@ public class AceEvaluator extends BoardEvaluator {
 		int score = 0;
 
 		long occupiedBoard = engineBoard.occupied_board;
+//		System.out.println();
 		while(occupiedBoard != 0L) {
 			final byte fieldIdx = (byte) Long.numberOfTrailingZeros(occupiedBoard);
 
 			final short coloredPiece = engineBoard.coloredPiece(fieldIdx);
-			score += pieceScore(fieldIdx, coloredPiece);
+			int pieceScore = pieceScore(fieldIdx, coloredPiece, engineBoard);
+			score += pieceScore;
 			occupiedBoard ^= 1L << fieldIdx;
+//			System.out.println(FieldUtils.fieldToString(fieldIdx) + " -> " + pieceScore);
 		}
 		if(engineBoard.getFiftyMoveClock() >= 8) {
 			if(engineBoard.getFiftyMoveClock() >= 50) {
@@ -49,11 +52,11 @@ public class AceEvaluator extends BoardEvaluator {
 		final ACEBoard newAceBoard = InitialACEBoard.createInitialACEBoard();
 		final List<Integer> moves = stackToList(engineBoard.plyStack);
 		final HashMap<String, Integer> dumps = new HashMap<>();
-		final String dump = ACEBoardUtils.dump(newAceBoard);
+		final String dump = ACEBoardUtils.threeFoldRepetitionDump(newAceBoard);
 		dumps.put(dump, 1);
 		for(int move : moves) {
 			newAceBoard.apply(move);
-			final String newDump = ACEBoardUtils.dump(newAceBoard);
+			final String newDump = ACEBoardUtils.threeFoldRepetitionDump(newAceBoard);
 			if(!dumps.containsKey(newDump)) {
 				dumps.put(newDump, 0);
 			}
@@ -84,13 +87,13 @@ public class AceEvaluator extends BoardEvaluator {
 	}
 
 
-	private int pieceScore(final int fieldIdx, final short coloredPiece) {
+	private int pieceScore(final int fieldIdx, final short coloredPiece, final ACEBoard engineBoard) {
 		int totalScore = 0;
 
 		final int pieceValue = ACEConstants.pieceValues[coloredPiece];
 		totalScore += pieceValue;
 
-		final int extraScore = extraScore(fieldIdx, coloredPiece);
+		final int extraScore = extraScore(fieldIdx, coloredPiece, engineBoard);
 		totalScore += extraScore;
 
 //		int mobilityScore = mobilityScore(moves);
@@ -107,36 +110,32 @@ public class AceEvaluator extends BoardEvaluator {
 	}
 
 
-	private int extraScore(final int fieldIdx, final short coloredPiece) {
+	private int extraScore(final int fieldIdx, final short coloredPiece, final ACEBoard engineBoard) {
 		switch (coloredPiece) {
 			case WHITE_PAWN_BYTE:   return pawnBonus(fieldIdx, Color.WHITE);
 			case WHITE_KNIGHT_BYTE: return knightBonus(fieldIdx, Color.WHITE);
 			case WHITE_BISHOP_BYTE: return bishopBonus(fieldIdx, Color.WHITE);
 			case WHITE_ROOK_BYTE:   return rookBonus(fieldIdx, Color.WHITE);
 			case WHITE_QUEEN_BYTE:  return queenBonus(fieldIdx, Color.WHITE);
-			case WHITE_KING_BYTE:   return kingBonus(fieldIdx, Color.WHITE);
+			case WHITE_KING_BYTE:   return kingBonus(fieldIdx, Color.WHITE, engineBoard);
 
 			case BLACK_PAWN_BYTE:   return pawnBonus(fieldIdx, Color.BLACK);
 			case BLACK_KNIGHT_BYTE: return knightBonus(fieldIdx, Color.BLACK);
 			case BLACK_BISHOP_BYTE: return bishopBonus(fieldIdx, Color.BLACK);
 			case BLACK_ROOK_BYTE:   return rookBonus(fieldIdx, Color.BLACK);
 			case BLACK_QUEEN_BYTE:  return queenBonus(fieldIdx, Color.BLACK);
-			case BLACK_KING_BYTE:   return kingBonus(fieldIdx, Color.BLACK);
+			case BLACK_KING_BYTE:   return kingBonus(fieldIdx, Color.BLACK, engineBoard);
 		}
 		throw new RuntimeException("Not yet implemented");
 	}
 
 	private int queenBonus(final int fieldIdx, final Color color) {
-		return 0;
+		return positionScore(fieldIdx, ACEConstants.queensTable, color);
 	}
 
 
 	private int rookBonus(final int fieldIdx, final Color color) {
-		final int score = 0;
-//		if (square.Piece.Moved && castled == false) {
-//			score -= 10;
-//		}
-		return score;
+		return positionScore(fieldIdx, ACEConstants.rooksTable, color);
 	}
 
 
@@ -167,12 +166,20 @@ public class AceEvaluator extends BoardEvaluator {
 		return positionScore(fieldIdx, ACEConstants.knightTable, color);
 	}
 
-	private int kingBonus(final int fieldIdx, final Color color) {
-		return positionScore(fieldIdx, ACEConstants.kingTable, color);
+	private int kingBonus(final int fieldIdx, final Color color, final ACEBoard engineBoard) {
+		return positionScore(fieldIdx, ACEConstants.kingTable, color) +
+				(lostCastlingRights(engineBoard, color) ? 0 : 15);
+	}
+
+	private boolean lostCastlingRights(final ACEBoard engineBoard, final Color color) {
+		return color == Color.WHITE
+				? engineBoard.white_king_or_rook_queen_side_moved || engineBoard.white_king_or_rook_king_side_moved
+				: engineBoard.black_king_or_rook_queen_side_moved || engineBoard.black_king_or_rook_king_side_moved;
 	}
 
 
 	private int positionScore(final int fieldIdx, final int[] positionBonusMap, final Color color) {
+		// TODO: Make more efficient by precalculating the bonus map per color
 		return color == Color.WHITE
 				? positionBonusMap[mirrorredFieldIndex(fieldIdx)]
 				: positionBonusMap[fieldIdx];

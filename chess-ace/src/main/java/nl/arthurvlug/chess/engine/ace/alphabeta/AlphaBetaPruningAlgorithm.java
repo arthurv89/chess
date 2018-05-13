@@ -17,7 +17,6 @@ import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
 import nl.arthurvlug.chess.engine.ace.IncomingState;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
-import nl.arthurvlug.chess.engine.ace.ThinkingTime;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
@@ -123,10 +122,11 @@ public class AlphaBetaPruningAlgorithm {
 
 
 		pv = new PrincipalVariation();
+		int startDepth = 1;
 		while(true) {
 			try {
 				thinkingEngineBoard = currentEngineBoard.cloneBoard();
-				for (depthNow = 1; depthNow <= depth; depthNow++) {
+				for (depthNow = startDepth; depthNow <= depth; depthNow++) {
 					info(String.format("Start thinking for %d ms on depth %d. PV line: %s",
 							maxThinkingTime,
 							depthNow,
@@ -163,8 +163,10 @@ public class AlphaBetaPruningAlgorithm {
 
 					if(pv.getPvHead() == UnapplyableMoveUtils.createMove(newMove, currentEngineBoard)) {
 						System.arraycopy(pv.getRawLine(), 1, pv.getRawLine(), 0, pv.getRawLine().length-1);
+						startDepth = depthNow-1;
 					} else {
 						pv = new PrincipalVariation();
+						startDepth = 1;
 					}
 
 					info("Applying " + newMove);
@@ -193,7 +195,7 @@ public class AlphaBetaPruningAlgorithm {
 		}
 
 //		final List<Integer> generatedMoves = Lists.newArrayList(priorityMove.get());
-		int alpha = OTHER_PLAYER_WINS/2;
+		int alpha = OTHER_PLAYER_WINS*2;
 		int beta = CURRENT_PLAYER_WINS;
 		Integer bestMove = null;
 		boolean white_king_or_rook_queen_side_moved = thinkingEngineBoard.white_king_or_rook_queen_side_moved;
@@ -219,8 +221,20 @@ public class AlphaBetaPruningAlgorithm {
 //			info("Investigating " + UnapplyableMoveUtils.toString(move));
 			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
 			thinkingEngineBoard.apply(move);
+			try {
+				thinkingEngineBoard.generateMoves();
+			} catch (KingEatingException e) {
+				// The applied move is not valid. Ignore
+				thinkingEngineBoard.unapply(move,
+						white_king_or_rook_queen_side_moved,
+						white_king_or_rook_king_side_moved,
+						black_king_or_rook_queen_side_moved,
+						black_king_or_rook_king_side_moved,
+						fiftyMove);
+				continue;
+			}
 			// Do a recursive search
-			final int val = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight);
+			final int val = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1);
 //			debugMoveStack(val);
 			sysout("");
 			thinkingEngineBoard.unapply(move,
@@ -232,20 +246,22 @@ public class AlphaBetaPruningAlgorithm {
 
 			score = Math.max(val, score);
 			if (score > alpha) {
+				updatePv(pline, line, move);
+				System.out.println("[" + score + "] " + pline.toString());
 				if (score >= beta) {
 					cutoffs++;
+					info("[ABPruning Root] Best move score: " + score);
 					return move;
-				}
+ 				}
 				alpha = score;
 				bestMove = move;
-				updatePv(pline, line, move);
 			}
 		}
 		info("[ABPruning Root] Best move score: " + alpha);
 		return bestMove;
 	}
 
-	private int alphaBeta(int alpha, final int beta, final int depth, final PrincipalVariation pline, final Integer height) {
+	private int alphaBeta(int alpha, final int beta, final int depth, final PrincipalVariation pline, final Integer pvHeight, final Integer height) {
 		performBrakeActions();
 		if (thinkingEngineBoard.getFiftyMoveClock() >= 50 || thinkingEngineBoard.getRepeatedMove() >= 3) {
 			return 0;
@@ -269,14 +285,14 @@ public class AlphaBetaPruningAlgorithm {
 		final PrincipalVariation line = new PrincipalVariation();
 		if (depth == 0) {
 			// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
-			return quiesceSearch(alpha, beta, quiesceMaxDepth);
+			return quiesceSearch(alpha, beta, quiesceMaxDepth, height);
 		}
 
 		List<Integer> generatedMoves;
 		try {
 			generatedMoves = thinkingEngineBoard.generateMoves();
 		} catch (KingEatingException e) {
-			return CURRENT_PLAYER_WINS;
+			return CURRENT_PLAYER_WINS-height;
 		}
 
 		Integer bestMove = null;
@@ -286,8 +302,8 @@ public class AlphaBetaPruningAlgorithm {
 		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
 
 		int score = alpha;
-		if(height != null) {
-			final Integer pvMove = pline.getMoveAtHeight(height);
+		if(pvHeight != null) {
+			final Integer pvMove = pline.getMoveAtHeight(pvHeight);
 			if (pvMove != NO_MOVE) {
 				swapPvMove(generatedMoves, pvMove);
 			}
@@ -299,11 +315,11 @@ public class AlphaBetaPruningAlgorithm {
 			thinkingEngineBoard.apply(move);
 
 			Integer newHeight = null;
-			if(height != null && move == generatedMoves.get(0)) {
-				newHeight = height + 1;
+			if(pvHeight != null && move == generatedMoves.get(0)) {
+				newHeight = pvHeight + 1;
 			}
 
-			int val = -alphaBeta(-beta, -alpha, depth-1, line, newHeight);
+			int val = -alphaBeta(-beta, -alpha, depth-1, line, newHeight, height+1);
 //			debugMoveStack(val);
 			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
@@ -331,7 +347,7 @@ public class AlphaBetaPruningAlgorithm {
 		return score;
 	}
 
-	private int quiesceSearch(int alpha, final int beta, final int depth) {
+	private int quiesceSearch(int alpha, final int beta, final int depth, int height) {
 		performBrakeActions();
 		int score = calculateScore(thinkingEngineBoard);
 		eventBus.post(new ThinkEvent(iterator));
@@ -349,7 +365,7 @@ public class AlphaBetaPruningAlgorithm {
 		try {
 			takeMoves = thinkingEngineBoard.generateTakeMoves();
 		} catch (KingEatingException e) {
-			return CURRENT_PLAYER_WINS;
+			return CURRENT_PLAYER_WINS-height;
 		}
 
 		boolean white_king_or_rook_queen_side_moved = thinkingEngineBoard.white_king_or_rook_queen_side_moved;
@@ -360,7 +376,7 @@ public class AlphaBetaPruningAlgorithm {
 		for(Integer move : takeMoves) {
 			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
 			thinkingEngineBoard.apply(move);
-			int val = -quiesceSearch(-beta, -alpha, depth-1);
+			int val = -quiesceSearch(-beta, -alpha, depth-1, height+1);
 //			debugMoveStack(val);
 			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
@@ -435,10 +451,6 @@ public class AlphaBetaPruningAlgorithm {
 
 		if(currentEngineBoard.plyStack.size() <= 1) {
 			return 1000; // First second should take at most 1 second
-		}
-		int moveNumber = currentEngineBoard.plyStack.size() / 2;
-		if(moveNumber >= ThinkingTime.times.length) {
-			return timeLeft / 20;
 		}
 //		double grandmasterThinkingTime = ThinkingTime.times[moveNumber];
 //		int time = (int) (timeLeft * grandmasterThinkingTime);

@@ -63,7 +63,7 @@ public class SimplePieceEvaluatorTest {
 		board.finalizeBitboards();
 		
 		int score = evaluator.evaluate(board);
-		assertEquals(280, score);
+		assertEquals(213, score);
 	}
 	
 	@Test
@@ -75,7 +75,7 @@ public class SimplePieceEvaluatorTest {
 		board.finalizeBitboards();
 		
 		int score = evaluator.evaluate(board);
-		assertEquals(290, score);
+		assertEquals(243, score);
 	}
 	
 	@Test
@@ -87,7 +87,7 @@ public class SimplePieceEvaluatorTest {
 		board.finalizeBitboards();
 		
 		int score = evaluator.evaluate(board);
-		assertEquals(500, score);
+		assertEquals(352, score);
 	}
 	
 	@Test
@@ -99,6 +99,6 @@ public class SimplePieceEvaluatorTest {
 		board.finalizeBitboards();
 		
 		int score = evaluator.evaluate(board);
-		assertEquals(975, score);
+		assertEquals(786, score);
 	}
 }

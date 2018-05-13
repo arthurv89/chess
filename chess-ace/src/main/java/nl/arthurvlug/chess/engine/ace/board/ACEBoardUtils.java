@@ -2,6 +2,7 @@ package nl.arthurvlug.chess.engine.ace.board;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import nl.arthurvlug.chess.utils.StringToBoardConverter;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
@@ -22,12 +23,20 @@ public class ACEBoardUtils {
 		return (byte) (toMoveColor.isWhite() ? 0 : 1);
 	}
 
-	public static String dump(final ACEBoard engineBoard) {
+	public static String stringDump(final ACEBoard engineBoard) {
+		return dumper(engineBoard, field -> true);
+	}
+
+	public static String threeFoldRepetitionDump(final ACEBoard engineBoard) {
+		return dumper(engineBoard, field ->
+						!field.getName().equals("plyStack") &&
+						!field.getName().equals("fiftyMove"));
+	}
+
+	private static String dumper(final ACEBoard engineBoard, final Predicate<? super Field> fieldPredicate) {
 		final Class<ACEBoard> engineBoardClass = ACEBoard.class;
 		return Arrays.stream(engineBoardClass.getDeclaredFields())
-				.filter(field ->
-					   !field.getName().equals("plyStack") &&
-					   !field.getName().equals("fiftyMove"))
+				.filter(fieldPredicate)
 				.map(f -> fieldString(engineBoard, engineBoardClass, f))
 				.collect(Collectors.joining("\n"));
 	}

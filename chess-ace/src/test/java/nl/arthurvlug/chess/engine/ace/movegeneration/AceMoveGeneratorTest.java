@@ -3,9 +3,11 @@ package nl.arthurvlug.chess.engine.ace.movegeneration;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import nl.arthurvlug.chess.engine.ColorUtils;
+import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils;
+import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import org.junit.Before;
@@ -17,6 +19,7 @@ import static nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator.cas
 import static nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator.generateMoves;
 import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -156,6 +159,20 @@ public class AceMoveGeneratorTest {
 		assertEquals(BLACK_KING_BYTE, engineBoard.coloredPiece("c8"));
 		assertEquals(BLACK_ROOK_BYTE, engineBoard.coloredPiece("d8"));
 		assertEquals(NO_PIECE, engineBoard.coloredPiece("a8"));
+	}
+
+	@Test
+	public void testCastling_when_passing_attacked_field_then_dont_allow_castling() throws KingEatingException {
+		final List<String> moves = ImmutableList.copyOf("e2e4 d7d5 e4d5 g8f6 d2d4 f6d5 g1f3 b8c6 f1b5 e7e6 e1g1 f8d6 c2c4 d5f6 d4d5 e6d5 c4d5 d6h2 f3h2 f6d5 f1e1 c8e6 d1c2 d5b4 c2c5".split(" "));
+		final ACEBoard engineBoard = createEngineBoard(moves);
+		final List<Integer> x = AceMoveGenerator.castlingMoves(engineBoard);
+		assertThat(UnapplyableMoveUtils.listToString(x)).hasSize(0);
+	}
+
+	private ACEBoard createEngineBoard(final List<String> moves) {
+		final ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
+		engineBoard.apply(moves);
+		return engineBoard;
 	}
 
 	@Test

@@ -195,7 +195,7 @@ public class ACEBoardTest {
 		boolean black_king_or_rook_king_side_moved = newBoard.black_king_or_rook_king_side_moved;
 		newBoard.apply(move);
 		newBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved, 0);
-		assertEquals(ACEBoardUtils.dump(oldBoard), ACEBoardUtils.dump(newBoard));
+		assertEquals(ACEBoardUtils.stringDump(oldBoard), ACEBoardUtils.stringDump(newBoard));
 	}
 
 	@Test
@@ -225,7 +225,7 @@ public class ACEBoardTest {
 		board.apply(move);
 		board.unapply(move, true, true, true, true, 0);
 
-		assertThat(ACEBoardUtils.dump(board)).isEqualTo(ACEBoardUtils.dump(oldBoard));
+		assertThat(ACEBoardUtils.stringDump(board)).isEqualTo(ACEBoardUtils.stringDump(oldBoard));
 	}
 
 	@Test
@@ -259,7 +259,7 @@ public class ACEBoardTest {
 				".....♛..\n");
 
 		board.unapply(move, true, true, true, true, 0);
-		assertThat(ACEBoardUtils.dump(clonedBoard)).isEqualTo(ACEBoardUtils.dump(board));
+		assertThat(ACEBoardUtils.stringDump(clonedBoard)).isEqualTo(ACEBoardUtils.stringDump(board));
 	}
 
 }

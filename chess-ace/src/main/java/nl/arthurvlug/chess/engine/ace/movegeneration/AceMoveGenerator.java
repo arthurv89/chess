@@ -197,8 +197,8 @@ public class AceMoveGenerator {
 	static List<Integer> castlingMoves(final ACEBoard engineBoard) throws KingEatingException {
 		final List<Integer> moves = new ArrayList<>();
 		if(ColorUtils.isWhite(engineBoard.toMove)) {
-			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.white_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
-			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.white_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
+			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.white_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE], ACEBoard.e1Bitboard);
+			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.white_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE], ACEBoard.e1Bitboard);
 			if(canCastleQueenSide) {
 				Integer move = UnapplyableMoveUtils.createMove((byte) 4, (byte) 2, NO_PIECE, engineBoard);
 				moves.add(move);
@@ -208,8 +208,8 @@ public class AceMoveGenerator {
 				moves.add(move);
 			}
 		} else {
-			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.black_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE]);
-			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.black_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE]);
+			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.black_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE], ACEBoard.e8Bitboard);
+			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.black_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE], ACEBoard.e8Bitboard);
 			if(canCastleQueenSide) {
 				Integer move = UnapplyableMoveUtils.createMove((byte) 60, (byte) 58, NO_PIECE, engineBoard);
 				moves.add(move);
@@ -226,18 +226,23 @@ public class AceMoveGenerator {
 	 * Warning: Doesn't check whether the pieces are on the right place. If we do games that don't start with the starting
 	 * position, we need to set the castle moved booleans in the ACEBoard class
 	 */
-	private static boolean canCastle(final ACEBoard engineBoard, final boolean piecesMoved, final long xRay) {
-		return !piecesMoved
-				&& (xRay & engineBoard.occupied_board) == 0L
-				& !inCheck(engineBoard);
+	private static boolean canCastle(final ACEBoard engineBoard, final boolean piecesMoved, final long castlingXray, final long kingFieldBitboard) {
+		boolean canCastle = !piecesMoved
+				&& (castlingXray & engineBoard.occupied_board) == 0L
+				&& !kingPassingFieldsAreAttacked(engineBoard, castlingXray | kingFieldBitboard);
+		return canCastle;
 	}
 
-	private static boolean inCheck(final ACEBoard engineBoard) {
+	// TODO: Make more efficient, with an attack bitboard for example
+	private static boolean kingPassingFieldsAreAttacked(final ACEBoard engineBoard, final long castlingBitboard3Fields) {
+		final ACEBoard boardForOtherPlayer = engineBoard.cloneBoard(ColorUtils.opponent(engineBoard.toMove), false);
 		try {
-			// TODO: Find a solution so we don't have to clone the board
-			final ACEBoard boardForOtherPlayer = engineBoard.cloneBoard(ColorUtils.opponent(engineBoard.toMove), false);
-			boardForOtherPlayer.generateTakeMoves();
-			return false;
+			return boardForOtherPlayer.generateMoves()
+					.stream()
+					.anyMatch(m -> {
+						final long attackBitboard = 1L << UnapplyableMove.targetIdx(m);
+						return (castlingBitboard3Fields & attackBitboard) != 0L;
+					});
 		} catch (KingEatingException e) {
 			return true;
 		}

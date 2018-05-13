@@ -71,7 +71,7 @@ public class ACEBoard {
 	// King positions
 	private static final long g8Bitboard = bitboardFromFieldName("g8");
 	private static final long c8Bitboard = bitboardFromFieldName("c8");
-	private static final long e8Bitboard = bitboardFromFieldName("e8");
+	public static final long e8Bitboard = bitboardFromFieldName("e8");
 
 	// White castling positions
 	private static final long a1Bitboard = bitboardFromFieldName("a1");
@@ -81,7 +81,7 @@ public class ACEBoard {
 	// King positions
 	private static final long g1Bitboard = bitboardFromFieldName("g1");
 	private static final long c1Bitboard = bitboardFromFieldName("c1");
-	private static final long e1Bitboard = bitboardFromFieldName("e1");
+	public static final long e1Bitboard = bitboardFromFieldName("e1");
 
 	public final static long first_row = bitboardFromFieldName("a1 b1 c1 d1 e1 f1 g1 h1");
 	public final static long last_row = bitboardFromFieldName("a8 b8 c8 d8 e8 f8 g8 h8");
