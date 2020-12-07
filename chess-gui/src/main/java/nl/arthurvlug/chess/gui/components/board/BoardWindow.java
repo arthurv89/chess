@@ -5,13 +5,9 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import java.awt.Font;
 import java.awt.FontFormatException;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javax.swing.JOptionPane;
 import nl.arthurvlug.chess.gui.components.Window;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
@@ -21,6 +17,8 @@ import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.game.Game;
 import nl.arthurvlug.chess.utils.ThinkEvent;
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
 
 @SuppressWarnings("serial")
 @EventHandler
@@ -86,12 +84,14 @@ public class BoardWindow extends Window {
 	}
 
 	private void playSound(final String url) {
-		final JFXPanel fxPanel = new JFXPanel();
 		new Thread(() -> {
-			Media hit = new Media(new File(url).toURI().toString());
-			MediaPlayer mediaPlayer = new MediaPlayer(hit);
-			mediaPlayer.setOnError(() -> System.out.println("ERROR"));
-			mediaPlayer.play();
+			try {
+				FileInputStream in = new FileInputStream(new File(url).toURI().toString());
+				AudioStream as = new AudioStream(in);
+				AudioPlayer.player.start(as);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}).start();
 	}
 

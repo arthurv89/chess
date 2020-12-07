@@ -10,6 +10,7 @@ import nl.arthurvlug.chess.utils.board.pieces.Color;
 
 public class ACEBoardUtils {
 	public static ACEBoard initializedBoard(final Color toMoveColor, String board) {
+		assert 64 == board.replace("\n", "").length();
 		final ACEBoard startPositionBoard = ACEBoard.emptyBoard(toMove(toMoveColor), false);
 		StringToBoardConverter.conv(board, ((coordinates, coloredPiece) -> {
 			startPositionBoard.addPiece(toMove(coloredPiece.getColor()), coloredPiece.getPieceType(), FieldUtils.fieldIdx(coordinates));

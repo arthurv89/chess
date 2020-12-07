@@ -432,16 +432,16 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void checkCanStalemateButShouldNot() {
 		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
-				"....♚..\n" +
+				"....♚...\n" +
 				"....♙...\n" +
 				"........\n" +
 				".....♔..\n" +
 				"........\n" +
 				"........\n" +
-				"........\n" +
+				"....♙...\n" +
 				"........\n");
 
-		algorithm.setDepth(2);
+		algorithm.setDepth(4);
 		final Move move = getAceResponse(engineBoard);
 		assertThat(move.toString()).isNotEqualTo("f5e6");
 	}
