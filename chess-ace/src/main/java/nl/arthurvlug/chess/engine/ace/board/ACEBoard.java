@@ -3,12 +3,15 @@ package nl.arthurvlug.chess.engine.ace.board;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.BiMap;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
+import java.util.function.Function;
+
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
@@ -17,9 +20,8 @@ import nl.arthurvlug.chess.engine.ace.movegeneration.AceTakeMoveGenerator;
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
-import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils;
-import nl.arthurvlug.chess.utils.board.pieces.PieceType;
-import nl.arthurvlug.chess.utils.board.pieces.PieceTypeBytes;
+import nl.arthurvlug.chess.utils.board.pieces.*;
+import org.apache.commons.lang3.StringUtils;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.*;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
@@ -750,4 +752,62 @@ public class ACEBoard {
 	public short[] getPieces() {
 		return pieces;
 	}
+
+	public String toString() {
+		return new ACEBoardToStringConverter().toString();
+	}
+
+	class ACEBoardToStringConverter {
+		Function<PieceSymbol, Character> GET_WHITE = (PieceSymbol x) -> x.getWhite();
+		Function<PieceSymbol, Character> GET_BLACK = (PieceSymbol x) -> x.getBlack();
+
+		public String toString() {
+			return merge(
+				str(black_kings, PieceType.KING, GET_BLACK),
+				str(white_kings, PieceType.KING, GET_WHITE),
+				str(black_queens, PieceType.QUEEN, GET_BLACK),
+				str(white_queens, PieceType.QUEEN, GET_WHITE),
+				str(black_rooks, PieceType.ROOK, GET_BLACK),
+				str(white_rooks, PieceType.ROOK, GET_WHITE),
+				str(black_bishops, PieceType.BISHOP, GET_BLACK),
+				str(white_bishops, PieceType.BISHOP, GET_WHITE),
+				str(black_knights, PieceType.KNIGHT, GET_BLACK),
+				str(white_knights, PieceType.KNIGHT, GET_WHITE),
+				str(black_pawns, PieceType.PAWN, GET_BLACK),
+				str(white_pawns, PieceType.PAWN, GET_WHITE)
+			);
+		}
+
+		private String merge(String... strings) {
+			for (int i = 0; i < strings.length; i++) {
+				strings[i] = StringUtils.leftPad(strings[i], 64, "0");
+			}
+			final StringBuilder board = new StringBuilder();
+			for (int row = 0; row < 8; row++) {
+				for (int col = 7; col >= 0; col--) {
+					int fieldNo = row * 8 + col;
+					char c = '.';
+					for(String s : strings) {
+						char sc = s.charAt(fieldNo);
+						if(sc != '0') {
+							c = sc;
+						}
+					}
+					board.append(c);
+				}
+				board.append('\n');
+			}
+			return board.toString();
+		}
+
+		private String str(long bitboard,
+						   PieceType pieceType,
+						   Function<PieceSymbol, Character> chooseColor) {
+			BiMap<PieceType, PieceSymbol> pieceToChessSymbolConverter = new PieceToChessSymbolConverter().getMap();
+			return Long.toBinaryString(bitboard).replace('1', chooseColor.apply(pieceToChessSymbolConverter.get(pieceType)));
+		}
+	}
+
 }
+
+

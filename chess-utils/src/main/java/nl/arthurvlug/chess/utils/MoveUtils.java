@@ -44,5 +44,4 @@ public class MoveUtils {
 				: Optional.empty();
 		return new Move(from, to, promotionPiece);
 	}
-
 }

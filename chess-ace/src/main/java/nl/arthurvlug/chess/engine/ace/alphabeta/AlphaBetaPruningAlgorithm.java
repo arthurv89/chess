@@ -4,10 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,8 +35,12 @@ import rx.Observer;
 import rx.Subscriber;
 import rx.observers.Observers;
 
+import javax.annotation.Nullable;
+
+import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
 import static nl.arthurvlug.chess.engine.ace.alphabeta.PrincipalVariation.NO_MOVE;
+import static nl.arthurvlug.chess.engine.ace.alphabeta.PrincipalVariation.copyElements;
 import static nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable.*;
 
 @Slf4j
@@ -58,7 +60,7 @@ public class AlphaBetaPruningAlgorithm {
 
 	private BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
-	private int depth = Integer.MAX_VALUE;
+	private int depth;
 	//	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
 	private static final int HASH_TABLE_LENGTH = 1048576; // Must be a power or 2
 
@@ -127,10 +129,11 @@ public class AlphaBetaPruningAlgorithm {
 			try {
 				thinkingEngineBoard = currentEngineBoard.cloneBoard();
 				for (depthNow = startDepth; depthNow <= depth; depthNow++) {
+					System.out.println("");
 					info(String.format("Start thinking for %d ms on depth %d. PV line: %s",
 							maxThinkingTime,
 							depthNow,
-							Arrays.stream(pv.getLine()).boxed().filter(x -> x != NO_MOVE).map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList())));
+							pv.toString()));
 					final Integer bestMove = alphaBetaRoot(depthNow, pv);
 					if (bestMove == null) {
 						err("No best move");
@@ -162,7 +165,7 @@ public class AlphaBetaPruningAlgorithm {
 					err("New move was: " + newMove);
 
 					if(pv.getPvHead() == UnapplyableMoveUtils.createMove(newMove, currentEngineBoard)) {
-						System.arraycopy(pv.getRawLine(), 1, pv.getRawLine(), 0, pv.getRawLine().length-1);
+						copyElements(pv, 1, pv, 0);
 						startDepth = depthNow-1;
 					} else {
 						pv = new PrincipalVariation();
@@ -180,13 +183,15 @@ public class AlphaBetaPruningAlgorithm {
 			} catch (OutOfThinkingTimeException e) {
 				// Out of time: just play the move
 				final int move = pv.getPvHead();
-				System.arraycopy(pv.getRawLine(), 1, pv.getRawLine(), 0, pv.getRawLine().length-1);
+				copyElements(pv, 1, pv, 0);
 				applyAndEmitMove(move);
 			}
 		}
 	}
 
+	@Nullable
 	private Integer alphaBetaRoot(final int depth, final PrincipalVariation pline) {
+		// TODO: Performance: Can this be an array?
 		List<Integer> generatedMoves;
 		try {
 			generatedMoves = thinkingEngineBoard.generateMoves();
@@ -196,24 +201,28 @@ public class AlphaBetaPruningAlgorithm {
 
 //		final List<Integer> generatedMoves = Lists.newArrayList(priorityMove.get());
 		int alpha = OTHER_PLAYER_WINS*2;
-		int beta = CURRENT_PLAYER_WINS;
+		int beta = CURRENT_PLAYER_WINS*2;
 		Integer bestMove = null;
 		boolean white_king_or_rook_queen_side_moved = thinkingEngineBoard.white_king_or_rook_queen_side_moved;
 		boolean white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved;
 		boolean black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
 
-		final PrincipalVariation line = new PrincipalVariation();
+		final PrincipalVariation new_pline = new PrincipalVariation();
 
 		int score = Integer.MIN_VALUE;
 
-		final Integer pvMove = pline.getMoveAtHeight(0);
+		final int pvMove = pline.getMoveAtHeight(0);
 		if (pvMove != NO_MOVE) {
+			// This is an O(n) operation. Can we improve?
 			swapPvMove(generatedMoves, pvMove);
 		}
 
 		for(int move : generatedMoves) {
+			print_move(0, move);
+
 			Integer newHeight = null;
+			// TODO better with an indexed for-loop.
 			if(move == generatedMoves.get(0)) {
 				newHeight = 1;
 			}
@@ -234,7 +243,7 @@ public class AlphaBetaPruningAlgorithm {
 				continue;
 			}
 			// Do a recursive search
-			final int val = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1);
+			final int val = -alphaBeta(-beta, -alpha, depth - 1, new_pline, newHeight, 1, thinkingEngineBoard, quiesceMaxDepth);
 //			debugMoveStack(val);
 			sysout("");
 			thinkingEngineBoard.unapply(move,
@@ -246,8 +255,9 @@ public class AlphaBetaPruningAlgorithm {
 
 			score = Math.max(val, score);
 			if (score > alpha) {
-				updatePv(pline, line, move);
-				System.out.println("[" + score + "] " + pline.toString());
+				updatePv(pline, new_pline, move);
+
+				info(String.format("[%d] %s", score, new_pline.toString()));
 				if (score >= beta) {
 					cutoffs++;
 					info("[ABPruning Root] Best move score: " + score);
@@ -261,7 +271,7 @@ public class AlphaBetaPruningAlgorithm {
 		return bestMove;
 	}
 
-	private int alphaBeta(int alpha, final int beta, final int depth, final PrincipalVariation pline, final Integer pvHeight, final Integer height) {
+	int alphaBeta(int alpha, final int beta, final int depth, final PrincipalVariation pline, final Integer pvHeight, final Integer height, ACEBoard thinkingEngineBoard, int quiesceMaxDepth) {
 		performBrakeActions();
 		if (thinkingEngineBoard.getFiftyMoveClock() >= 50 || thinkingEngineBoard.getRepeatedMove() >= 3) {
 			return 0;
@@ -282,7 +292,7 @@ public class AlphaBetaPruningAlgorithm {
 			}
 		}
 
-		final PrincipalVariation line = new PrincipalVariation();
+		final PrincipalVariation new_pline = new PrincipalVariation();
 		if (depth == 0) {
 			// IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
 			return quiesceSearch(alpha, beta, quiesceMaxDepth, height);
@@ -309,7 +319,9 @@ public class AlphaBetaPruningAlgorithm {
 			}
 		}
 
+		boolean hasValidMove = false;
 		for(final int move : generatedMoves) {
+			print_move(height, move);
 			// Do a recursive search
 			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
 			thinkingEngineBoard.apply(move);
@@ -319,7 +331,8 @@ public class AlphaBetaPruningAlgorithm {
 				newHeight = pvHeight + 1;
 			}
 
-			int val = -alphaBeta(-beta, -alpha, depth-1, line, newHeight, height+1);
+			int val = -alphaBeta(-beta, -alpha, depth-1, new_pline, newHeight, height+1, thinkingEngineBoard, quiesceMaxDepth);
+
 //			debugMoveStack(val);
 			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
@@ -328,23 +341,78 @@ public class AlphaBetaPruningAlgorithm {
 					black_king_or_rook_king_side_moved,
 					fiftyMove);
 
+			if(!king_taken(val)) {
+				hasValidMove = true;
+			}
+
 			score = Math.max(score, val);
 			if (score > alpha) {
 				if (score >= beta) {
 					cutoffs++;
 					transpositionTable.set(depth, score, hashfBETA, move, zobristHash);
-					logDebug("BETA CUT OFF. " + score + " >= " + beta);
+					info("BETA CUT OFF. " + score + " >= " + beta);
 					return score;
 				}
-				updatePv(pline, line, move);
+				updatePv(pline, new_pline, move);
 				bestMove = move;
 				alpha = score;
 				hashf = TranspositionTable.hashfEXACT;
 			}
 		}
 
+		if(!hasValidMove) {
+			// Is opponent in check?
+			if(in_check(thinkingEngineBoard)) {
+				if (thinkingEngineBoard.toMove == ColorUtils.BLACK) {
+					return CURRENT_PLAYER_WINS;
+				}
+				return -CURRENT_PLAYER_WINS;
+			} else {
+				return 0;
+			}
+		}
+
 		transpositionTable.set(depth, alpha, hashf, bestMove, zobristHash);
 		return score;
+	}
+
+	/**
+	 * Returns true when the opponent has (take) moves that take our king (if it was their turn).
+	 * False otherwise.
+	 */
+	private boolean in_check(ACEBoard thinkingEngineBoard) {
+		int move = UnapplyableMove.create(0, 0, NO_PIECE, NO_PIECE, NO_PIECE);
+		thinkingEngineBoard.apply(move);
+		try {
+			List<Integer> generatedMoves = thinkingEngineBoard.generateMoves();
+			return false;
+		} catch (KingEatingException e) {
+			return true;
+		}
+	}
+
+	private boolean king_taken(int val) {
+		return val < -CURRENT_PLAYER_WINS / 2;
+	}
+
+	private void print_move(int height, int move) {
+		thinkingEngineBoard.apply(move);
+		int score = calculateScore(thinkingEngineBoard);
+
+		boolean white_king_or_rook_queen_side_moved = thinkingEngineBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
+		thinkingEngineBoard.unapply(move,
+				white_king_or_rook_queen_side_moved,
+				white_king_or_rook_king_side_moved,
+				black_king_or_rook_queen_side_moved,
+				black_king_or_rook_king_side_moved,
+				1);
+
+		String padding = new String(new char[height]).replace("\0", " ");
+		String moveString = UnapplyableMoveUtils.toString(move);
+		info(String.format("%s%s [[%d]]", padding, moveString, score));
 	}
 
 	private int quiesceSearch(int alpha, final int beta, final int depth, int height) {
@@ -401,20 +469,18 @@ public class AlphaBetaPruningAlgorithm {
 		return score;
 	}
 
-	private void updatePv(final PrincipalVariation pv, final PrincipalVariation line, final Integer move) {
-		if(isWorsePv(pv, line, move)) {
+	private void updatePv(final PrincipalVariation src_pline, final PrincipalVariation dest_pline, final Integer move) {
+		if(isWorsePv(src_pline, dest_pline, move)) {
 			return;
 		}
-		pv.getRawLine()[0] = move;
-		System.arraycopy(line.getRawLine(), 0, pv.getRawLine(), 1, line.getRawLine().length-1);
-		pv.setLineElements(line.getLineElements() + 1);
+		dest_pline.replace(move, src_pline);
 	}
 
-	private boolean isWorsePv(final PrincipalVariation pv, final PrincipalVariation line, final Integer move) {
-		return pv.getRawLine()[0] == move
+	private boolean isWorsePv(final PrincipalVariation pline, final PrincipalVariation new_pline, final Integer move) {
+		return Objects.equals(pline.getPvHead(), move)
 				&& Arrays.equals(
-					Arrays.copyOfRange(pv.getLine(), 1, 1+line.getLineElements()),
-					Arrays.copyOfRange(line.getLine(), 0, line.getLineElements()));
+				Arrays.copyOfRange(pline.getRawLineCopy(), 1, 1 + new_pline.getLineElementCount()),
+				Arrays.copyOfRange(new_pline.getRawLineCopy(), 0, new_pline.getLineElementCount()));
 	}
 
 	private void applyAndEmitMove(final Integer unapplyableMove) {
@@ -509,7 +575,7 @@ public class AlphaBetaPruningAlgorithm {
 	private void debugMoveStack(final int score) {
 		if(MoveUtils.DEBUG) {
 			final List<String> moveList = moveListStrings();
-			System.out.printf("%s = %d%n", moveList, score);
+			info(String.format("%s = %d%n", moveList, score));
 		}
 	}
 
@@ -563,6 +629,10 @@ public class AlphaBetaPruningAlgorithm {
 
 	public void disableQuiesce() {
 		this.quiesceEnabled = false;
+	}
+
+	public void enableQuiesce() {
+		this.quiesceEnabled = true;
 	}
 
 	public void useSimplePieceEvaluator() {

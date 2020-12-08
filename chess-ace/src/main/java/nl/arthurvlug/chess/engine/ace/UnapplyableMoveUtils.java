@@ -49,7 +49,7 @@ public class UnapplyableMoveUtils {
 		byte movingPiece = UnapplyableMove.coloredMovingPiece(move);
 		byte takePiece = UnapplyableMove.takePiece(move);
 		byte promotionPiece = UnapplyableMove.promotionPiece(move);
-		return String.format("%s%s%s%s (took: %s)",
+		return String.format("%s%s%s%s (%s)",
 				PieceUtils.type(movingPiece),
 				FieldUtils.fieldToString(fromIdx),
 				FieldUtils.fieldToString(toIdx),

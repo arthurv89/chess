@@ -6,7 +6,7 @@
             <level>WARN</level>
         </filter>
         <encoder>
-            <pattern>%d{hh:mm:ss:sss} %level [%thread] %c{2} %msg%n</pattern>
+            <pattern>%d{hh:mm:ss:sss} %level %c{2} %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -33,7 +33,7 @@
             <onMatch>DENY</onMatch>
         </filter>
         <encoder>
-            <pattern>%d{hh:mm:ss:sss} %level [%thread] %c{2} %msg%n</pattern>
+            <pattern>%d{hh:mm:ss:sss} %level %c{2} %msg%n</pattern>
         </encoder>
     </appender>
 
