@@ -237,7 +237,7 @@ public class AceMoveGenerator {
 	private static boolean kingPassingFieldsAreAttacked(final ACEBoard engineBoard, final long castlingBitboard3Fields) {
 		final ACEBoard boardForOtherPlayer = engineBoard.cloneBoard(ColorUtils.opponent(engineBoard.toMove), false);
 		try {
-			return boardForOtherPlayer.generateMoves()
+			return AceMoveGenerator.generateMoves(boardForOtherPlayer)
 					.stream()
 					.anyMatch(m -> {
 						final long attackBitboard = 1L << UnapplyableMove.targetIdx(m);

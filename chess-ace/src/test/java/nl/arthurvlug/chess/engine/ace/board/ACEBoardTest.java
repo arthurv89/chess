@@ -7,10 +7,13 @@ import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
+import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
+import nl.arthurvlug.chess.engine.ace.movegeneration.AceTakeMoveGenerator;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils.createMove;
@@ -20,6 +23,7 @@ import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class ACEBoardTest {
 	private static final ACEBoard startPositionBoard = ACEBoardUtils.initializedBoard(WHITE, "" +
@@ -211,7 +215,9 @@ public class ACEBoardTest {
 				"♙♘♗♖♕♔..\n");
 		final ACEBoard oldBoard = board.cloneBoard();
 
-		final List<Integer> takeMoves = board.generateTakeMoves();
+		AceMoveGenerator aceMoveGenerator = mock(AceMoveGenerator.class);
+
+		final List<Integer> takeMoves = AceTakeMoveGenerator.generateTakeMoves(board, aceMoveGenerator);
 		assertThat(takeMoves).containsExactlyInAnyOrder(
 				createMove("f7e8q", board),
 				createMove("f7e8r", board),

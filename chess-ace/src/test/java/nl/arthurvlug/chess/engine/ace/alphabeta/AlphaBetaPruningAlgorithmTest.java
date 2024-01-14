@@ -13,6 +13,7 @@ import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
+import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
@@ -40,6 +41,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		AceConfiguration configuration = new AceConfiguration();
 		configuration.setQuiesceMaxDepth(3);
 		algorithm = new AlphaBetaPruningAlgorithm(configuration);
+		algorithm.setMoveGenerator(new AceMoveGenerator());
 		algorithm.setEventBus(new EventBus());
 		algorithm.disableQuiesce();
 	}
@@ -147,7 +149,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	}
 
 	@Test
-	public void testMateIn2() {
+	public void testMateIn2QueenRook() {
 		ACEBoard engineBoard = ACEBoard.emptyBoard(WHITE, false);
 		engineBoard.addPiece(BLACK, KING, FieldUtils.fieldIdx("a8"));
 		engineBoard.addPiece(BLACK, ROOK, FieldUtils.fieldIdx("b8"));
@@ -175,6 +177,23 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.setDepth(5);
 		final Move move = getAceResponse(engineBoard);
 		assertEquals("a5a6", move.toString());
+	}
+
+	@Test
+	public void testMateIn2Pawns() {
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
+				"♚♗......\n" +
+				"..♔.....\n" +
+				"........\n" +
+				".♙......\n" +
+				"........\n" +
+				".♟♟.....\n" +
+				"........\n" +
+				"♗.......");
+
+		algorithm.setDepth(5);
+		final Move move = getAceResponse(engineBoard);
+		assertEquals("b5b6", move.toString());
 	}
 
 	@Test

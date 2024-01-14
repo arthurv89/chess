@@ -16,8 +16,8 @@ import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUti
 public class AceTakeMoveGenerator {
 	// TODO: Replace with inverted Xrays.
 	// For each occupied field by the current player,it should calculate which fields can attack them
-	public static List<Integer> generateTakeMoves(final ACEBoard engineBoard) throws KingEatingException {
-		return AceMoveGenerator.generateMoves(engineBoard)
+	public static List<Integer> generateTakeMoves(final ACEBoard engineBoard, AceMoveGenerator aceMoveGenerator) throws KingEatingException {
+		return aceMoveGenerator.generateMoves(engineBoard)
 				.stream()
 				.filter(move -> {
 					byte idx = UnapplyableMove.targetIdx(move);

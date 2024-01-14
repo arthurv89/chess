@@ -717,12 +717,8 @@ public class ACEBoard {
 		return clonedBoard;
 	}
 
-	public List<Integer> generateMoves() throws KingEatingException {
-		return AceMoveGenerator.generateMoves(this);
-	}
-
-	public List<Integer> generateTakeMoves() throws KingEatingException {
-		return AceTakeMoveGenerator.generateTakeMoves(this);
+	public List<Integer> generateTakeMoves(AceMoveGenerator aceMoveGenerator) throws KingEatingException {
+		return AceTakeMoveGenerator.generateTakeMoves(this, aceMoveGenerator);
 	}
 
 	public int getRepeatedMove() {
