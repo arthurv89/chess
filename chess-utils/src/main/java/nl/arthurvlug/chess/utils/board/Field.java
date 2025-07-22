@@ -10,5 +10,5 @@ import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 @Getter
 @Value
 public class Field {
-	private Optional<ColoredPiece> piece;
+	private final Optional<ColoredPiece> piece;
 }

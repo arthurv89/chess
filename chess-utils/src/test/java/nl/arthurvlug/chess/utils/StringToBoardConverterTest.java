@@ -3,9 +3,9 @@ package nl.arthurvlug.chess.utils;
 import nl.arthurvlug.chess.utils.board.Board;
 import nl.arthurvlug.chess.utils.board.InitialBoard;
 import nl.arthurvlug.chess.utils.board.InitializedBoard;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StringToBoardConverterTest {
 	@Test
