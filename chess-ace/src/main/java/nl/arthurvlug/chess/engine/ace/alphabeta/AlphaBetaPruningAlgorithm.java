@@ -58,14 +58,14 @@ public class AlphaBetaPruningAlgorithm {
 
 	private BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
-	private int depth = Integer.MAX_VALUE;
+	int depth = Integer.MAX_VALUE;
 	//	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
 	private static final int HASH_TABLE_LENGTH = 1048576; // Must be a power or 2
 
 	private static final TranspositionTable transpositionTable = new TranspositionTable(HASH_TABLE_LENGTH);
 	private boolean quiesceEnabled = true;
 
-	private ACEBoard thinkingEngineBoard;
+	ACEBoard thinkingEngineBoard;
 
 	private volatile Optional<IncomingState> newIncomingState = Optional.empty();
 	private volatile Optional<ACEBoard> newIncomingEngineBoard = Optional.empty();
@@ -77,7 +77,8 @@ public class AlphaBetaPruningAlgorithm {
 	private int iterator = 0;
 	private Subscriber<? super Move> subscriber;
 	private int depthNow;
-	private PrincipalVariation pv;
+	PrincipalVariation pv;
+	boolean cutoffEnabled = true;
 
 	public AlphaBetaPruningAlgorithm(final AceConfiguration configuration) {
 		this(configuration, InitialACEBoard.createInitialACEBoard());
@@ -106,6 +107,7 @@ public class AlphaBetaPruningAlgorithm {
 			new Thread(() -> {
 				try {
 					think();
+					sub.onCompleted();
 				} catch (Exception e) {
 					sub.onError(e);
 				}
@@ -130,7 +132,7 @@ public class AlphaBetaPruningAlgorithm {
 						maxThinkingTime,
 						depthNow,
 						Arrays.stream(pv.getLine()).boxed().filter(x -> x != NO_MOVE).map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList())));
-				final Integer bestMove = alphaBetaRoot(depthNow, pv);
+				final Integer bestMove = alphaBetaRoot(depthNow);
 				if (bestMove == null) {
 					err("No best move");
 					emitNewMove(null);
@@ -186,7 +188,7 @@ public class AlphaBetaPruningAlgorithm {
 		}
 	}
 
-	private Integer alphaBetaRoot(final int depth, final PrincipalVariation pline) {
+	public Integer alphaBetaRoot(final int depth) {
 		if (depth == 0) {
 			return calculateScore(thinkingEngineBoard);
 		}
@@ -211,7 +213,7 @@ public class AlphaBetaPruningAlgorithm {
 
 		int score = Integer.MIN_VALUE;
 
-		final Integer pvMove = pline.getMoveAtHeight(0);
+		final Integer pvMove = pv.getMoveAtHeight(0);
 		if (pvMove != NO_MOVE) {
 			swapPvMove(generatedMoves, pvMove);
 		}
@@ -250,9 +252,9 @@ public class AlphaBetaPruningAlgorithm {
 
 			score = Math.max(val, score);
 			if (score > alpha) {
-				updatePv(pline, line, move);
-                System.out.printf("[%d] %s%n", score, pline);
-				if (score >= beta) {
+				updatePv(pv, line, move);
+                System.out.printf("[%d] %s%n", score, pv);
+				if (cutoffEnabled && score >= beta) {
 					cutoffs++;
 					info(String.format("[ABPruning Root] Best move score: %d", score));
 					return move;
@@ -334,7 +336,7 @@ public class AlphaBetaPruningAlgorithm {
 
 			score = Math.max(score, val);
 			if (score > alpha) {
-				if (score >= beta) {
+				if (cutoffEnabled && score >= beta) {
 					cutoffs++;
 					transpositionTable.set(depth, score, hashfBETA, move, zobristHash);
 					logDebug("BETA CUT OFF. " + score + " >= " + beta);
@@ -392,7 +394,7 @@ public class AlphaBetaPruningAlgorithm {
 
 			score = Math.max(score, val);
 			if (score > alpha) {
-				if (val >= beta) {
+				if (cutoffEnabled && val >= beta) {
 					// Beta cut-off
 					cutoffs++;
 					logDebug("Beta cut-off");
@@ -422,11 +424,7 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	private void applyAndEmitMove(final Integer unapplyableMove) {
-		final Optional<PieceType> promotionType = promotionType(unapplyableMove);
-		final Move bestMove = new Move(
-				FieldUtils.coordinates(UnapplyableMove.fromIdx(unapplyableMove)),
-				FieldUtils.coordinates(UnapplyableMove.targetIdx(unapplyableMove)),
-				promotionType);
+		final Move bestMove = toMove(unapplyableMove);
 
 		info("Applying after emitting: " + UnapplyableMoveUtils.toString(unapplyableMove));
 		currentEngineBoard.apply(unapplyableMove);
@@ -435,6 +433,15 @@ public class AlphaBetaPruningAlgorithm {
 		// Emit the move that we found
 		info("Emitting move " + bestMove);
 		emitNewMove(bestMove);
+	}
+
+	public static Move toMove(Integer unapplyableMove) {
+		final Optional<PieceType> promotionType = promotionType(unapplyableMove);
+		final Move bestMove = new Move(
+				FieldUtils.coordinates(UnapplyableMove.fromIdx(unapplyableMove)),
+				FieldUtils.coordinates(UnapplyableMove.targetIdx(unapplyableMove)),
+				promotionType);
+		return bestMove;
 	}
 
 	private void err(final String s) {
@@ -468,7 +475,7 @@ public class AlphaBetaPruningAlgorithm {
 	private void performBrakeActions() {
 		iterator++;
 
-		if((iterator & 4095) != 0) {
+		if((iterator & 0b111111111111) != 0) {
 			return;
 		}
 
@@ -536,7 +543,7 @@ public class AlphaBetaPruningAlgorithm {
 		return score;
 	}
 
-	private Optional<PieceType> promotionType(final int unapplyableMove) {
+	private static Optional<PieceType> promotionType(final int unapplyableMove) {
 		byte promotionPiece = UnapplyableMove.promotionPiece(unapplyableMove);
 		if(promotionPiece == NO_PIECE) {
 			return Optional.empty();

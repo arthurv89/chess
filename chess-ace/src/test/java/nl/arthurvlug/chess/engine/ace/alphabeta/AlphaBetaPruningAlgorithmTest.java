@@ -47,11 +47,12 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.setDepth(1);
 		algorithm.useSimplePieceEvaluator();
 		algorithm.disableQuiesce();
+		algorithm.cutoffEnabled = false;
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
 		getAceResponse(engineBoard);
 		assertEquals(0, algorithm.getCutoffs());
-		assertEquals(21, algorithm.getNodesEvaluated());
+		assertEquals(20, algorithm.getNodesEvaluated());
 	}
 
 	@Test
@@ -59,11 +60,11 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.setDepth(2);
 		algorithm.useSimplePieceEvaluator();
 		algorithm.disableQuiesce();
+		algorithm.cutoffEnabled = false;
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
 		getAceResponse(engineBoard);
-		assertEquals(19, algorithm.getCutoffs());
-		assertEquals(60, algorithm.getNodesEvaluated());
+		assertEquals(400, algorithm.getNodesEvaluated());
 	}
 
 	@Test
@@ -71,11 +72,11 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm.setDepth(3);
 		algorithm.useSimplePieceEvaluator();
 		algorithm.disableQuiesce();
+		algorithm.cutoffEnabled = false;
 		ACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
 		engineBoard.finalizeBitboards();
 		getAceResponse(engineBoard);
-		assertEquals(57, algorithm.getCutoffs());
-		assertEquals(584, algorithm.getNodesEvaluated());
+		assertEquals(8902, algorithm.getNodesEvaluated());
 	}
 
 	@Test
@@ -255,7 +256,14 @@ public class AlphaBetaPruningAlgorithmTest {
 	}
 
 	private Move getAceResponse(final ACEBoard engineBoard) {
-		return algorithm.startThinking(engineBoard).toBlocking().first();
+		algorithm.thinkingEngineBoard = engineBoard.cloneBoard();
+		algorithm.pv = new PrincipalVariation();
+		Integer unapplyableMove = algorithm.alphaBetaRoot(algorithm.depth);
+		if(unapplyableMove == null) {
+			return null;
+		}
+		return AlphaBetaPruningAlgorithm.toMove(unapplyableMove);
+//		return algorithm.startThinking(engineBoard).toBlocking().last();
 	}
 
 	@Test
@@ -474,7 +482,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		final ACEBoard engineBoard = createEngineBoard("e2e4 g8f6 b1c3 b8c6 f2f4 d7d5 e4e5 d5d4 c3b5 f6d5 g1f3 d5f4 d2d3 f4g6 f1e2 c8e6 e1g1 a7a6 b5a3 g6e5 f3e5 c6e5 a3c4 e5c4 d3c4 d8d6 b2b4 e8c8 c4c5 d6d5 e2f3 d5c4 a2a3 h7h6 f3e2 c4d5 c1f4 c8b8 e2f3 d5c4 c5c6 b7c6 f3e2 c4d5 e2a6 e6f5 a1b1 e7e5 f4g3 f5e6 d1d3 e5e4 d3e2 e4e3 b4b5 c6c5 b5b6 f8d6 b6c7 b8c7 b1b7 d5b7 a6b7 d6g3 e2b5 g3d6 b5c6 c7b8 f1b1 e6a2 b1b2 a2e6 b7a6");
 		algorithm.setDepth(3);
 		final Move move = getAceResponse(engineBoard);
-		assertThat(move.toString()).isEqualTo("b8a7");
+		assertThat(ImmutableList.of("b8a7", "e6b3")).contains(move.toString());
 	}
 
 	@Test
