@@ -122,71 +122,75 @@ public class AlphaBetaPruningAlgorithm {
 
 
 		pv = new PrincipalVariation();
-		int startDepth = 1;
-		while(true) {
-			try {
-				thinkingEngineBoard = currentEngineBoard.cloneBoard();
-				for (depthNow = startDepth; depthNow <= depth; depthNow++) {
-					info(String.format("Start thinking for %d ms on depth %d. PV line: %s",
-							maxThinkingTime,
-							depthNow,
-							Arrays.stream(pv.getLine()).boxed().filter(x -> x != NO_MOVE).map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList())));
-					final Integer bestMove = alphaBetaRoot(depthNow, pv);
-					if (bestMove == null) {
-						err("No best move");
-						emitNewMove(null);
-						return;
-					}
-					if(depthNow == depth) {
-						applyAndEmitMove(bestMove);
-						return;
-					}
-					if (depthNow > 1000) {
-						err("depth is extremely high");
-						return;
-					}
+		int startDepth = 0;
+		try {
+			thinkingEngineBoard = currentEngineBoard.cloneBoard();
+			for (depthNow = startDepth; depthNow <= depth; depthNow++) {
+				info(String.format("Start thinking for %d ms on depth %d. PV line: %s",
+						maxThinkingTime,
+						depthNow,
+						Arrays.stream(pv.getLine()).boxed().filter(x -> x != NO_MOVE).map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList())));
+				final Integer bestMove = alphaBetaRoot(depthNow, pv);
+				if (bestMove == null) {
+					err("No best move");
+					emitNewMove(null);
+					return;
 				}
-			} catch (NewEngineBoardException e) {
-				// TODO: Where is newIncomingEngineBoard set?
-				thinkingEngineBoard = newIncomingEngineBoard.get();
-				newIncomingEngineBoard = Optional.empty();
-				pv = new PrincipalVariation();
-			} catch (OpponentMoveCameInException e) {
-				err("Our turn!");
-				IncomingState incomingState = newIncomingState.get();
-				newIncomingState = Optional.empty();
-
-				final Move move = incomingState.getMove();
-				if (move != null) {
-					final String newMove = MoveUtils.toEngineMove(move);
-					err("New move was: " + newMove);
-
-					if(pv.getPvHead() == UnapplyableMoveUtils.createMove(newMove, currentEngineBoard)) {
-						System.arraycopy(pv.getRawLine(), 1, pv.getRawLine(), 0, pv.getRawLine().length-1);
-						startDepth = depthNow-1;
-					} else {
-						pv = new PrincipalVariation();
-						startDepth = 1;
-					}
-
-					info("Applying " + newMove);
-					currentEngineBoard.apply(newMove);
+				if(depthNow == depth) {
+					applyAndEmitMove(bestMove);
+					return;
 				}
-
-				maxThinkingTime = thinkingTime(incomingState.getThinkingParams());
-				info("Set max thinking time to " + maxThinkingTime);
-				timer = Stopwatch.createStarted();
-				iterator = 0;
-			} catch (OutOfThinkingTimeException e) {
-				// Out of time: just play the move
-				final int move = pv.getPvHead();
-				System.arraycopy(pv.getRawLine(), 1, pv.getRawLine(), 0, pv.getRawLine().length-1);
-				applyAndEmitMove(move);
+				if (depthNow > 1000) {
+					err("depth is extremely high");
+					return;
+				}
+				info(String.format("Done thinking %d moves.", depthNow));
 			}
+			info(String.format("Done thinking ALL %d moves.", depth));
+		} catch (NewEngineBoardException e) {
+			// TODO: Where is newIncomingEngineBoard set?
+			thinkingEngineBoard = newIncomingEngineBoard.get();
+			newIncomingEngineBoard = Optional.empty();
+			pv = new PrincipalVariation();
+		} catch (OpponentMoveCameInException e) {
+			err("Our turn!");
+			IncomingState incomingState = newIncomingState.get();
+			newIncomingState = Optional.empty();
+
+			final Move move = incomingState.getMove();
+			if (move != null) {
+				final String newMove = MoveUtils.toEngineMove(move);
+				err("New move was: " + newMove);
+
+				if(pv.getPvHead() == UnapplyableMoveUtils.createMove(newMove, currentEngineBoard)) {
+					System.arraycopy(pv.getRawLine(), 1, pv.getRawLine(), 0, pv.getRawLine().length-1);
+					startDepth = depthNow-1;
+				} else {
+					pv = new PrincipalVariation();
+					startDepth = 1;
+				}
+
+				info("Applying " + newMove);
+				currentEngineBoard.apply(newMove);
+			}
+
+			maxThinkingTime = thinkingTime(incomingState.getThinkingParams());
+			info("Set max thinking time to " + maxThinkingTime);
+			timer = Stopwatch.createStarted();
+			iterator = 0;
+		} catch (OutOfThinkingTimeException e) {
+			// Out of time: just play the move
+			final int move = pv.getPvHead();
+			System.arraycopy(pv.getRawLine(), 1, pv.getRawLine(), 0, pv.getRawLine().length-1);
+			applyAndEmitMove(move);
 		}
 	}
 
 	private Integer alphaBetaRoot(final int depth, final PrincipalVariation pline) {
+		if (depth == 0) {
+			return calculateScore(thinkingEngineBoard);
+		}
+
 		List<Integer> generatedMoves;
 		try {
 			generatedMoves = thinkingEngineBoard.generateMoves();
@@ -247,10 +251,10 @@ public class AlphaBetaPruningAlgorithm {
 			score = Math.max(val, score);
 			if (score > alpha) {
 				updatePv(pline, line, move);
-				System.out.println("[" + score + "] " + pline.toString());
+                System.out.printf("[%d] %s%n", score, pline);
 				if (score >= beta) {
 					cutoffs++;
-					info("[ABPruning Root] Best move score: " + score);
+					info(String.format("[ABPruning Root] Best move score: %d", score));
 					return move;
  				}
 				alpha = score;

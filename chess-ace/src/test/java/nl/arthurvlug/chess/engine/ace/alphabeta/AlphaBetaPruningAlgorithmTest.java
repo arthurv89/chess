@@ -30,10 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AlphaBetaPruningAlgorithmTest {
-	// Moves in initial position
-	private static final int M = 20;
-//	private static final int M = 4;
-
 	private AlphaBetaPruningAlgorithm algorithm;
 
 	@BeforeEach
@@ -55,7 +51,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.finalizeBitboards();
 		getAceResponse(engineBoard);
 		assertEquals(0, algorithm.getCutoffs());
-		assertEquals(M, algorithm.getNodesEvaluated());
+		assertEquals(21, algorithm.getNodesEvaluated());
 	}
 
 	@Test
@@ -67,7 +63,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.finalizeBitboards();
 		getAceResponse(engineBoard);
 		assertEquals(19, algorithm.getCutoffs());
-		assertEquals(59, algorithm.getNodesEvaluated());
+		assertEquals(60, algorithm.getNodesEvaluated());
 	}
 
 	@Test
@@ -79,7 +75,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		engineBoard.finalizeBitboards();
 		getAceResponse(engineBoard);
 		assertEquals(57, algorithm.getCutoffs());
-		assertEquals(583, algorithm.getNodesEvaluated());
+		assertEquals(584, algorithm.getNodesEvaluated());
 	}
 
 	@Test
@@ -443,7 +439,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"....♙...\n" +
 				"........\n");
 
-		algorithm.setDepth(4);
+		algorithm.setDepth(6);
 		final Move move = getAceResponse(engineBoard);
 		assertThat(move.toString()).isNotEqualTo("f5e6");
 	}
