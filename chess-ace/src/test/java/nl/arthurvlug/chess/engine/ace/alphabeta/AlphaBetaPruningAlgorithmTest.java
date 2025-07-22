@@ -417,7 +417,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void checkStalemate() {
 		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.BLACK, "" +
-				"....♚..\n" +
+				"....♚...\n" +
 				"....♙...\n" +
 				"....♔...\n" +
 				"........\n" +
