@@ -4,15 +4,15 @@ import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.utils.MoveUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AceEvaluatorTest {
 	private AceEvaluator aceEvaluator;
 
-	@Before
+	@BeforeEach
 	public void before() {
 		MoveUtils.DEBUG = false;
 		this.aceEvaluator = new AceEvaluator();

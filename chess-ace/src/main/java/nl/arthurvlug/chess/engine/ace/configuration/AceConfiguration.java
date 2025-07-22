@@ -1,9 +1,9 @@
 package nl.arthurvlug.chess.engine.ace.configuration;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Builder;
 import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
 

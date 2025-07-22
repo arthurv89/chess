@@ -17,15 +17,17 @@ import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.game.Move;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.BLACK;
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AlphaBetaPruningAlgorithmTest {
 	// Moves in initial position
@@ -34,7 +36,7 @@ public class AlphaBetaPruningAlgorithmTest {
 
 	private AlphaBetaPruningAlgorithm algorithm;
 
-	@Before
+	@BeforeEach
 	public void before() {
 		MoveUtils.DEBUG = false;
 		AceConfiguration configuration = new AceConfiguration();

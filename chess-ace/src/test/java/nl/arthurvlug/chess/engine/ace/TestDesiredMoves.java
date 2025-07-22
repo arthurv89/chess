@@ -1,10 +1,10 @@
 package nl.arthurvlug.chess.engine.ace;
 
 import nl.arthurvlug.chess.utils.MoveUtils;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 public class TestDesiredMoves {
-	@Before
+	@BeforeEach
 	public void before() {
 		MoveUtils.DEBUG = false;
 	}

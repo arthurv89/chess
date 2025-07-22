@@ -9,8 +9,8 @@ import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.game.Move;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils.createMove;
@@ -19,7 +19,7 @@ import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUti
 import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.WHITE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ACEBoardTest {
 	private static final ACEBoard startPositionBoard = ACEBoardUtils.initializedBoard(WHITE, "" +
@@ -32,7 +32,7 @@ public class ACEBoardTest {
 			"........\n" +
 			"♙♘♗♖♕♔..\n");
 
-	@Before
+	@BeforeEach
 	public void before() {
 		MoveUtils.DEBUG = false;
 	}

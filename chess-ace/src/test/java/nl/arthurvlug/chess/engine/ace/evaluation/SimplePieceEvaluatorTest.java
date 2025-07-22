@@ -2,18 +2,18 @@ package nl.arthurvlug.chess.engine.ace.evaluation;
 
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.utils.MoveUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.BLACK;
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SimplePieceEvaluatorTest {
 	private SimplePieceEvaluator evaluator;
-	@Before
+	@BeforeEach
 	public void before() {
 		MoveUtils.DEBUG = false;
 		evaluator = new SimplePieceEvaluator();

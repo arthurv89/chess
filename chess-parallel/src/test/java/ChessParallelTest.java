@@ -1,10 +1,10 @@
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
 import nl.arthurvlug.chess.ChessParallel;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ChessParallelTest {
 	private static final double DELTA = 0.001;

@@ -10,9 +10,9 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator.castlingMoves;
@@ -20,11 +20,11 @@ import static nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator.gen
 import static nl.arthurvlug.chess.utils.board.FieldUtils.fieldIdx;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AceMoveGeneratorTest {
-	@Before
+	@BeforeEach
 	public void before() {
 		MoveUtils.DEBUG = false;
 	}
@@ -342,7 +342,7 @@ public class AceMoveGeneratorTest {
 	}
 
 	@Test
-	@Ignore
+	@Disabled
 	public void testShouldNotCastle() {
 		final ACEBoard board = ACEBoardUtils.initializedBoard(BLACK, "" +
 				"♜..♛♚..♜\n" +

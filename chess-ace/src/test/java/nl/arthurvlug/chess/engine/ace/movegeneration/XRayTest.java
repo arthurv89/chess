@@ -3,13 +3,13 @@ package nl.arthurvlug.chess.engine.ace.movegeneration;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.Coordinates;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class XRayTest {
-	@Before
+	@BeforeEach
 	public void before() {
 		MoveUtils.DEBUG = false;
 	}
