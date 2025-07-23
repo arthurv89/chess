@@ -70,6 +70,6 @@ public class ChessParallel implements Serializable {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		System.out.println(new ChessParallel(2).mem());
+		logDebug(new ChessParallel(2).mem());
 	}
 }

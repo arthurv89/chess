@@ -15,6 +15,7 @@ import nl.arthurvlug.chess.utils.game.Move;
 import rx.Observable;
 
 import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.*;
+import static nl.arthurvlug.chess.utils.LogUtils.logDebug;
 
 @Slf4j
 public class ACE extends CustomEngine {
@@ -54,7 +55,7 @@ public class ACE extends CustomEngine {
 		final Move move = moveStringList.size() > 0
 				? MoveUtils.toMove(moveStringList.get(moveStringList.size()-1))
 				: null;
-		System.out.println("Go. New move: " + move);
+		logDebug("Go. New move: " + move);
 		searchAlgorithm.getIncomingMoves().onNext(new IncomingState(move, thinkingParams));
 	}
 

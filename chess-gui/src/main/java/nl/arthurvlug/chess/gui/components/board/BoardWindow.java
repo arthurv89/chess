@@ -75,7 +75,7 @@ public class BoardWindow extends Window {
 
 	@Subscribe
 	public void on(MoveAppliedEvent event) {
-//		System.out.println(game.getBoard().toString() + "\n");
+//		logDebug(game.getBoard().toString() + "\n");
 
 		playSound(PIECE_MOVED_MP3);
 

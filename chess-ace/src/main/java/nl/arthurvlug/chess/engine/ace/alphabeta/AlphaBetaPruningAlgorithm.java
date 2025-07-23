@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,7 @@ import rx.observers.Observers;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
 import static nl.arthurvlug.chess.engine.ace.alphabeta.PrincipalVariation.NO_MOVE;
 import static nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable.*;
+import static nl.arthurvlug.chess.utils.LogUtils.logDebug;
 
 @Slf4j
 public class AlphaBetaPruningAlgorithm {
@@ -56,7 +58,7 @@ public class AlphaBetaPruningAlgorithm {
 	@Getter
 	private int hashHits;
 
-	private BoardEvaluator evaluator;
+	BoardEvaluator evaluator;
 	private final int quiesceMaxDepth;
 	int depth = Integer.MAX_VALUE;
 	//	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
@@ -218,7 +220,10 @@ public class AlphaBetaPruningAlgorithm {
 			swapPvMove(generatedMoves, pvMove);
 		}
 
+		logDebug("");
+		logDebug("Moves: [] %s%n".formatted(movesToString(generatedMoves)));
 		for(int move : generatedMoves) {
+			System.out.printf("Start Move: %s, score=%d. PV: [%d] %s%n", UnapplyableMoveUtils.toShortString(move), score, alpha, pv);
 			Integer newHeight = null;
 			if(move == generatedMoves.get(0)) {
 				newHeight = 1;
@@ -240,9 +245,9 @@ public class AlphaBetaPruningAlgorithm {
 				continue;
 			}
 			// Do a recursive search
-			final int val = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1);
+			final int val = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1, ImmutableList.of(move));
 //			debugMoveStack(val);
-			sysout("");
+			logDebug("");
 			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
@@ -253,21 +258,28 @@ public class AlphaBetaPruningAlgorithm {
 			score = Math.max(val, score);
 			if (score > alpha) {
 				updatePv(pv, line, move);
-                System.out.printf("[%d] %s%n", score, pv);
 				if (cutoffEnabled && score >= beta) {
 					cutoffs++;
-					info(String.format("[ABPruning Root] Best move score: %d", score));
+					logDebug(String.format("[ABPruning Root] Best move score: %d", score));
 					return move;
  				}
 				alpha = score;
 				bestMove = move;
 			}
+			logDebug("End Move: %s, score=%d. PV: [%d] %s%n".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv));
 		}
 		info("[ABPruning Root] Best move score: " + alpha);
 		return bestMove;
 	}
 
-	private int alphaBeta(int alpha, final int beta, final int depth, final PrincipalVariation pline, final Integer pvHeight, final Integer height) {
+	private int alphaBeta(int alpha,
+						  final int beta,
+						  final int depth,
+						  final PrincipalVariation pline,
+						  final Integer pvHeight,
+						  final Integer height,
+						  List<Integer> movesPlayed) {
+//		logDebug("AlphaBeta. Depth=%s".formatted(depth));
 		performBrakeActions();
 		if (thinkingEngineBoard.getFiftyMoveClock() >= 50 || thinkingEngineBoard.getRepeatedMove() >= 3) {
 			return 0;
@@ -315,17 +327,32 @@ public class AlphaBetaPruningAlgorithm {
 			}
 		}
 
+		logDebug("");
+		System.out.printf("Moves: %s - %s%n", movesToString(movesPlayed), movesToString(generatedMoves));
 		for(final int move : generatedMoves) {
+			System.out.printf("Start Move: %s, score=%d. PV: [%d] %s%n", UnapplyableMoveUtils.toShortString(move), score, alpha, pv);
 			// Do a recursive search
 			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
 			thinkingEngineBoard.apply(move);
+
+			if(MoveUtils.DEBUG) {
+				if (thinkingEngineBoard.white_kings == 0 || thinkingEngineBoard.black_kings == 0) {
+					logDebug("NO KING! " + thinkingEngineBoard.white_kings + " - " + thinkingEngineBoard.black_kings);
+				}
+			}
 
 			Integer newHeight = null;
 			if(pvHeight != null && move == generatedMoves.get(0)) {
 				newHeight = pvHeight + 1;
 			}
 
-			int val = -alphaBeta(-beta, -alpha, depth-1, line, newHeight, height+1);
+			ImmutableList<Integer>  newMovesPlayed;
+			if(MoveUtils.DEBUG) {
+				newMovesPlayed = ImmutableList.<Integer>builder().addAll(movesPlayed).add(move).build();
+			} else {
+				newMovesPlayed = ImmutableList.of();
+			}
+			int val = -alphaBeta(-beta, -alpha, depth-1, line, newHeight, height+1, newMovesPlayed);
 //			debugMoveStack(val);
 			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
@@ -347,10 +374,15 @@ public class AlphaBetaPruningAlgorithm {
 				alpha = score;
 				hashf = TranspositionTable.hashfEXACT;
 			}
+			logDebug("End Move: %s, score=%d. PV: [%d] %s%n".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv));
 		}
 
 		transpositionTable.set(depth, alpha, hashf, bestMove, zobristHash);
 		return score;
+	}
+
+	private static List<String> movesToString(List<Integer> moves) {
+		return moves.stream().map(UnapplyableMoveUtils::toShortString).toList();
 	}
 
 	private int quiesceSearch(int alpha, final int beta, final int depth, int height) {
@@ -403,6 +435,7 @@ public class AlphaBetaPruningAlgorithm {
 
 				alpha = score;
 			}
+			System.out.printf("End Move: %s, score=%d. PV: [%d] %s%n", UnapplyableMoveUtils.toShortString(move), score, alpha, pv);
 		}
 		return score;
 	}
@@ -503,18 +536,6 @@ public class AlphaBetaPruningAlgorithm {
 
 	private void info(final String s) {
 		log.info(this.name + " -> " + s);
-	}
-
-	private void logDebug(final String message) {
-		if(MoveUtils.DEBUG) {
-			log.info(message);
-		}
-	}
-
-	private void sysout(final String message) {
-		if(MoveUtils.DEBUG) {
-			log.info(message);
-		}
 	}
 
 	private void debugMoveStack(final int score) {

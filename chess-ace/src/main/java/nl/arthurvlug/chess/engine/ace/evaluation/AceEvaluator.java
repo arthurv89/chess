@@ -25,7 +25,7 @@ public class AceEvaluator extends BoardEvaluator {
 		int score = 0;
 
 		long occupiedBoard = engineBoard.occupied_board;
-//		System.out.println();
+//		logDebug("");
 		while(occupiedBoard != 0L) {
 			final byte fieldIdx = (byte) Long.numberOfTrailingZeros(occupiedBoard);
 
@@ -33,7 +33,7 @@ public class AceEvaluator extends BoardEvaluator {
 			int pieceScore = pieceScore(fieldIdx, coloredPiece, engineBoard);
 			score += pieceScore;
 			occupiedBoard ^= 1L << fieldIdx;
-//			System.out.println(FieldUtils.fieldToString(fieldIdx) + " -> " + pieceScore);
+//			logDebug(FieldUtils.fieldToString(fieldIdx) + " -> " + pieceScore);
 		}
 		if(engineBoard.getFiftyMoveClock() >= 8) {
 			if(engineBoard.getFiftyMoveClock() >= 50) {

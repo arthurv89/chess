@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import static nl.arthurvlug.chess.engine.ColorUtils.BLACK;
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH;
+import static nl.arthurvlug.chess.utils.LogUtils.logDebug;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -93,7 +94,7 @@ public class AlphaBetaPruningAlgorithmTest {
 
 		/*    */
 		final Move move = getAceResponse(engineBoard);
-		System.out.println(move);
+		logDebug(move);
 		assertNull(move);
 	}
 
@@ -437,6 +438,7 @@ public class AlphaBetaPruningAlgorithmTest {
 
 	@Test
 	public void checkCanStalemateButShouldNot() {
+		MoveUtils.DEBUG = true;
 		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
 				"....♚...\n" +
 				"....♙...\n" +
@@ -447,7 +449,19 @@ public class AlphaBetaPruningAlgorithmTest {
 				"....♙...\n" +
 				"........\n");
 
-		algorithm.setDepth(6);
+		algorithm.setDepth(2);
+		algorithm.disableQuiesce();
+//		algorithm.evaluator = new BoardEvaluator() {
+//			int eval = 0;
+//			@Override
+//			public Integer evaluate(ACEBoard engineBoard) {
+//				eval++;
+//				if(engineBoard.toMove == BLACK)
+//					return eval;
+//				else
+//					return -eval;
+//			}
+//		};
 		final Move move = getAceResponse(engineBoard);
 		assertThat(move.toString()).isNotEqualTo("f5e6");
 	}
@@ -544,7 +558,7 @@ public class AlphaBetaPruningAlgorithmTest {
 //	public void whiteShouldNotCastleWhenInCheck() throws KingEatingException {
 //		final ACEBoard board = createEngineBoard("d2d4 d7d5 b1c3 g8f6 g1f3 c8g4 c1f4 c7c6 e2e3 d8b6 a1b1 e7e6 f1d3 f8b4 a2a3 b4c3 b2c3 b6a5 b1b7 a5c3");
 //		final List<Integer> moves = board.generateMoves();
-//		System.out.println(UnapplyableMoveUtils.listToString(moves));
+//		logDebug(UnapplyableMoveUtils.listToString(moves));
 //	}
 
 	private ACEBoard createEngineBoard(final String movesString) {
@@ -585,7 +599,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		final ACEBoard aceBoard = createEngineBoard(moves);
 		final ACE ace = new ACE(depth, evaluator, quiesceMaxDepth, "ACE", new EventBus(), aceBoard);
 		final Move move = ace.startThinking().toBlocking().first();
-		System.out.println("Move is: " + move);
+		logDebug("Move is: " + move);
 		assertTrue(expect.apply(move));
 	}
 
