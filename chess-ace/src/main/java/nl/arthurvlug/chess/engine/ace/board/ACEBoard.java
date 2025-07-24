@@ -175,6 +175,7 @@ public class ACEBoard {
 	}
 
 	public void apply(int move) {
+//		hashCode() == 812553708 && move == 95954
 		incFiftyClock = true;
 		plyStack.push(move);
 		// TODO: Fix this by creating a more efficient Move object
@@ -551,12 +552,19 @@ public class ACEBoard {
 
 	private void finalizeBitboardsAfterApply(final int fromIdx, final int targetIdx,
 											 final byte movingPiece, final byte takenPiece) {
+		mutateGeneralBoardOccupation();
+		mutateZobristHash(fromIdx, targetIdx, movingPiece, takenPiece);
+	}
+
+	public void mutateGeneralBoardOccupation() {
+		// TODO: Test this hashing
 		occupied_board = occupiedSquares[WHITE] | occupiedSquares[BLACK];
 		unoccupied_board = ~occupied_board;
 		byte opponent = opponent(toMove);
 		enemy_and_empty_board = occupiedSquares[opponent] | unoccupied_board;
+	}
 
-		// TODO: Test this hashing
+	private void mutateZobristHash(int fromIdx, int targetIdx, byte movingPiece, byte takenPiece) {
 		zobristHash ^= bitsToSwap(fromIdx, movingPiece);
 		zobristHash ^= bitsToSwap(targetIdx, movingPiece);
 		if(takenPiece != NO_PIECE) {
@@ -721,6 +729,15 @@ public class ACEBoard {
 
 	public List<Integer> generateTakeMoves() throws KingEatingException {
 		return AceTakeMoveGenerator.generateTakeMoves(this);
+	}
+
+	public boolean canTakeKing() {
+		try {
+			AceTakeMoveGenerator.generateTakeMoves(this);
+			return false;
+		} catch (KingEatingException e) {
+			return true;
+		}
 	}
 
 	public int getRepeatedMove() {

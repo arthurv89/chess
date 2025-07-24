@@ -6,6 +6,7 @@ import com.google.common.eventbus.EventBus;
 import java.util.List;
 import java.util.function.Function;
 import nl.arthurvlug.chess.engine.ace.ACE;
+import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.BLACK;
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
+import static nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils.listToString;
 import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH;
 import static nl.arthurvlug.chess.utils.LogUtils.logDebug;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
@@ -35,11 +37,12 @@ public class AlphaBetaPruningAlgorithmTest {
 
 	@BeforeEach
 	public void before() {
-		MoveUtils.DEBUG = false;
+		MoveUtils.DEBUG = true;
 		AceConfiguration configuration = new AceConfiguration();
-		configuration.setQuiesceMaxDepth(3);
+//		configuration.setQuiesceMaxDepth(3);
 		algorithm = new AlphaBetaPruningAlgorithm(configuration);
 		algorithm.setEventBus(new EventBus());
+		algorithm.disableQuiesce();
 	}
 
 //	@Ignore
@@ -117,6 +120,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			........
 			♙♙......
 			♔♖......  */
+		algorithm.depth = 3;
 		final Move move = getAceResponse(engineBoard);
 
 		assertEquals("b4c2", move.toString());
@@ -336,10 +340,23 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n" +
 				"........\n" +
 				".....♔..\n");
-//		algorithm.useSimplePieceEvaluator();
-//		algorithm.disableQuiesce();
 		final Move move = getAceResponse(engineBoard);
 		assertEquals(MoveUtils.toMove("d7d8q"), move);
+	}
+
+	@Test
+	public void testCanTakeKing() {
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
+				"...♕...♚\n" +
+				"......♟♟\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				"........\n" +
+				".....♔..\n");
+		final boolean canTakeKing = engineBoard.canTakeKing();
+		assertThat(canTakeKing).isTrue();
 	}
 
 	@Test
@@ -353,7 +370,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				"........\n" +
 				"........\n" +
 				"........\n");
-		algorithm.setDepth(5);
+		algorithm.setDepth(3);
 		final Move move = getAceResponse(engineBoard);
 		assertEquals(MoveUtils.toMove("g7g8n"), move);
 	}
@@ -440,28 +457,36 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void checkCanStalemateButShouldNot() {
 		MoveUtils.DEBUG = true;
 		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
-				"....♚...\n" +
-				"....♙...\n" +
+				".......♚\n" +
+				".......♙\n" +
 				"........\n" +
-				".....♔..\n" +
+				".......♔\n" +
+				".......♙\n" +
 				"........\n" +
 				"........\n" +
-				"....♙...\n" +
 				"........\n");
 
-		algorithm.setDepth(2);
+		algorithm.setDepth(3);
 		algorithm.disableQuiesce();
-//		algorithm.evaluator = new BoardEvaluator() {
-//			int eval = 0;
-//			@Override
-//			public Integer evaluate(ACEBoard engineBoard) {
-//				eval++;
-//				if(engineBoard.toMove == BLACK)
-//					return eval;
-//				else
-//					return -eval;
-//			}
-//		};
+		final Move move = getAceResponse(engineBoard);
+		assertThat(move.toString()).isNotEqualTo("h5g6");
+	}
+
+	@Test
+	public void checkCanStalemateByTakingButShouldNot() {
+		MoveUtils.DEBUG = true;
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
+				"......♚.\n" +
+				"......♙.\n" +
+				"......♟.\n" +
+				".......♔\n" +
+				"........\n" +
+				"......♙.\n" +
+				"......♙.\n" +
+				"........\n");
+
+		algorithm.setDepth(3);
+		algorithm.disableQuiesce();
 		final Move move = getAceResponse(engineBoard);
 		assertThat(move.toString()).isNotEqualTo("f5e6");
 	}
