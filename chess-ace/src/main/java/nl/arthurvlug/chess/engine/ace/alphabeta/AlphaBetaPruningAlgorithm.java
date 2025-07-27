@@ -221,9 +221,9 @@ public class AlphaBetaPruningAlgorithm {
 			swapPvMove(generatedMoves, pvMove);
 		}
 
-		logDebug("Moves after []: %s".formatted(movesToString(generatedMoves)));
+		logDebug("Root: Moves after []: %s".formatted(movesToString(generatedMoves)));
 		for(int move : generatedMoves) {
-			logDebug("Start Move: %s, score=%d. PV: [%d] %s".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv));
+			logDebug("Root: Start Move: %s, score=%d. PV: [%d] %s".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv));
 			Integer newHeight = null;
 			if(move == generatedMoves.get(0)) {
 				newHeight = 1;
@@ -236,6 +236,7 @@ public class AlphaBetaPruningAlgorithm {
 				thinkingEngineBoard.generateMoves();
 			} catch (KingEatingException e) {
 				// The applied move is not valid. Ignore
+				logDebug("Root: The applied move " + UnapplyableMoveUtils.toShortString(move) + " is not valid. Ignore");
 				thinkingEngineBoard.unapply(move,
 						white_king_or_rook_queen_side_moved,
 						white_king_or_rook_king_side_moved,
@@ -265,7 +266,7 @@ public class AlphaBetaPruningAlgorithm {
 				alpha = score;
 				bestMove = move;
 			}
-			logDebug("End Move: %s, score=%d. PV: [%d] %s".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv));
+			logDebug("Root: End Move: %s, score=%d. PV: [%d] %s".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv));
 		}
 		info("[ABPruning Root] Best move score: " + alpha);
 		return bestMove;

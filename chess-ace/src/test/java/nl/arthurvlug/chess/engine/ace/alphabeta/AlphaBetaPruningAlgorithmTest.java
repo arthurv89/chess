@@ -43,6 +43,7 @@ public class AlphaBetaPruningAlgorithmTest {
 		algorithm = new AlphaBetaPruningAlgorithm(configuration);
 		algorithm.setEventBus(new EventBus());
 		algorithm.disableQuiesce();
+		algorithm.cutoffEnabled = true;
 	}
 
 //	@Ignore
@@ -598,9 +599,26 @@ public class AlphaBetaPruningAlgorithmTest {
 	}
 
 	@Test
+	public void whiteShouldMatePawn() {
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
+				"........\n" +
+				"♟♟♟.....\n" +
+				".♚......\n" +
+				".♙......\n" +
+				".♔♙.....\n" +
+				".♙♙.....\n" +
+				"........\n" +
+				"........\n");
+
+		algorithm.setDepth(3);
+		final Move move = getAceResponse(engineBoard);
+		assertThat(move.toString()).isEqualTo("c4c5");
+	}
+
+	@Test
 	public void whiteShouldMate() {
 		checkMove("d2d4 d7d5 b1c3 b8c6 c1f4 g8f6 c3b5 g7g6 b5c7 e8d7 c7a8 d8a5 c2c3 f6e8 g1f3 e8d6 e2e3 f8g7 f1d3 b7b6 f3e5 c6e5 d4e5 d6f5 b2b4 a5a3 d3b5 d7e6",
-				is("a8c7"), 4, new AceEvaluator(), 6);
+				is("a8c7"), 4, new AceEvaluator(), 0);
 	}
 
 	@Test
