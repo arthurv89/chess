@@ -10,7 +10,7 @@ public class LogUtils {
 
     public static void logDebug(final Object message) {
         if(MoveUtils.DEBUG) {
-            log.debug(message.toString());
+            log.debug("{}", message);
         }
     }
 

@@ -2,6 +2,8 @@ package nl.arthurvlug.chess.engine.ace.board;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
@@ -203,10 +205,38 @@ public class ACEBoard {
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, coloredMovingPiece, UnapplyableMove.takePiece(move));
 
 		if(DEBUG) {
-			Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
-			Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
-			Preconditions.checkArgument((occupiedSquares[WHITE] & occupiedSquares[BLACK]) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toString((occupiedSquares[WHITE] & occupiedSquares[BLACK])));
+			checkConsistency();
 		}
+	}
+
+	private void checkConsistency() {
+		Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
+		Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
+		long intersectBoard = occupiedSquares[WHITE] & occupiedSquares[BLACK];
+		if(intersectBoard != 0) {
+			throw new IllegalArgumentException(("""
+                    White and black occupy the same fields.
+                    
+                    Offending field:
+                    %s
+                    White:
+                    %s
+                    Black:
+                    %s
+                    """)
+					.formatted(BitboardUtils.toString(intersectBoard), whiteBoard(), blackBoard()));
+		}
+		;
+	}
+
+	private String whiteBoard() {
+		List<Byte> pieces = List.of(WHITE_PAWN_BYTE, WHITE_KNIGHT_BYTE, WHITE_BISHOP_BYTE, WHITE_ROOK_BYTE, WHITE_QUEEN_BYTE, WHITE_KING_BYTE);
+		return string(pieces::contains);
+	}
+
+	private String blackBoard() {
+		List<Byte> pieces = List.of(BLACK_PAWN_BYTE, BLACK_KNIGHT_BYTE, BLACK_BISHOP_BYTE, BLACK_ROOK_BYTE, BLACK_QUEEN_BYTE, BLACK_KING_BYTE);
+		return string(pieces::contains);
 	}
 
 	public void unapply(final int move,
@@ -241,9 +271,7 @@ public class ACEBoard {
 		this.fiftyMove = fiftyMove_before;
 
 		if(DEBUG) {
-			Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
-			Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
-			Preconditions.checkArgument((occupiedSquares[WHITE] & occupiedSquares[BLACK]) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toString((occupiedSquares[WHITE] & occupiedSquares[BLACK])));
+			checkConsistency();
 		}
 	}
 
@@ -592,10 +620,11 @@ public class ACEBoard {
 	}
 
 	public String string() {
-		Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
-		Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
-		Preconditions.checkArgument((occupiedSquares[WHITE] & occupiedSquares[BLACK]) == 0, "White and black occupy the same fields. Offending field: \n" + BitboardUtils.toString((occupiedSquares[WHITE] & occupiedSquares[BLACK])));
-		
+		checkConsistency();
+		return string(Predicates.alwaysTrue());
+	}
+
+	private String string(Predicate<Byte> predicate) {
 		StringBuilder sb = new StringBuilder();
 		for (byte fieldIdx = 0; fieldIdx < 64; fieldIdx++) {
 			if((fieldIdx)%8 == 0) {
@@ -603,7 +632,7 @@ public class ACEBoard {
 			}
 
 			byte coloredPieceOnField = coloredPiece(fieldIdx);
-			if(coloredPieceOnField == NO_PIECE) {
+			if(coloredPieceOnField == NO_PIECE || !predicate.apply(coloredPieceOnField)) {
 				sb.append('.');
 			} else {
 				String c = PieceStringUtils.toCharacterString(ColoredPieceType.from(coloredPieceOnField), PieceStringUtils.pieceToChessSymbolMap);
@@ -611,11 +640,19 @@ public class ACEBoard {
 			}
 		}
 		String reversedBoard = sb.toString();
-		
+
 		// Reverse rows
 		List<String> l = Lists.newArrayList(Splitter.on('\n').split(reversedBoard));
 		Collections.reverse(l);
 		return Joiner.on('\n').join(l);
+	}
+
+	private byte[] coloredPiecePerField() {
+		byte[] coloredPieces = new byte[64];
+		for (byte fieldIdx = 0; fieldIdx < 64; fieldIdx++) {
+			coloredPieces[fieldIdx] = coloredPiece(fieldIdx);
+		}
+		return coloredPieces;
 	}
 
 	public void addPiece(byte color, PieceType pieceType, byte fieldIndex) {
