@@ -50,12 +50,14 @@ public class ACEBoardUtils {
 			final Object o = field.get(engineBoard);
 			String value = o.toString();
 			if(o.getClass().isArray()) {
-				if(o instanceof long[]) {
-					value = Arrays.toString((long[]) o);
-				} else if(o instanceof short[]) {
-					value = Arrays.toString((short[]) o);
-				} else if(o instanceof int[][]) {
-					value = Arrays.deepToString((int[][]) o);
+				if(o instanceof long[] arr) {
+					value = Arrays.toString(arr);
+				} else if(o instanceof short[] arr) {
+					value = Arrays.toString(arr);
+				} else if(o instanceof int[][] arr) {
+					value = Arrays.deepToString(arr);
+				} else if(o instanceof byte[] arr) {
+					value = Arrays.toString(arr);
 				} else {
 					throw new RuntimeException("Could not convert " + o.getClass());
 				}

@@ -35,8 +35,8 @@ public class AceEvaluator extends BoardEvaluator {
 			occupiedBoard ^= 1L << fieldIdx;
 //			logDebug(FieldUtils.fieldToString(fieldIdx) + " -> " + pieceScore);
 		}
-		if(engineBoard.getFiftyMoveClock() >= 8) {
-			if(engineBoard.getFiftyMoveClock() >= 50) {
+		if(engineBoard.getFiftyMove() >= 8) {
+			if(engineBoard.getFiftyMove() >= 50) {
 				return 0;
 			}
 			if(isThreeFoldRepetition(engineBoard)) {

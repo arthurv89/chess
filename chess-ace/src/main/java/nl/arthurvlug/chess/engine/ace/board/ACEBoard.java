@@ -57,7 +57,7 @@ public class ACEBoard {
 	public boolean black_king_or_rook_queen_side_moved;
 	public boolean black_king_or_rook_king_side_moved;
 
-	private short[] pieces = new short[64];
+	private byte[] pieces = new byte[64];
 
 	// TODO: Implement
 	private int fiftyMove = 0;
@@ -781,7 +781,7 @@ public class ACEBoard {
 		return repeatedMove;
 	}
 
-	public int getFiftyMoveClock() {
+	public int getFiftyMove() {
 		return fiftyMove;
 	}
 
@@ -801,7 +801,7 @@ public class ACEBoard {
 		return zobristHash;
 	}
 
-	public short[] getPieces() {
+	public byte[] getPieces() {
 		return pieces;
 	}
 }

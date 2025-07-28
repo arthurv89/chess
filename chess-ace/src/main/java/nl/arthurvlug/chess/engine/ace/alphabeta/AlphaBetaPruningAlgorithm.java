@@ -40,6 +40,7 @@ import rx.observers.Observers;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
+import static nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils.toShortString;
 import static nl.arthurvlug.chess.engine.ace.alphabeta.PrincipalVariation.NO_MOVE;
 import static nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable.*;
 import static nl.arthurvlug.chess.utils.LogUtils.logDebug;
@@ -129,12 +130,12 @@ public class AlphaBetaPruningAlgorithm {
 		pv = new PrincipalVariation();
 		int startDepth = 0;
 		try {
-			thinkingEngineBoard = currentEngineBoard.cloneBoard();
 			for (depthNow = startDepth; depthNow <= depth; depthNow++) {
+				thinkingEngineBoard = currentEngineBoard.cloneBoard();
 				info(String.format("Start thinking for %d ms on depth %d. PV line: %s",
 						maxThinkingTime,
 						depthNow,
-						Arrays.stream(pv.getLine()).boxed().filter(x -> x != NO_MOVE).map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList())));
+						Arrays.stream(pv.getLine()).boxed().filter(x -> x != NO_MOVE).map(m -> toShortString(m)).collect(Collectors.toList())));
 				final Integer bestMove = alphaBetaRoot(depthNow);
 				if (bestMove == null) {
 					err("No best move");
@@ -220,23 +221,22 @@ public class AlphaBetaPruningAlgorithm {
 		if (pvMove != NO_MOVE) {
 			swapPvMove(generatedMoves, pvMove);
 		}
-
 		logDebug("Root: Moves after []: %s".formatted(movesToString(generatedMoves)));
 		for(int move : generatedMoves) {
-			logDebug("Root: Start Move: %s, score=%d. PV: [%d] %s".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv));
+			logDebug("Root: Start Move: %s, score=%d. PV: [%d] %s".formatted(toShortString(move), score, alpha, pv));
 			Integer newHeight = null;
 			if(move == generatedMoves.get(0)) {
 				newHeight = 1;
 			}
 
 //			info("Investigating " + UnapplyableMoveUtils.toString(move));
-			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
+			final int fiftyMove = thinkingEngineBoard.getFiftyMove();
 			thinkingEngineBoard.apply(move);
 			try {
 				thinkingEngineBoard.generateMoves();
 			} catch (KingEatingException e) {
 				// The applied move is not valid. Ignore
-				logDebug("Root: The applied move " + UnapplyableMoveUtils.toShortString(move) + " is not valid. Ignore");
+				logDebug("Root: The applied move %s is not valid. Ignore".formatted(toShortString(move)));
 				thinkingEngineBoard.unapply(move,
 						white_king_or_rook_queen_side_moved,
 						white_king_or_rook_king_side_moved,
@@ -266,7 +266,7 @@ public class AlphaBetaPruningAlgorithm {
 				alpha = score;
 				bestMove = move;
 			}
-			logDebug("Root: End Move: %s, score=%d. PV: [%d] %s".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv));
+			logDebug("Root: End Move: %s, score=%d. PV: [%d] %s".formatted(toShortString(move), score, alpha, pv));
 		}
 		info("[ABPruning Root] Best move score: " + alpha);
 		return bestMove;
@@ -282,7 +282,7 @@ public class AlphaBetaPruningAlgorithm {
 		String indent = toIndent(movesPlayed);
 //		logDebug("AlphaBeta. Depth=%s".formatted(depth), indent);
 		performBrakeActions();
-		if (thinkingEngineBoard.getFiftyMoveClock() >= 50 || thinkingEngineBoard.getRepeatedMove() >= 3) {
+		if (thinkingEngineBoard.getFiftyMove() >= 50 || thinkingEngineBoard.getRepeatedMove() >= 3) {
 			logDebug("50 move / repeated move", indent);
 			return 0;
 		}
@@ -332,9 +332,9 @@ public class AlphaBetaPruningAlgorithm {
 
 		logDebug("Moves after []: %s - %s".formatted(movesToString(movesPlayed), movesToString(generatedMoves)), indent);
 		boolean hasValidMove = false;
-		final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
+		final int fiftyMove = thinkingEngineBoard.getFiftyMove();
 		for(final int move : generatedMoves) {
-			logDebug("Start Move: %s, score=%d. PV: [%d] %s".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv), indent);
+			logDebug("Start Move: %s, score=%d. PV: [%d] %s".formatted(toShortString(move), score, alpha, pv), indent);
 			// Do a recursive search
 			thinkingEngineBoard.apply(move);
 
@@ -375,7 +375,7 @@ public class AlphaBetaPruningAlgorithm {
 				alpha = score;
 				hashf = TranspositionTable.hashfEXACT;
 			}
-			logDebug("End Move: %s, score=%d. PV: [%d] %s".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv), indent);
+			logDebug("End Move: %s, score=%d. PV: [%d] %s".formatted(toShortString(move), score, alpha, pv), indent);
 		}
 
 		if(!hasValidMove) {
@@ -448,7 +448,7 @@ public class AlphaBetaPruningAlgorithm {
 		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
 
 		for(Integer move : takeMoves) {
-			final int fiftyMove = thinkingEngineBoard.getFiftyMoveClock();
+			final int fiftyMove = thinkingEngineBoard.getFiftyMove();
 			thinkingEngineBoard.apply(move);
 			int val = -quiesceSearch(-beta, -alpha, depth-1, height+1, movesPlayed);
 //			debugMoveStack(val);
@@ -471,7 +471,7 @@ public class AlphaBetaPruningAlgorithm {
 
 				alpha = score;
 			}
-			logDebug("End Move: %s, score=%d. PV: [%d] %s".formatted(UnapplyableMoveUtils.toShortString(move), score, alpha, pv), indent);
+			logDebug("End Move: %s, score=%d. PV: [%d] %s".formatted(toShortString(move), score, alpha, pv), indent);
 		}
 		return score;
 	}
@@ -580,7 +580,7 @@ public class AlphaBetaPruningAlgorithm {
 	}
 
 	private List<String> moveListStrings() {
-		return thinkingEngineBoard.plyStack.stream().map(m -> UnapplyableMoveUtils.toShortString(m)).collect(Collectors.toList());
+		return thinkingEngineBoard.plyStack.stream().map(m -> toShortString(m)).collect(Collectors.toList());
 	}
 
 	private int calculateScore(final ACEBoard board) {
@@ -603,7 +603,8 @@ public class AlphaBetaPruningAlgorithm {
 
 	private void swapPvMove(final List<Integer> moves, final int priorityMove) {
 		final int idx = moves.indexOf(priorityMove);
-		Preconditions.checkArgument(idx != -1, "Could not find move " + UnapplyableMoveUtils.toShortString(priorityMove) + " (" + priorityMove + ") in move list!");
+		String moveShortString = toShortString(priorityMove);
+		Preconditions.checkArgument(idx != -1, "Could not find move %s in move list!".formatted(moveShortString));
 		Collections.swap(moves, 0, idx);
 	}
 

@@ -4,13 +4,30 @@ import com.google.common.collect.BiMap;
 import java.util.Optional;
 
 abstract class PieceConverter {
-	Optional<PieceType> fromChar(final char character) {
+	public Optional<PieceType> pieceTypeFromChar(final char character) {
 		return getMap()
 				.values()
 				.stream()
 				.filter(pieceSymbol -> pieceSymbol.getWhite() == character || pieceSymbol.getBlack() == character)
 				.findFirst()
 				.map(pieceSymbol -> getMap().inverse().get(pieceSymbol));
+	}
+
+	public Optional<ColoredPiece> coloredPieceFromChar(final char character) {
+		return getMap()
+				.values()
+				.stream()
+				.flatMap(pieceSymbol -> {
+					boolean isWhite = pieceSymbol.getWhite() == character;
+					boolean isBlack = pieceSymbol.getBlack() == character;
+					if(isWhite || isBlack) {
+						final PieceType pieceType = getMap().inverse().get(pieceSymbol);
+						final ColoredPiece value = new ColoredPiece(pieceType, isWhite ? Color.WHITE : Color.BLACK);
+						return Optional.of(value).stream();
+					}
+					return Optional.<ColoredPiece> empty().stream();
+				})
+				.findFirst();
 	}
 
 	char convert(final PieceType pieceType, final Color color) {

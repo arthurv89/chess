@@ -40,7 +40,7 @@ public class MoveUtils {
 		Coordinates from = FieldUtils.coordinates(sMove.substring(0, 2));
 		Coordinates to = FieldUtils.coordinates(sMove.substring(2, 4));
 		Optional<PieceType> promotionPiece = sMove.length() == 5
-				? PieceStringUtils.fromChar(sMove.charAt(4), PieceStringUtils.pieceToCharacterConverter)
+				? Optional.of(PieceStringUtils.pieceTypeFromCharacter(sMove.charAt(4), PieceStringUtils.pieceToCharacterConverter))
 				: Optional.empty();
 		return new Move(from, to, promotionPiece);
 	}

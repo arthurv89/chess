@@ -8,6 +8,9 @@ import java.awt.FontFormatException;
 import java.io.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.JOptionPane;
 import nl.arthurvlug.chess.gui.components.Window;
 import nl.arthurvlug.chess.gui.events.BoardWindowInitializedEvent;
@@ -85,11 +88,11 @@ public class BoardWindow extends Window {
 
 	private void playSound(final String url) {
 		new Thread(() -> {
-			try {
-				FileInputStream in = new FileInputStream(new File(url).toURI().toString());
-				AudioStream as = new AudioStream(in);
-				AudioPlayer.player.start(as);
-			} catch (IOException e) {
+			try (AudioInputStream ais = AudioSystem.getAudioInputStream(new File(url))) {
+				Clip clip = AudioSystem.getClip();
+				clip.open(ais);
+				clip.start();
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}).start();

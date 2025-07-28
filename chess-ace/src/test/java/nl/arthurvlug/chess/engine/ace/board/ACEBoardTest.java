@@ -1,19 +1,32 @@
 package nl.arthurvlug.chess.engine.ace.board;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
+import nl.arthurvlug.chess.engine.ace.PieceUtils;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
+import nl.arthurvlug.chess.utils.JacksonUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils;
+import nl.arthurvlug.chess.utils.board.pieces.PieceSymbol;
+import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
+import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
 import static nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils.createMove;
+import static nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove.create;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromBoard;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 import static nl.arthurvlug.chess.utils.board.pieces.Color.BLACK;
@@ -215,7 +228,7 @@ public class ACEBoardTest {
 		assertThat(takeMoves).containsExactlyInAnyOrder(
 				createMove("f7e8q", board),
 				createMove("f7e8r", board),
-				createMove("f7e8l", board),
+				createMove("f7e8b", board),
 				createMove("f7e8n", board),
 				createMove("e1e8", board),
 				createMove("d1d8", board)
@@ -262,4 +275,186 @@ public class ACEBoardTest {
 		assertThat(ACEBoardUtils.stringDump(clonedBoard)).isEqualTo(ACEBoardUtils.stringDump(board));
 	}
 
+	@Test
+	public void applyF4G3() {
+		String initialEngineBoardJson = """
+				{
+				  "toMove" : 0,
+				  "black_kings" : 17592186044416,
+				  "white_kings" : 16,
+				  "black_queens" : 65536,
+				  "white_queens" : 8,
+				  "white_rooks" : 129,
+				  "black_rooks" : -9223372036854775808,
+				  "white_bishops" : 9126805504,
+				  "black_bishops" : 306244774661193728,
+				  "white_knights" : 1125899906842624,
+				  "black_knights" : 137438953472,
+				  "white_pawns" : 68754399488,
+				  "black_pawns" : 49893673004957696,
+				  "occupiedSquares" : [ 1125977788047769, -8867215859563560960 ],
+				  "unoccupied_board" : 8866089881775513190,
+				  "occupied_board" : -8866089881775513191,
+				  "enemy_and_empty_board" : -1125977788047770,
+				  "white_king_or_rook_queen_side_moved" : false,
+				  "white_king_or_rook_king_side_moved" : false,
+				  "black_king_or_rook_queen_side_moved" : true,
+				  "black_king_or_rook_king_side_moved" : false,
+				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 0, 0, 7, 7, 9, 7, 2, 0, 9, 0, 0, 0, 0, 10 ],
+				  "fiftyMove" : 1,
+				  "repeatedMove" : 0,
+				  "zobristHash" : -513536744,
+				  "plyStack" : [ 198045 ]
+				}""";
+
+		ACEBoard engineBoard = JacksonUtils.fromJson(initialEngineBoardJson, new TypeReference<>() {});
+
+//		InitialACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
+//		String initialEngineBoardJson = """
+//				{
+//				  "toMove" : 0,
+//				  "black_kings" : 1152921504606846976,
+//				  "white_kings" : 16,
+//				  "black_queens" : 576460752303423488,
+//				  "white_queens" : 8,
+//				  "white_rooks" : 129,
+//				  "black_rooks" : -9151314442816847872,
+//				  "white_bishops" : 36,
+//				  "black_bishops" : 2594073385365405696,
+//				  "white_knights" : 66,
+//				  "black_knights" : 4755801206503243776,
+//				  "white_pawns" : 65280,
+//				  "black_pawns" : 71776119061217280,
+//				  "occupiedSquares" : [ 65535, -281474976710656 ],
+//				  "unoccupied_board" : 281474976645120,
+//				  "occupied_board" : -281474976645121,
+//				  "enemy_and_empty_board" : -65536,
+//				  "white_king_or_rook_queen_side_moved" : false,
+//				  "white_king_or_rook_king_side_moved" : false,
+//				  "black_king_or_rook_queen_side_moved" : false,
+//				  "black_king_or_rook_king_side_moved" : false,
+//				  "pieces" : [ 4, 2, 3, 5, 6, 3, 2, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 10, 8, 9, 11, 12, 9, 8, 10 ],
+//				  "fiftyMove" : 0,
+//				  "repeatedMove" : 0,
+//				  "zobristHash" : -1072491330,
+//				  "plyStack" : [ ]
+//				}""";
+
+		System.out.println("Initial:\n" + printPieces(engineBoard));
+
+		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
+		int fiftyMove = engineBoard.getFiftyMove();
+		String engineBoardStringBefore = engineBoard.string();
+
+		String fromField = "g1";
+		String toField = "f3";
+		byte fromIdx = (byte) Long.numberOfTrailingZeros(bitboardFromFieldName(fromField));
+		byte targetIdx = (byte) Long.numberOfTrailingZeros(bitboardFromFieldName(toField));
+		int coloredMovingPiece = engineBoard.coloredPiece(fromField);
+		int move = create(
+				fromIdx,
+				targetIdx,
+				coloredMovingPiece,
+				NO_PIECE,
+				NO_PIECE
+		);
+
+		System.out.println();
+		System.out.println("before apply:\n" + printPieces(engineBoard));
+		engineBoard.apply(move);
+
+		System.out.println();
+		System.out.println("after apply:\n" + printPieces(engineBoard));
+		assertThat(engineBoard.string()).isEqualTo("""
+				..♝....♜
+				♟.♘.♟♟♝♟
+				.♟..♚.♟.
+				.♗.♟♙♞..
+				.♙...♗..
+				♛.♙.♙...
+				♙....♙♙♙
+				♖..♕♔..♖
+				""");
+
+		String expectedEngineBoardAfterMove = """
+				{
+				  "toMove" : 1,
+				  "black_kings" : 17592186044416,
+				  "white_kings" : 16,
+				  "black_queens" : 65536,
+				  "white_queens" : 8,
+				  "white_rooks" : 129,
+				  "black_rooks" : -9223372036854775808,
+				  "white_bishops" : 9126805504,
+				  "black_bishops" : 306244774661193728,
+				  "white_knights" : 1125899906842624,
+				  "black_knights" : 137438953472,
+				  "white_pawns" : 68754399488,
+				  "black_pawns" : 49893673004957696,
+				  "occupiedSquares" : [ 1125977788047769, -8867215859563560960 ],
+				  "unoccupied_board" : 8866089881775513190,
+				  "occupied_board" : -8866089881775513191,
+				  "enemy_and_empty_board" : 8867215859563560959,
+				  "white_king_or_rook_queen_side_moved" : false,
+				  "white_king_or_rook_king_side_moved" : false,
+				  "black_king_or_rook_queen_side_moved" : true,
+				  "black_king_or_rook_king_side_moved" : false,
+				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 0, 0, 7, 7, 9, 7, 2, 0, 9, 0, 0, 0, 0, 10 ],
+				  "fiftyMove" : 2,
+				  "repeatedMove" : 0,
+				  "zobristHash" : -513536744,
+				  "plyStack" : [ 198045, 1350 ]
+				}""";
+		assertThat(engineBoardStringBefore).isNotEqualTo(expectedEngineBoardAfterMove);
+
+		String engineBoardAfterMove = JacksonUtils.toJson(engineBoard);
+		assertThat(engineBoardAfterMove).isEqualTo(expectedEngineBoardAfterMove);
+
+		System.out.println("before unapply:\n" + printPieces(engineBoard));
+		engineBoard.unapply(move,
+				white_king_or_rook_queen_side_moved,
+				white_king_or_rook_king_side_moved,
+				black_king_or_rook_queen_side_moved,
+				black_king_or_rook_king_side_moved,
+				fiftyMove);
+
+		System.out.println();
+		System.out.println("after unapply:\n" + printPieces(engineBoard));
+		assertThat(engineBoard.string()).isEqualTo(engineBoardStringBefore);
+
+		System.out.println();
+		System.out.println("before to json:\n" + printPieces(engineBoard));
+		String engineBoardAfterUnapply = JacksonUtils.toJson(engineBoard);
+
+		System.out.println();
+		System.out.println("after to json:\n" + printPieces(engineBoard));
+		assertThat(engineBoardAfterUnapply).isEqualTo(initialEngineBoardJson);
+	}
+
+	private static String printPieces(ACEBoard engineBoard) {
+		byte[] array = engineBoard.getPieces();
+		int chunkSize = 8;
+
+		List<String> chunks = new ArrayList<>();
+		for (int i = 0; i < array.length; i += chunkSize) {
+			StringBuilder sb = new StringBuilder();
+			for (int j = i; j < Math.min(i + chunkSize, array.length); j++) {
+				char piece = PieceUtils.typeOrDot(array[j]);
+				Optional<ColoredPiece> coloredPieceOpt = PieceStringUtils.coloredPieceFromCharacter(piece, PieceStringUtils.pieceToCharacterConverter);
+				if(coloredPieceOpt.isPresent()) {
+					ColoredPiece coloredPiece = coloredPieceOpt.get();
+					PieceSymbol pieceSymbol = PieceStringUtils.pieceToChessSymbolMap.getMap().get(coloredPiece.getPieceType());
+					sb.append(coloredPiece.getColor() == WHITE ? pieceSymbol.getWhite() : pieceSymbol.getBlack());
+				} else {
+					sb.append(' ');
+				}
+			}
+			chunks.add("\n%s".formatted(sb));
+		}
+
+		return chunks.toString();
+	}
 }

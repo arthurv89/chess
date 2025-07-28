@@ -18,11 +18,15 @@ public class PieceStringUtils {
 		return converter.convert(pieceType, color);
 	}
 
-	public static Optional<PieceType> fromChar(final char character, final PieceConverter converter) {
-		Optional<PieceType> type = converter.fromChar(character);
-		if(!type.isPresent()) {
+	public static PieceType pieceTypeFromCharacter(final char character, final PieceConverter converter) {
+		Optional<PieceType> type = converter.pieceTypeFromChar(character);
+		if(type.isEmpty()) {
 			throw new IllegalArgumentException("Could not find piece with char " + character);
 		}
-		return type;
+		return type.get();
+	}
+
+	public static Optional<ColoredPiece> coloredPieceFromCharacter(char character, PieceConverter converter) {
+        return converter.coloredPieceFromChar(character);
 	}
 }

@@ -19,7 +19,7 @@ public class UnapplyableMoveUtils {
 		byte promotionPiece = NO_PIECE;
 		if(sMove.length() > 4) {
 			final char c = sMove.charAt(4);
-			final PieceType pieceType = PieceStringUtils.fromChar(c, PieceStringUtils.pieceToCharacterConverter).get();
+			final PieceType pieceType = PieceStringUtils.pieceTypeFromCharacter(c, PieceStringUtils.pieceToCharacterConverter);
 			promotionPiece = ColoredPieceType.getColoredByte(pieceType, engineBoard.toMove);
 		}
 		try {
