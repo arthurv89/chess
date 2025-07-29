@@ -28,22 +28,27 @@ import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.HashElement;
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable;
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams;
+import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.ThinkEvent;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.game.Move;
+import nl.arthurvlug.chess.utils.jackson.JacksonUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
 import rx.observers.Observers;
 
+import static nl.arthurvlug.chess.engine.ColorUtils.BLACK;
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
 import static nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils.toShortString;
 import static nl.arthurvlug.chess.engine.ace.alphabeta.PrincipalVariation.NO_MOVE;
+import static nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils.stringDump;
 import static nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable.*;
 import static nl.arthurvlug.chess.utils.LogUtils.logDebug;
+import static nl.arthurvlug.chess.utils.jackson.JacksonUtils.toJson;
 
 @Slf4j
 public class AlphaBetaPruningAlgorithm {
@@ -212,6 +217,7 @@ public class AlphaBetaPruningAlgorithm {
 		boolean white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved;
 		boolean black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
+//		boolean incFiftyClock = thinkingEngineBoard.incFiftyClock;
 
 		final PrincipalVariation line = new PrincipalVariation();
 
@@ -230,7 +236,8 @@ public class AlphaBetaPruningAlgorithm {
 			}
 
 //			info("Investigating " + UnapplyableMoveUtils.toString(move));
-			final int fiftyMove = thinkingEngineBoard.getFiftyMove();
+//			final int fiftyMove = thinkingEngineBoard.getFiftyMove();
+			String blackOccupiedSquaresBefore = BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[BLACK]);
 			thinkingEngineBoard.apply(move);
 			try {
 				thinkingEngineBoard.generateMoves();
@@ -241,8 +248,11 @@ public class AlphaBetaPruningAlgorithm {
 						white_king_or_rook_queen_side_moved,
 						white_king_or_rook_king_side_moved,
 						black_king_or_rook_queen_side_moved,
-						black_king_or_rook_king_side_moved,
-						fiftyMove);
+						black_king_or_rook_king_side_moved);
+				String blackOccupiedSquaresAfter = BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[BLACK]);
+				if(!blackOccupiedSquaresAfter.equals(blackOccupiedSquaresBefore)) {
+					throw new RuntimeException("Uh oh!");
+				}
 				continue;
 			}
 			// Do a recursive search
@@ -252,8 +262,11 @@ public class AlphaBetaPruningAlgorithm {
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
-					black_king_or_rook_king_side_moved,
-					fiftyMove);
+					black_king_or_rook_king_side_moved);
+			String blackOccupiedSquaresAfter = BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[BLACK]);
+			if(!blackOccupiedSquaresAfter.equals(blackOccupiedSquaresBefore)) {
+				throw new RuntimeException("Uh oh!");
+			}
 
 			score = Math.max(val, score);
 			if (score > alpha) {
@@ -280,12 +293,14 @@ public class AlphaBetaPruningAlgorithm {
 						  final Integer height,
 						  List<Integer> movesPlayed) {
 		String indent = toIndent(movesPlayed);
+
+		logDebug("To move: " + thinkingEngineBoard.toMove, indent);
 //		logDebug("AlphaBeta. Depth=%s".formatted(depth), indent);
 		performBrakeActions();
-		if (thinkingEngineBoard.getFiftyMove() >= 50 || thinkingEngineBoard.getRepeatedMove() >= 3) {
-			logDebug("50 move / repeated move", indent);
-			return 0;
-		}
+//		if (thinkingEngineBoard.getFiftyMove() >= 50 || thinkingEngineBoard.getRepeatedMove() >= 3) {
+//			logDebug("50 move / repeated move", indent);
+//			return 0;
+//		}
 
 		int hashf = hashfALPHA;
 		int zobristHash = thinkingEngineBoard.getZobristHash();
@@ -321,6 +336,7 @@ public class AlphaBetaPruningAlgorithm {
 		boolean white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved;
 		boolean black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
+//		boolean incFiftyClock = thinkingEngineBoard.incFiftyClock;
 
 		int score = alpha;
 		if(pvHeight != null) {
@@ -332,14 +348,16 @@ public class AlphaBetaPruningAlgorithm {
 
 		logDebug("Moves after []: %s - %s".formatted(movesToString(movesPlayed), movesToString(generatedMoves)), indent);
 		boolean hasValidMove = false;
-		final int fiftyMove = thinkingEngineBoard.getFiftyMove();
+//		final int fiftyMove = thinkingEngineBoard.getFiftyMove();
 		for(final int move : generatedMoves) {
 			logDebug("Start Move: %s, score=%d. PV: [%d] %s".formatted(toShortString(move), score, alpha, pv), indent);
 			// Do a recursive search
+			String dumpBeforeApply = stringDump(thinkingEngineBoard);
+			String thinkingEngineBoardBefore = thinkingEngineBoard.string();
 			thinkingEngineBoard.apply(move);
 
 			Integer newHeight = null;
-			if(pvHeight != null && move == generatedMoves.get(0)) {
+			if(pvHeight != null && move == generatedMoves.getFirst()) {
 				newHeight = pvHeight + 1;
 			}
 
@@ -359,8 +377,12 @@ public class AlphaBetaPruningAlgorithm {
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
-					black_king_or_rook_king_side_moved,
-					fiftyMove);
+					black_king_or_rook_king_side_moved);
+			String dumpAfterUnapply = stringDump(thinkingEngineBoard);
+			String thinkingEngineBoardAfter = thinkingEngineBoard.string();
+			if(!dumpAfterUnapply.equals(dumpBeforeApply)) {
+				throw new RuntimeException("Uh oh!");
+			}
 
 			score = Math.max(score, val);
 			if (score > alpha) {
@@ -390,13 +412,14 @@ public class AlphaBetaPruningAlgorithm {
 			thinkingEngineBoard.mutateGeneralBoardOccupation();
 //			thinkingEngineBoard.apply(bestMove);
 			boolean opponentCanTakeKing = thinkingEngineBoard.canTakeKing();
-//			thinkingEngineBoard.toMove = opponent(thinkingEngineBoard.toMove);
 //			thinkingEngineBoard.unapply(bestMove,
 //					thinkingEngineBoard.white_king_or_rook_queen_side_moved,
 //					thinkingEngineBoard.white_king_or_rook_king_side_moved,
 //					thinkingEngineBoard.black_king_or_rook_queen_side_moved,
 //					thinkingEngineBoard.black_king_or_rook_king_side_moved,
 //					thinkingEngineBoard.getFiftyMoveClock());
+
+			thinkingEngineBoard.toMove = opponent(thinkingEngineBoard.toMove);
 
 			if(!opponentCanTakeKing) {
 				// Stalemate
@@ -446,9 +469,11 @@ public class AlphaBetaPruningAlgorithm {
 		boolean white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved;
 		boolean black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved;
+//		boolean incFiftyClock = thinkingEngineBoard.incFiftyClock;
 
 		for(Integer move : takeMoves) {
-			final int fiftyMove = thinkingEngineBoard.getFiftyMove();
+//			final int fiftyMove = thinkingEngineBoard.getFiftyMove();
+			String blackOccupiedSquaresBefore = BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[BLACK]);
 			thinkingEngineBoard.apply(move);
 			int val = -quiesceSearch(-beta, -alpha, depth-1, height+1, movesPlayed);
 //			debugMoveStack(val);
@@ -456,8 +481,11 @@ public class AlphaBetaPruningAlgorithm {
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
 					black_king_or_rook_queen_side_moved,
-					black_king_or_rook_king_side_moved,
-					fiftyMove);
+					black_king_or_rook_king_side_moved);
+			String blackOccupiedSquaresAfter = BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[BLACK]);
+			if(!blackOccupiedSquaresAfter.equals(blackOccupiedSquaresBefore)) {
+				throw new RuntimeException("Uh oh!");
+			}
 //			debugMoveStack("Evaluating board\n{}Score: {}\n", thinkingEngineBoard.string(), val);
 
 			score = Math.max(score, val);

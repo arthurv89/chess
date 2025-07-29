@@ -12,9 +12,9 @@ import java.util.Optional;
 import nl.arthurvlug.chess.engine.ColorUtils;
 import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.PieceUtils;
+import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
-import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.jackson.JacksonUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
 import static nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils.createMove;
+import static nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils.stringDump;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove.create;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromBoard;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
@@ -48,7 +49,7 @@ public class ACEBoardTest {
 
 	@BeforeEach
 	public void before() {
-		MoveUtils.DEBUG = false;
+		MoveUtils.DEBUG = true;
 	}
 
 	@Test
@@ -207,9 +208,10 @@ public class ACEBoardTest {
 		boolean white_king_or_rook_king_side_moved = newBoard.white_king_or_rook_king_side_moved;
 		boolean black_king_or_rook_queen_side_moved = newBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = newBoard.black_king_or_rook_king_side_moved;
+//		boolean incFiftyClock = newBoard.incFiftyClock;
 		newBoard.apply(move);
-		newBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved, 0);
-		assertEquals(ACEBoardUtils.stringDump(oldBoard), ACEBoardUtils.stringDump(newBoard));
+		newBoard.unapply(move, white_king_or_rook_queen_side_moved, white_king_or_rook_king_side_moved, black_king_or_rook_queen_side_moved, black_king_or_rook_king_side_moved);
+		assertEquals(stringDump(oldBoard), stringDump(newBoard));
 	}
 
 	@Test
@@ -237,9 +239,10 @@ public class ACEBoardTest {
 
 		int move = createMove("d1d8", board);
 		board.apply(move);
-		board.unapply(move, true, true, true, true, 0);
 
-		assertThat(ACEBoardUtils.stringDump(board)).isEqualTo(ACEBoardUtils.stringDump(oldBoard));
+		board.unapply(move, true, true, true, true);
+
+		assertThat(stringDump(board)).isEqualTo(stringDump(oldBoard));
 	}
 
 	@Test
@@ -258,6 +261,8 @@ public class ACEBoardTest {
 				"......♜.\n" +
 				"♔....♟..\n" +
 				"........");
+//		boolean incFiftyClock = board.incFiftyClock;
+
 		final ACEBoard clonedBoard = board.cloneBoard();
 		int move = createMove("f2f1q", board);
 		board.apply(move);
@@ -272,8 +277,8 @@ public class ACEBoardTest {
 				"♔.......\n" +
 				".....♛..\n");
 
-		board.unapply(move, true, true, true, true, 0);
-		assertThat(ACEBoardUtils.stringDump(clonedBoard)).isEqualTo(ACEBoardUtils.stringDump(board));
+		board.unapply(move, true, true, true, true);
+		assertThat(stringDump(clonedBoard)).isEqualTo(stringDump(board));
 	}
 
 	@Test
@@ -322,7 +327,6 @@ public class ACEBoardTest {
 				  "black_king_or_rook_queen_side_moved" : true,
 				  "black_king_or_rook_king_side_moved" : false,
 				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 2, 0, 7, 7, 9, 7, 0, 0, 9, 0, 0, 0, 0, 10 ],
-				  "fiftyMove" : 1,
 				  "repeatedMove" : 0,
 				  "zobristHash" : -513536744,
 				  "plyStack" : [ 198045 ]
@@ -352,7 +356,6 @@ public class ACEBoardTest {
 				  "black_king_or_rook_queen_side_moved" : true,
 				  "black_king_or_rook_king_side_moved" : false,
 				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 2, 0, 7, 7, 9, 7, 0, 0, 9, 0, 0, 0, 0, 10 ],
-				  "fiftyMove" : 2,
 				  "repeatedMove" : 0,
 				  "zobristHash" : -607014438,
 				  "plyStack" : [ 198045, 198045 ]
@@ -366,7 +369,9 @@ public class ACEBoardTest {
 		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
 		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
 		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
-		int fiftyMove = engineBoard.getFiftyMove();
+//		int fiftyMove = engineBoard.getFiftyMove();
+//		boolean incFiftyClock = engineBoard.incFiftyClock;
+
 		String engineBoardStringBefore = engineBoard.string();
 
 		int move = createMoveForSquares(engineBoard);
@@ -381,8 +386,7 @@ public class ACEBoardTest {
 				white_king_or_rook_queen_side_moved,
 				white_king_or_rook_king_side_moved,
 				black_king_or_rook_queen_side_moved,
-				black_king_or_rook_king_side_moved,
-				fiftyMove);
+				black_king_or_rook_king_side_moved);
 
 		assertThat(engineBoard.string()).isEqualTo(engineBoardStringBefore);
 		assertThat(JacksonUtils.toJson(engineBoard)).isEqualTo(initialEngineBoardJson);
@@ -426,5 +430,76 @@ public class ACEBoardTest {
 		}
 		Collections.reverse(chunks);
 		return chunks.toString();
+	}
+
+	@Test
+	public void testQueenTakesQueen() {
+		String position = """
+				♚♜......
+				.♟.♟....
+				♟.♟.....
+				.♟......
+				........
+				........
+				♖.......
+				♔.......
+				""";
+		String json = """
+				{
+				  "toMove" : 0,
+				  "black_kings" : 72057594037927936,
+				  "white_kings" : 1,
+				  "black_queens" : 0,
+				  "white_queens" : 0,
+				  "white_rooks" : 256,
+				  "black_rooks" : 144115188075855872,
+				  "white_bishops" : 0,
+				  "black_bishops" : 0,
+				  "white_knights" : 0,
+				  "black_knights" : 0,
+				  "white_pawns" : 0,
+				  "black_pawns" : 2820255915180032,
+				  "occupiedSquares" : [ 257, 218993038028963840 ],
+				  "unoccupied_board" : -218993038028964098,
+				  "occupied_board" : 218993038028964097,
+				  "enemy_and_empty_board" : -258,
+				  "white_king_or_rook_queen_side_moved" : true,
+				  "white_king_or_rook_king_side_moved" : true,
+				  "black_king_or_rook_queen_side_moved" : true,
+				  "black_king_or_rook_king_side_moved" : true,
+				  "pieces" : [ 6, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 12, 10, 0, 0, 0, 0, 0, 0 ],
+				  "repeatedMove" : 0,
+				  "zobristHash" : -678140938,
+				  "plyStack" : [ ]
+				}""";
+		ACEBoard aceBoard = JacksonUtils.fromJson(json, new TypeReference<>() {});
+
+		String json2 = JacksonUtils.toJson(aceBoard);
+		assertThat(json2).isEqualTo(json);
+
+		assertThat(aceBoard.string()).isEqualTo(position);
+
+//		aceBoard.checkConsistency();
+
+		int move = UnapplyableMoveUtils.createMove("b5f1", aceBoard);
+		assertThat(move).isEqualTo(459105);
+
+		MoveUtils.DEBUG = false;
+		boolean white_king_or_rook_queen_side_moved = aceBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = aceBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = aceBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = aceBoard.black_king_or_rook_king_side_moved;
+
+		String expected = stringDump(aceBoard);
+
+		aceBoard.apply(move);
+		aceBoard.unapply(move,
+				white_king_or_rook_queen_side_moved,
+				white_king_or_rook_king_side_moved,
+				black_king_or_rook_queen_side_moved,
+				black_king_or_rook_king_side_moved);
+
+		String actual = stringDump(aceBoard);
+		assertThat(actual).isEqualTo(expected);
 	}
 }

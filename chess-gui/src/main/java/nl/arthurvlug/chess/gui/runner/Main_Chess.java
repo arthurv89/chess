@@ -16,6 +16,8 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+import static nl.arthurvlug.chess.utils.LogUtils.logDebug;
+
 @Slf4j
 public class Main_Chess {
 	private final static Injector injector = Guice.createInjector(new ApplicationModule());

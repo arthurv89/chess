@@ -2,11 +2,21 @@ package nl.arthurvlug.chess.engine.ace.board;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
+import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
 import nl.arthurvlug.chess.utils.StringToBoardConverter;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
+import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
+import nl.arthurvlug.chess.utils.board.pieces.PieceToChessSymbolConverter;
+
+import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.from;
 
 public class ACEBoardUtils {
 	public static ACEBoard initializedBoard(final Color toMoveColor, String board) {
@@ -35,10 +45,9 @@ public class ACEBoardUtils {
 	}
 
 	private static String dumper(final ACEBoard engineBoard, final Predicate<? super Field> fieldPredicate) {
-		final Class<ACEBoard> engineBoardClass = ACEBoard.class;
-		return Arrays.stream(engineBoardClass.getDeclaredFields())
+		return Arrays.stream(ACEBoard.class.getDeclaredFields())
 				.filter(fieldPredicate)
-				.map(f -> fieldString(engineBoard, engineBoardClass, f))
+				.map(f -> fieldString(engineBoard, ACEBoard.class, f))
 				.collect(Collectors.joining("\n"));
 	}
 
@@ -49,7 +58,9 @@ public class ACEBoardUtils {
 			field.setAccessible(true);
 			final Object o = field.get(engineBoard);
 			String value = o.toString();
-			if(o.getClass().isArray()) {
+			if(o instanceof Long l) {
+				value = longToBinaryLineString(l);
+			} else if(o.getClass().isArray()) {
 				if(o instanceof long[] arr) {
 					value = Arrays.toString(arr);
 				} else if(o instanceof short[] arr) {
@@ -57,7 +68,13 @@ public class ACEBoardUtils {
 				} else if(o instanceof int[][] arr) {
 					value = Arrays.deepToString(arr);
 				} else if(o instanceof byte[] arr) {
-					value = Arrays.toString(arr);
+					value = "\n" + IntStream.iterate(7, i -> i >= 0, i -> i - 1)
+							.mapToObj(i -> IntStream.range(0, 8)
+									.mapToObj(j -> Optional.ofNullable(ColoredPieceType.from(arr[i * 8 + j]))
+											.map(ColoredPiece::getCharacterString)
+											.orElse("."))
+									.collect(Collectors.joining()))
+							.collect(Collectors.joining("\n"));
 				} else {
 					throw new RuntimeException("Could not convert " + o.getClass());
 				}
@@ -66,5 +83,9 @@ public class ACEBoardUtils {
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static String longToBinaryLineString(Long l) {
+		return "\n" + BitboardUtils.toString(l);
 	}
 }

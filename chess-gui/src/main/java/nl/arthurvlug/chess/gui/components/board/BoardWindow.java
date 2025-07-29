@@ -20,8 +20,6 @@ import nl.arthurvlug.chess.gui.events.GameStartedEvent;
 import nl.arthurvlug.chess.gui.events.MoveAppliedEvent;
 import nl.arthurvlug.chess.gui.game.Game;
 import nl.arthurvlug.chess.utils.ThinkEvent;
-import sun.audio.AudioPlayer;
-import sun.audio.AudioStream;
 
 @SuppressWarnings("serial")
 @EventHandler

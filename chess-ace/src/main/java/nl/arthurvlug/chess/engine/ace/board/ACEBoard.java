@@ -59,8 +59,8 @@ public class ACEBoard {
 
 	private byte[] pieces = new byte[64];
 
-	// TODO: Implement
-	private int fiftyMove = 0;
+//	// TODO: Implement
+//	private int fiftyMove = 0;
 
 	// TODO: Implement
 	private int repeatedMove = 0;
@@ -97,7 +97,7 @@ public class ACEBoard {
 	private static int[][] zobristRandomTable = new int[64][13];
 
 	public Stack<Integer> plyStack = new Stack<>();
-	private boolean incFiftyClock;
+//	public boolean incFiftyClock;
 
 
 	protected ACEBoard() {
@@ -178,7 +178,7 @@ public class ACEBoard {
 
 	public void apply(int move) {
 //		hashCode() == 812553708 && move == 95954
-		incFiftyClock = true;
+//		incFiftyClock = true;
 		plyStack.push(move);
 		// TODO: Fix this by creating a more efficient Move object
 		byte fromIdx = UnapplyableMove.fromIdx(move);
@@ -195,11 +195,11 @@ public class ACEBoard {
 		pieces[fromIdx] = NO_PIECE;
 		pieces[targetIdx] = coloredMovingPiece;
 
-		if(incFiftyClock) {
-			fiftyMove++;
-		} else {
-			fiftyMove = 0;
-		}
+//		if(incFiftyClock) {
+//			fiftyMove++;
+//		} else {
+//			fiftyMove = 0;
+//		}
 		toMove = opponent(toMove);
 
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, coloredMovingPiece, UnapplyableMove.takePiece(move));
@@ -209,7 +209,7 @@ public class ACEBoard {
 		}
 	}
 
-	private void checkConsistency() {
+	public void checkConsistency() {
 		Preconditions.checkArgument((white_pawns & white_knights & white_bishops & white_rooks & white_queens & white_kings) == 0);
 		Preconditions.checkArgument((black_pawns & black_knights & black_bishops & black_rooks & black_queens & black_kings) == 0);
 		long intersectBoard = occupiedSquares[WHITE] & occupiedSquares[BLACK];
@@ -226,8 +226,7 @@ public class ACEBoard {
                     """)
 					.formatted(BitboardUtils.toString(intersectBoard), whiteBoard(), blackBoard()));
 		}
-		;
-	}
+    }
 
 	private String whiteBoard() {
 		List<Byte> pieces = List.of(WHITE_PAWN_BYTE, WHITE_KNIGHT_BYTE, WHITE_BISHOP_BYTE, WHITE_ROOK_BYTE, WHITE_QUEEN_BYTE, WHITE_KING_BYTE);
@@ -243,8 +242,7 @@ public class ACEBoard {
 						final boolean white_king_or_rook_queen_side_moved_before,
 						final boolean white_king_or_rook_king_side_moved_before,
 						final boolean black_king_or_rook_queen_side_moved_before,
-						final boolean black_king_or_rook_king_side_moved_before,
-						final int fiftyMove_before) {
+						final boolean black_king_or_rook_king_side_moved_before) {
 		plyStack.pop();
 		toMove = opponent(toMove);
 
@@ -268,21 +266,22 @@ public class ACEBoard {
 		this.black_king_or_rook_king_side_moved = black_king_or_rook_king_side_moved_before;
 
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, coloredMovingPiece, UnapplyableMove.takePiece(move));
-		this.fiftyMove = fiftyMove_before;
+//		this.fiftyMove = fiftyMove_before;
 
 		if(DEBUG) {
 			checkConsistency();
 		}
 	}
 
-	private void xorMove(final long targetBitboard, final long fromBitboard,
+	private void xorMove(final long targetBitboard,
+						 final long fromBitboard,
 						 final short coloredMovingPiece,
 						 final int move,
 						 final boolean isApply) {
 		// TODO: Remove if statement
 		if(isWhite(toMove)) {
 			switch (coloredMovingPiece) {
-				case WHITE_PAWN_BYTE:   incFiftyClock = false; moveWhitePawn(fromBitboard, targetBitboard, move, isApply); break;
+				case WHITE_PAWN_BYTE:   moveWhitePawn(fromBitboard, targetBitboard, move, isApply); break;
 				case WHITE_KNIGHT_BYTE: moveWhiteKnight(fromBitboard, targetBitboard); break;
 				case WHITE_BISHOP_BYTE: moveWhiteBishop(fromBitboard, targetBitboard); break;
 				case WHITE_ROOK_BYTE:   moveWhiteRook  (fromBitboard, targetBitboard); break;
@@ -292,7 +291,7 @@ public class ACEBoard {
 			recalculateWhiteOccupiedSquares();
 		} else {
 			switch (coloredMovingPiece) {
-				case BLACK_PAWN_BYTE:   incFiftyClock = false; moveBlackPawn(fromBitboard, targetBitboard, move, isApply); break;
+				case BLACK_PAWN_BYTE:   moveBlackPawn(fromBitboard, targetBitboard, move, isApply); break;
 				case BLACK_KNIGHT_BYTE: moveBlackKnight(fromBitboard, targetBitboard); break;
 				case BLACK_BISHOP_BYTE: moveBlackBishop(fromBitboard, targetBitboard); break;
 				case BLACK_ROOK_BYTE:   moveBlackRook  (fromBitboard, targetBitboard); break;
@@ -318,22 +317,22 @@ public class ACEBoard {
 				case NO_PIECE: return;
 				case BLACK_PAWN_BYTE:
 					pieces[targetIdx] = BLACK_PAWN_BYTE;
-					incFiftyClock=false; black_pawns   ^= targetBitboard; break;
+					black_pawns   ^= targetBitboard; break;
 				case BLACK_KNIGHT_BYTE:
 					pieces[targetIdx] = BLACK_KNIGHT_BYTE;
-					incFiftyClock=false; black_knights ^= targetBitboard; break;
+					black_knights ^= targetBitboard; break;
 				case BLACK_BISHOP_BYTE:
 					pieces[targetIdx] = BLACK_BISHOP_BYTE;
-					incFiftyClock=false; black_bishops ^= targetBitboard; break;
+					black_bishops ^= targetBitboard; break;
 				case BLACK_ROOK_BYTE:
 					pieces[targetIdx] = BLACK_ROOK_BYTE;
-					incFiftyClock=false; takeBlackRook(targetBitboard); break;
+					takeBlackRook(targetBitboard); break;
 				case BLACK_QUEEN_BYTE:
 					pieces[targetIdx] = BLACK_QUEEN_BYTE;
-					incFiftyClock=false; black_queens  ^= targetBitboard; break;
+					black_queens  ^= targetBitboard; break;
 				case BLACK_KING_BYTE:
 					pieces[targetIdx] = BLACK_KING_BYTE;
-					incFiftyClock=false; black_kings   ^= targetBitboard; break;
+					black_kings   ^= targetBitboard; break;
 			}
 			// TODO: Move this so we don't have to do the if statement
 			recalculateBlackOccupiedSquares();
@@ -343,22 +342,22 @@ public class ACEBoard {
 					return;
 				case WHITE_PAWN_BYTE:
 					pieces[targetIdx] = WHITE_PAWN_BYTE;
-					incFiftyClock=false; white_pawns   ^= targetBitboard; break;
+					white_pawns   ^= targetBitboard; break;
 				case WHITE_KNIGHT_BYTE:
 					pieces[targetIdx] = WHITE_KNIGHT_BYTE;
-					incFiftyClock=false; white_knights ^= targetBitboard; break;
+					white_knights ^= targetBitboard; break;
 				case WHITE_BISHOP_BYTE:
 					pieces[targetIdx] = WHITE_BISHOP_BYTE;
-					incFiftyClock=false; white_bishops ^= targetBitboard; break;
+					white_bishops ^= targetBitboard; break;
 				case WHITE_ROOK_BYTE:
 					pieces[targetIdx] = WHITE_ROOK_BYTE;
-					incFiftyClock=false; takeWhiteRook(targetBitboard); break;
+					takeWhiteRook(targetBitboard); break;
 				case WHITE_QUEEN_BYTE:
 					pieces[targetIdx] = WHITE_QUEEN_BYTE;
-					incFiftyClock=false; white_queens  ^= targetBitboard; break;
+					white_queens  ^= targetBitboard; break;
 				case WHITE_KING_BYTE:
 					pieces[targetIdx] = WHITE_PAWN_BYTE;
-					incFiftyClock=false; white_kings   ^= targetBitboard; break;
+					white_kings   ^= targetBitboard; break;
 			}
 			recalculateWhiteOccupiedSquares();
 		}
@@ -781,9 +780,10 @@ public class ACEBoard {
 		return repeatedMove;
 	}
 
-	public int getFiftyMove() {
-		return fiftyMove;
-	}
+//	public int getFiftyMove() {
+//		// TODO: Implement using fiftyMove
+//		return 0;
+//	}
 
 	public int getToMove() {
 		return toMove;
