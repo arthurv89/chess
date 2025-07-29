@@ -1,13 +1,23 @@
-package nl.arthurvlug.chess.utils;
+package nl.arthurvlug.chess.utils.jackson;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public abstract class JacksonUtils {
-    private static final ObjectMapper objectMapper = new ObjectMapper()
-            .enable(SerializationFeature.INDENT_OUTPUT);;
+    private static final ObjectMapper objectMapper = createObjectMapper();
+
+    private static ObjectMapper createObjectMapper() {
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(byte[].class, new ByteArrayAsArraySerializer());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(module);
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return mapper;
+    }
 
 
     public static String toJson(Object object) {

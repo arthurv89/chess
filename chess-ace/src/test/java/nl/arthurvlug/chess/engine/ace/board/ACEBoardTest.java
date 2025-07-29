@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,12 +14,12 @@ import nl.arthurvlug.chess.engine.ace.KingEatingException;
 import nl.arthurvlug.chess.engine.ace.PieceUtils;
 import nl.arthurvlug.chess.engine.ace.alphabeta.AlphaBetaPruningAlgorithm;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
-import nl.arthurvlug.chess.utils.JacksonUtils;
+import nl.arthurvlug.chess.utils.board.pieces.Color;
+import nl.arthurvlug.chess.utils.jackson.JacksonUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils;
 import nl.arthurvlug.chess.utils.board.pieces.PieceSymbol;
-import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.game.Move;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -277,6 +278,26 @@ public class ACEBoardTest {
 
 	@Test
 	public void applyF4G3() {
+		String expectedInitialBoard = """
+				..♝....♜
+				♟.♘.♟♟♝♟
+				.♟..♚.♟.
+				.♗.♟♙♞..
+				.♙...♗..
+				♛.♙.♙...
+				♙....♙♙♙
+				♖..♕♔..♖
+				""";
+		String expectedBoardAfterMoving = """
+				..♝....♜
+				♟.♘.♟♟♝♟
+				.♟..♚.♟.
+				.♗.♟♙♞..
+				.♙......
+				♛.♙.♙.♗.
+				♙....♙♙♙
+				♖..♕♔..♖
+				""";
 		String initialEngineBoardJson = """
 				{
 				  "toMove" : 0,
@@ -300,84 +321,12 @@ public class ACEBoardTest {
 				  "white_king_or_rook_king_side_moved" : false,
 				  "black_king_or_rook_queen_side_moved" : true,
 				  "black_king_or_rook_king_side_moved" : false,
-				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 0, 0, 7, 7, 9, 7, 2, 0, 9, 0, 0, 0, 0, 10 ],
+				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 2, 0, 7, 7, 9, 7, 0, 0, 9, 0, 0, 0, 0, 10 ],
 				  "fiftyMove" : 1,
 				  "repeatedMove" : 0,
 				  "zobristHash" : -513536744,
 				  "plyStack" : [ 198045 ]
 				}""";
-
-		ACEBoard engineBoard = JacksonUtils.fromJson(initialEngineBoardJson, new TypeReference<>() {});
-
-//		InitialACEBoard engineBoard = InitialACEBoard.createInitialACEBoard();
-//		String initialEngineBoardJson = """
-//				{
-//				  "toMove" : 0,
-//				  "black_kings" : 1152921504606846976,
-//				  "white_kings" : 16,
-//				  "black_queens" : 576460752303423488,
-//				  "white_queens" : 8,
-//				  "white_rooks" : 129,
-//				  "black_rooks" : -9151314442816847872,
-//				  "white_bishops" : 36,
-//				  "black_bishops" : 2594073385365405696,
-//				  "white_knights" : 66,
-//				  "black_knights" : 4755801206503243776,
-//				  "white_pawns" : 65280,
-//				  "black_pawns" : 71776119061217280,
-//				  "occupiedSquares" : [ 65535, -281474976710656 ],
-//				  "unoccupied_board" : 281474976645120,
-//				  "occupied_board" : -281474976645121,
-//				  "enemy_and_empty_board" : -65536,
-//				  "white_king_or_rook_queen_side_moved" : false,
-//				  "white_king_or_rook_king_side_moved" : false,
-//				  "black_king_or_rook_queen_side_moved" : false,
-//				  "black_king_or_rook_king_side_moved" : false,
-//				  "pieces" : [ 4, 2, 3, 5, 6, 3, 2, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 10, 8, 9, 11, 12, 9, 8, 10 ],
-//				  "fiftyMove" : 0,
-//				  "repeatedMove" : 0,
-//				  "zobristHash" : -1072491330,
-//				  "plyStack" : [ ]
-//				}""";
-
-		System.out.println("Initial:\n" + printPieces(engineBoard));
-
-		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
-		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
-		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
-		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
-		int fiftyMove = engineBoard.getFiftyMove();
-		String engineBoardStringBefore = engineBoard.string();
-
-		String fromField = "g1";
-		String toField = "f3";
-		byte fromIdx = (byte) Long.numberOfTrailingZeros(bitboardFromFieldName(fromField));
-		byte targetIdx = (byte) Long.numberOfTrailingZeros(bitboardFromFieldName(toField));
-		int coloredMovingPiece = engineBoard.coloredPiece(fromField);
-		int move = create(
-				fromIdx,
-				targetIdx,
-				coloredMovingPiece,
-				NO_PIECE,
-				NO_PIECE
-		);
-
-		System.out.println();
-		System.out.println("before apply:\n" + printPieces(engineBoard));
-		engineBoard.apply(move);
-
-		System.out.println();
-		System.out.println("after apply:\n" + printPieces(engineBoard));
-		assertThat(engineBoard.string()).isEqualTo("""
-				..♝....♜
-				♟.♘.♟♟♝♟
-				.♟..♚.♟.
-				.♗.♟♙♞..
-				.♙...♗..
-				♛.♙.♙...
-				♙....♙♙♙
-				♖..♕♔..♖
-				""");
 
 		String expectedEngineBoardAfterMove = """
 				{
@@ -388,32 +337,46 @@ public class ACEBoardTest {
 				  "white_queens" : 8,
 				  "white_rooks" : 129,
 				  "black_rooks" : -9223372036854775808,
-				  "white_bishops" : 9126805504,
+				  "white_bishops" : 8594128896,
 				  "black_bishops" : 306244774661193728,
 				  "white_knights" : 1125899906842624,
 				  "black_knights" : 137438953472,
 				  "white_pawns" : 68754399488,
 				  "black_pawns" : 49893673004957696,
-				  "occupiedSquares" : [ 1125977788047769, -8867215859563560960 ],
-				  "unoccupied_board" : 8866089881775513190,
-				  "occupied_board" : -8866089881775513191,
+				  "occupiedSquares" : [ 1125977255371161, -8867215859563560960 ],
+				  "unoccupied_board" : 8866089882308189798,
+				  "occupied_board" : -8866089882308189799,
 				  "enemy_and_empty_board" : 8867215859563560959,
 				  "white_king_or_rook_queen_side_moved" : false,
 				  "white_king_or_rook_king_side_moved" : false,
 				  "black_king_or_rook_queen_side_moved" : true,
 				  "black_king_or_rook_king_side_moved" : false,
-				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 0, 0, 7, 7, 9, 7, 2, 0, 9, 0, 0, 0, 0, 10 ],
+				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 2, 0, 7, 7, 9, 7, 0, 0, 9, 0, 0, 0, 0, 10 ],
 				  "fiftyMove" : 2,
 				  "repeatedMove" : 0,
-				  "zobristHash" : -513536744,
-				  "plyStack" : [ 198045, 1350 ]
+				  "zobristHash" : -607014438,
+				  "plyStack" : [ 198045, 198045 ]
 				}""";
+
+		ACEBoard engineBoard = JacksonUtils.fromJson(initialEngineBoardJson, new TypeReference<>() {});
+		assertThat(engineBoard.string()).isEqualTo(expectedInitialBoard);
+		assertThat(JacksonUtils.toJson(engineBoard)).isEqualTo(initialEngineBoardJson);
+
+		boolean white_king_or_rook_queen_side_moved = engineBoard.white_king_or_rook_queen_side_moved;
+		boolean white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved;
+		boolean black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved;
+		boolean black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved;
+		int fiftyMove = engineBoard.getFiftyMove();
+		String engineBoardStringBefore = engineBoard.string();
+
+		int move = createMoveForSquares(engineBoard);
+		engineBoard.apply(move);
+
+		assertThat(engineBoard.string()).isEqualTo(expectedBoardAfterMoving);
+
 		assertThat(engineBoardStringBefore).isNotEqualTo(expectedEngineBoardAfterMove);
+		assertThat(JacksonUtils.toJson(engineBoard)).isEqualTo(expectedEngineBoardAfterMove);
 
-		String engineBoardAfterMove = JacksonUtils.toJson(engineBoard);
-		assertThat(engineBoardAfterMove).isEqualTo(expectedEngineBoardAfterMove);
-
-		System.out.println("before unapply:\n" + printPieces(engineBoard));
 		engineBoard.unapply(move,
 				white_king_or_rook_queen_side_moved,
 				white_king_or_rook_king_side_moved,
@@ -421,17 +384,24 @@ public class ACEBoardTest {
 				black_king_or_rook_king_side_moved,
 				fiftyMove);
 
-		System.out.println();
-		System.out.println("after unapply:\n" + printPieces(engineBoard));
 		assertThat(engineBoard.string()).isEqualTo(engineBoardStringBefore);
+		assertThat(JacksonUtils.toJson(engineBoard)).isEqualTo(initialEngineBoardJson);
+	}
 
-		System.out.println();
-		System.out.println("before to json:\n" + printPieces(engineBoard));
-		String engineBoardAfterUnapply = JacksonUtils.toJson(engineBoard);
-
-		System.out.println();
-		System.out.println("after to json:\n" + printPieces(engineBoard));
-		assertThat(engineBoardAfterUnapply).isEqualTo(initialEngineBoardJson);
+	private static int createMoveForSquares(ACEBoard engineBoard) {
+		String fromField = "f4";
+		String toField = "g3";
+		byte fromIdx = (byte) Long.numberOfTrailingZeros(bitboardFromFieldName(fromField));
+		byte targetIdx = (byte) Long.numberOfTrailingZeros(bitboardFromFieldName(toField));
+		int coloredMovingPiece = engineBoard.coloredPiece(fromField);
+		int move = create(
+				fromIdx,
+				targetIdx,
+				coloredMovingPiece,
+				NO_PIECE,
+				NO_PIECE
+		);
+		return move;
 	}
 
 	private static String printPieces(ACEBoard engineBoard) {
@@ -454,7 +424,7 @@ public class ACEBoardTest {
 			}
 			chunks.add("\n%s".formatted(sb));
 		}
-
+		Collections.reverse(chunks);
 		return chunks.toString();
 	}
 }
