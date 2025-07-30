@@ -5,7 +5,6 @@ import com.google.common.base.Stopwatch
 import com.google.common.collect.ImmutableList
 import com.google.common.eventbus.EventBus
 import lombok.Getter
-import lombok.extern.slf4j.Slf4j
 import nl.arthurvlug.chess.engine.ColorUtils
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType
 import nl.arthurvlug.chess.engine.ace.IncomingState
@@ -14,7 +13,6 @@ import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils
 import nl.arthurvlug.chess.engine.ace.board.AceBoardDebugUtils.string
-import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator
@@ -410,8 +408,8 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             } else {
                 ImmutableList.of()
             }
-            val `val` = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, height + 1, newMovesPlayed)
-            if (!isLost(`val`)) {
+            val recursiveVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, height + 1, newMovesPlayed)
+            if (!isLost(recursiveVal)) {
                 hasValidMove = true
             }
 
@@ -428,7 +426,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 throw RuntimeException("Uh oh!")
             }
 
-            score = max(score.toDouble(), `val`.toDouble()).toInt()
+            score = max(score.toDouble(), recursiveVal.toDouble()).toInt()
             if (score > alpha) {
                 if (cutoffEnabled && score >= beta) {
                     cutoffs++
