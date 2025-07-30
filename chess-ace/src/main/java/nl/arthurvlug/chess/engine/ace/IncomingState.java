@@ -8,8 +8,15 @@ import nl.arthurvlug.chess.utils.game.Move;
 
 @ToString
 @AllArgsConstructor
-@Getter
 public class IncomingState {
 	private final Move move;
 	private final ThinkingParams thinkingParams;
+
+	public Move getMove() {
+		return move;
+	}
+
+	public ThinkingParams getThinkingParams() {
+		return thinkingParams;
+	}
 }

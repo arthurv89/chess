@@ -6,10 +6,9 @@ import lombok.Getter;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
 import org.jetbrains.annotations.Nullable;
 
-class PrincipalVariation {
+public class PrincipalVariation {
 	static final int NO_MOVE = -9;
 	private int[] line = new int[100];
-	@Getter
 	private int lineElements = 0;
 
 	PrincipalVariation() {
@@ -54,5 +53,9 @@ class PrincipalVariation {
 
 	public void setLineElements(final int lineElements) {
 		this.lineElements = lineElements;
+	}
+
+	public int getLineElements() {
+		return lineElements;
 	}
 }

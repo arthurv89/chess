@@ -7,7 +7,6 @@ import lombok.Setter;
 import nl.arthurvlug.chess.engine.ace.evaluation.AceEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
 
-@Getter
 @Setter
 @Builder
 @AllArgsConstructor
@@ -22,5 +21,17 @@ public class AceConfiguration {
 
 	public AceConfiguration() {
 
+	}
+
+	public BoardEvaluator getEvaluator() {
+		return evaluator;
+	}
+
+	public int getSearchDepth() {
+		return searchDepth;
+	}
+
+	public int getQuiesceMaxDepth() {
+		return quiesceMaxDepth;
 	}
 }
