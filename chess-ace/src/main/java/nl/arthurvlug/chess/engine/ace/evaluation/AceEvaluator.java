@@ -39,9 +39,9 @@ public class AceEvaluator extends BoardEvaluator {
 //			if(engineBoard.getFiftyMove() >= 50) {
 //				return 0;
 //			}
-//			if(isThreeFoldRepetition(engineBoard)) {
-//				return 0;
-//			}
+			if(isThreeFoldRepetition(engineBoard)) {
+				return 0;
+			}
 //		}
 
 		return score;
