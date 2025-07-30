@@ -10,6 +10,7 @@ import nl.arthurvlug.chess.engine.ace.ColoredPieceType
 import nl.arthurvlug.chess.engine.ace.KingEatingException
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils
 import nl.arthurvlug.chess.engine.ace.board.AceBoardDebugUtils.checkConsistency
+import nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.*
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceTakeMoveGenerator
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
@@ -19,6 +20,8 @@ import nl.arthurvlug.chess.utils.board.FieldUtils
 import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils
 import nl.arthurvlug.chess.utils.board.pieces.PieceType
 import nl.arthurvlug.chess.utils.board.pieces.PieceTypeBytes
+import java.lang.Long.numberOfLeadingZeros
+import java.lang.Long.numberOfTrailingZeros
 import java.util.Collections
 import java.util.Random
 import java.util.Stack
@@ -95,7 +98,7 @@ open class ACEBoard protected constructor() {
                 for (color in 0..1) {
                     val coloredByte = ColoredPieceType.getColoredByte(pieceType, color.toByte())
                     val rand = random.nextInt()
-                    StaticAceBoard.zobristRandomTable[fieldIndex][coloredByte.toInt()] = rand
+                    zobristRandomTable[fieldIndex][coloredByte.toInt()] = rand
                 }
             }
         }
@@ -180,14 +183,14 @@ open class ACEBoard protected constructor() {
 
         val coloredMovingPiece = UnapplyableMove.coloredMovingPiece(move)
 
-        xorMove(targetBitboard, fromBitboard, coloredMovingPiece, move, true)
-        xorTakePiece(move, targetBitboard, targetIdx.toInt())
-
         val x = 1
         breakpoint()
 
         pieces[fromIdx.toInt()] = ColoredPieceType.NO_PIECE
         pieces[targetIdx.toInt()] = coloredMovingPiece
+
+        xorMove(targetBitboard, fromBitboard, coloredMovingPiece, move, true)
+        xorTakePiece(move, targetBitboard, targetIdx.toInt())
 
         //		if(incFiftyClock) {
 //			fiftyMove++;
@@ -368,18 +371,18 @@ open class ACEBoard protected constructor() {
     }
 
     private fun takeWhiteRook(targetBitboard: Long) {
-        if (targetBitboard == StaticAceBoard.a1Bitboard) {
+        if (targetBitboard == a1Bitboard) {
             white_king_or_rook_queen_side_moved = true
-        } else if (targetBitboard == StaticAceBoard.h1Bitboard) {
+        } else if (targetBitboard == h1Bitboard) {
             white_king_or_rook_king_side_moved = true
         }
         white_rooks = white_rooks xor targetBitboard
     }
 
     private fun takeBlackRook(targetBitboard: Long) {
-        if (targetBitboard == StaticAceBoard.a8Bitboard) {
+        if (targetBitboard == a8Bitboard) {
             black_king_or_rook_queen_side_moved = true
-        } else if (targetBitboard == StaticAceBoard.h8Bitboard) {
+        } else if (targetBitboard == h8Bitboard) {
             black_king_or_rook_king_side_moved = true
         }
         black_rooks = black_rooks xor targetBitboard
@@ -387,17 +390,20 @@ open class ACEBoard protected constructor() {
 
     private fun moveWhitePawn(fromBitboard: Long, targetBitboard: Long, move: Int, isApply: Boolean) {
         if (isApply) {
-            if ((targetBitboard and StaticAceBoard.last_row) != 0L) {
+            if ((targetBitboard and last_row) != 0L) {
                 val promotionPiece = UnapplyableMove.promotionPiece(move)
-                pieces[java.lang.Long.numberOfTrailingZeros(fromBitboard)] = ColoredPieceType.NO_PIECE
+                pieces[numberOfTrailingZeros(fromBitboard)] = ColoredPieceType.NO_PIECE
+                pieces[numberOfTrailingZeros(targetBitboard)] = promotionPiece
                 promoteWhitePawn(targetBitboard, promotionPiece)
             } else {
                 white_pawns = white_pawns xor targetBitboard
             }
             white_pawns = white_pawns xor fromBitboard
         } else {
-            if ((fromBitboard and StaticAceBoard.last_row) != 0L) {
+            if ((fromBitboard and last_row) != 0L) {
                 val promotionPiece = UnapplyableMove.promotionPiece(move)
+                pieces[numberOfTrailingZeros(fromBitboard)] = ColoredPieceType.NO_PIECE
+                pieces[numberOfTrailingZeros(targetBitboard)] = ColoredPieceType.WHITE_PAWN_BYTE
                 promoteWhitePawn(fromBitboard, promotionPiece)
             } else {
                 white_pawns = white_pawns xor fromBitboard
@@ -408,17 +414,20 @@ open class ACEBoard protected constructor() {
 
     private fun moveBlackPawn(fromBitboard: Long, targetBitboard: Long, move: Int, isApply: Boolean) {
         if (isApply) {
-            if ((targetBitboard and StaticAceBoard.first_row) != 0L) {
+            if ((targetBitboard and first_row) != 0L) {
                 val promotionPiece = UnapplyableMove.promotionPiece(move)
+                pieces[numberOfTrailingZeros(fromBitboard)] = ColoredPieceType.NO_PIECE
+                pieces[numberOfTrailingZeros(targetBitboard)] = promotionPiece
                 promoteBlackPawn(targetBitboard, promotionPiece)
             } else {
                 black_pawns = black_pawns xor targetBitboard
             }
             black_pawns = black_pawns xor fromBitboard
         } else {
-            if ((fromBitboard and StaticAceBoard.first_row) != 0L) {
+            if ((fromBitboard and first_row) != 0L) {
                 val promotionPiece = UnapplyableMove.promotionPiece(move)
-                pieces[java.lang.Long.numberOfTrailingZeros(fromBitboard)] = ColoredPieceType.NO_PIECE
+                pieces[numberOfTrailingZeros(fromBitboard)] = ColoredPieceType.NO_PIECE
+                pieces[numberOfTrailingZeros(targetBitboard)] = ColoredPieceType.BLACK_PAWN_BYTE
                 promoteBlackPawn(fromBitboard, promotionPiece)
             } else {
                 black_pawns = black_pawns xor fromBitboard
@@ -464,18 +473,18 @@ open class ACEBoard protected constructor() {
     }
 
     private fun moveWhiteRook(fromBitboard: Long, targetBitboard: Long) {
-        if (fromBitboard == StaticAceBoard.a1Bitboard) {
+        if (fromBitboard == a1Bitboard) {
             white_king_or_rook_queen_side_moved = true
-        } else if (fromBitboard == StaticAceBoard.h1Bitboard) {
+        } else if (fromBitboard == h1Bitboard) {
             white_king_or_rook_king_side_moved = true
         }
         white_rooks = white_rooks xor (fromBitboard xor targetBitboard)
     }
 
     private fun moveBlackRook(fromBitboard: Long, targetBitboard: Long) {
-        if (fromBitboard == StaticAceBoard.a8Bitboard) {
+        if (fromBitboard == a8Bitboard) {
             black_king_or_rook_queen_side_moved = true
-        } else if (fromBitboard == StaticAceBoard.h8Bitboard) {
+        } else if (fromBitboard == h8Bitboard) {
             black_king_or_rook_king_side_moved = true
         }
         black_rooks = black_rooks xor (fromBitboard xor targetBitboard)
@@ -493,31 +502,31 @@ open class ACEBoard protected constructor() {
         white_kings = white_kings xor (fromBitboard xor targetBitboard)
 
         if (isApply) {
-            if (fromBitboard == StaticAceBoard.e1Bitboard) {
+            if (fromBitboard == e1Bitboard) {
                 white_king_or_rook_king_side_moved = true
                 white_king_or_rook_queen_side_moved = true
-                if (targetBitboard == StaticAceBoard.c1Bitboard) {
-                    white_rooks = white_rooks xor StaticAceBoard.a1Bitboard xor StaticAceBoard.d1Bitboard
-                    pieces[StaticAceBoard.d1FieldIdx.toInt()] = ColoredPieceType.WHITE_ROOK_BYTE
-                    pieces[StaticAceBoard.a1FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
-                } else if (targetBitboard == StaticAceBoard.g1Bitboard) {
-                    white_rooks = white_rooks xor StaticAceBoard.h1Bitboard xor StaticAceBoard.f1Bitboard
-                    pieces[StaticAceBoard.f1FieldIdx.toInt()] = ColoredPieceType.WHITE_ROOK_BYTE
-                    pieces[StaticAceBoard.h1FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
+                if (targetBitboard == c1Bitboard) {
+                    white_rooks = white_rooks xor a1Bitboard xor d1Bitboard
+                    pieces[d1FieldIdx.toInt()] = ColoredPieceType.WHITE_ROOK_BYTE
+                    pieces[a1FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
+                } else if (targetBitboard == g1Bitboard) {
+                    white_rooks = white_rooks xor h1Bitboard xor f1Bitboard
+                    pieces[f1FieldIdx.toInt()] = ColoredPieceType.WHITE_ROOK_BYTE
+                    pieces[h1FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
                 }
             }
         } else {
-            if (targetBitboard == StaticAceBoard.e1Bitboard) {
-                if (fromBitboard == StaticAceBoard.c1Bitboard) {
+            if (targetBitboard == e1Bitboard) {
+                if (fromBitboard == c1Bitboard) {
                     white_king_or_rook_queen_side_moved = true
-                    white_rooks = white_rooks xor StaticAceBoard.a1Bitboard xor StaticAceBoard.d1Bitboard
-                    pieces[StaticAceBoard.a1FieldIdx.toInt()] = ColoredPieceType.WHITE_ROOK_BYTE
-                    pieces[StaticAceBoard.d1FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
-                } else if (fromBitboard == StaticAceBoard.g1Bitboard) {
+                    white_rooks = white_rooks xor a1Bitboard xor d1Bitboard
+                    pieces[a1FieldIdx.toInt()] = ColoredPieceType.WHITE_ROOK_BYTE
+                    pieces[d1FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
+                } else if (fromBitboard == g1Bitboard) {
                     white_king_or_rook_king_side_moved = true
-                    white_rooks = white_rooks xor StaticAceBoard.h1Bitboard xor StaticAceBoard.f1Bitboard
-                    pieces[StaticAceBoard.h1FieldIdx.toInt()] = ColoredPieceType.WHITE_ROOK_BYTE
-                    pieces[StaticAceBoard.f1FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
+                    white_rooks = white_rooks xor h1Bitboard xor f1Bitboard
+                    pieces[h1FieldIdx.toInt()] = ColoredPieceType.WHITE_ROOK_BYTE
+                    pieces[f1FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
                 }
             }
         }
@@ -529,31 +538,31 @@ open class ACEBoard protected constructor() {
 
         // Handle castling
         if (isApply) {
-            if (fromBitboard == StaticAceBoard.e8Bitboard) {
+            if (fromBitboard == e8Bitboard) {
                 black_king_or_rook_king_side_moved = true
                 black_king_or_rook_queen_side_moved = true
-                if (targetBitboard == StaticAceBoard.c8Bitboard) {
-                    black_rooks = black_rooks xor StaticAceBoard.a8Bitboard xor StaticAceBoard.d8Bitboard
-                    pieces[StaticAceBoard.d8FieldIdx.toInt()] = ColoredPieceType.BLACK_ROOK_BYTE
-                    pieces[StaticAceBoard.a8FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
-                } else if (targetBitboard == StaticAceBoard.g8Bitboard) {
-                    black_rooks = black_rooks xor StaticAceBoard.h8Bitboard xor StaticAceBoard.f8Bitboard
-                    pieces[StaticAceBoard.f8FieldIdx.toInt()] = ColoredPieceType.BLACK_ROOK_BYTE
-                    pieces[StaticAceBoard.h8FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
+                if (targetBitboard == c8Bitboard) {
+                    black_rooks = black_rooks xor a8Bitboard xor d8Bitboard
+                    pieces[d8FieldIdx.toInt()] = ColoredPieceType.BLACK_ROOK_BYTE
+                    pieces[a8FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
+                } else if (targetBitboard == g8Bitboard) {
+                    black_rooks = black_rooks xor h8Bitboard xor f8Bitboard
+                    pieces[f8FieldIdx.toInt()] = ColoredPieceType.BLACK_ROOK_BYTE
+                    pieces[h8FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
                 }
             }
         } else {
-            if (targetBitboard == StaticAceBoard.e8Bitboard) {
-                if (fromBitboard == StaticAceBoard.c8Bitboard) {
+            if (targetBitboard == e8Bitboard) {
+                if (fromBitboard == c8Bitboard) {
                     black_king_or_rook_queen_side_moved = false
-                    black_rooks = black_rooks xor StaticAceBoard.a8Bitboard xor StaticAceBoard.d8Bitboard
-                    pieces[StaticAceBoard.a8FieldIdx.toInt()] = ColoredPieceType.BLACK_ROOK_BYTE
-                    pieces[StaticAceBoard.d8FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
-                } else if (fromBitboard == StaticAceBoard.g8Bitboard) {
+                    black_rooks = black_rooks xor a8Bitboard xor d8Bitboard
+                    pieces[a8FieldIdx.toInt()] = ColoredPieceType.BLACK_ROOK_BYTE
+                    pieces[d8FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
+                } else if (fromBitboard == g8Bitboard) {
                     black_king_or_rook_king_side_moved = false
-                    black_rooks = black_rooks xor StaticAceBoard.h8Bitboard xor StaticAceBoard.f8Bitboard
-                    pieces[StaticAceBoard.h8FieldIdx.toInt()] = ColoredPieceType.BLACK_ROOK_BYTE
-                    pieces[StaticAceBoard.f8FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
+                    black_rooks = black_rooks xor h8Bitboard xor f8Bitboard
+                    pieces[h8FieldIdx.toInt()] = ColoredPieceType.BLACK_ROOK_BYTE
+                    pieces[f8FieldIdx.toInt()] = ColoredPieceType.NO_PIECE
                 }
             }
         }
@@ -613,7 +622,7 @@ open class ACEBoard protected constructor() {
     }
 
     private fun zobristPieceHash(fieldIdx: Int, coloredPiece: Byte): Int {
-        return StaticAceBoard.zobristRandomTable[fieldIdx][coloredPiece.toInt()]
+        return zobristRandomTable[fieldIdx][coloredPiece.toInt()]
     }
 
     fun addPiece(color: Byte, pieceType: PieceType, fieldIndex: Byte) {
