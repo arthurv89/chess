@@ -351,15 +351,16 @@ public class AlphaBetaPruningAlgorithmTest {
 
 	@Test
 	public void testShouldPromoteToKnightAndWin() {
-		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, "" +
-				".....♔..\n" +
-				".....♟♙♟\n" +
-				"......♟♚\n" +
-				"......♟♟\n" +
-				"........\n" +
-				"........\n" +
-				"........\n" +
-				"........\n");
+		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, """
+                .....♔..
+                .....♟♙♟
+                ......♟♚
+                ......♟♟
+                ........
+                ........
+                ........
+                ........
+                """);
 		algorithm.setDepth(3);
 		final Move move = getAceResponse(engineBoard);
 		assertEquals(MoveUtils.toMove("g7g8n"), move);

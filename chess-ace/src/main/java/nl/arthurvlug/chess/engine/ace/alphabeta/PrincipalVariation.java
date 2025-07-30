@@ -2,9 +2,9 @@ package nl.arthurvlug.chess.engine.ace.alphabeta;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import lombok.Getter;
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils;
+import org.jetbrains.annotations.Nullable;
 
 class PrincipalVariation {
 	static final int NO_MOVE = -9;

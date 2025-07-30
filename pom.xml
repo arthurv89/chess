@@ -12,12 +12,42 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<slf4j.version>2.0.16</slf4j.version>
 		<logback.version>1.5.11</logback.version>
-	</properties>
+        <kotlin.version>1.9.24</kotlin.version>
+    </properties>
 
 	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<testSourceDirectory>src/test/java</testSourceDirectory>
-	</build>
+        <plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version> <!-- latest stable -->
+			</plugin>
+			<plugin>
+				<groupId>org.jetbrains.kotlin</groupId>
+				<artifactId>kotlin-maven-plugin</artifactId>
+				<version>${kotlin.version}</version>
+				<executions>
+					<execution>
+						<id>kotlin-compile</id>
+						<phase>process-sources</phase> <!-- before compile -->
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>kotlin-test-compile</id>
+						<phase>process-test-sources</phase>
+						<goals>
+							<goal>test-compile</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<jvmTarget>${maven.compiler.target}</jvmTarget>
+				</configuration>
+			</plugin>
+		</plugins>
+    </build>
 
 	<repositories>
 		<repository>
@@ -90,5 +120,16 @@
 			<artifactId>fugue</artifactId>
 			<version>2.1.0</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

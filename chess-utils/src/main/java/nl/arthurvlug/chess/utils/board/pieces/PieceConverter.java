@@ -3,7 +3,7 @@ package nl.arthurvlug.chess.utils.board.pieces;
 import com.google.common.collect.BiMap;
 import java.util.Optional;
 
-abstract class PieceConverter {
+public abstract class PieceConverter {
 	public Optional<PieceType> pieceTypeFromChar(final char character) {
 		return getMap()
 				.values()
