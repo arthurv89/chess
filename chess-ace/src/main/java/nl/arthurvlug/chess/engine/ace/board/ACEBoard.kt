@@ -570,10 +570,8 @@ open class ACEBoard protected constructor() {
     }
 
     fun finalizeBitboards() {
-        occupiedSquares[ColorUtils.WHITE.toInt()] =
-            white_pawns or white_knights or white_bishops or white_rooks or white_queens or white_kings
-        occupiedSquares[ColorUtils.BLACK.toInt()] =
-            black_pawns or black_knights or black_bishops or black_rooks or black_queens or black_kings
+        occupiedSquares[ColorUtils.WHITE.toInt()] = white_pawns or white_knights or white_bishops or white_rooks or white_queens or white_kings
+        occupiedSquares[ColorUtils.BLACK.toInt()] = black_pawns or black_knights or black_bishops or black_rooks or black_queens or black_kings
 
         occupied_board = occupiedSquares[ColorUtils.WHITE.toInt()] or occupiedSquares[ColorUtils.BLACK.toInt()]
         unoccupied_board = occupied_board.inv()

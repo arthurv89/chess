@@ -31,17 +31,16 @@ object AceBoardDebugUtils {
         Preconditions.checkArgument((black_pawns and black_knights and black_bishops and black_rooks and black_queens and black_kings) == 0L)
         val intersectBoard = occupiedSquares[WHITE.toInt()] and occupiedSquares[BLACK.toInt()]
         if(intersectBoard != 0L) {
-            throw IllegalArgumentException(("""
+            throw IllegalArgumentException("""
                     White and black occupy the same fields.
 
                     Offending field:
-                    %s
+${BitboardUtils.toString(intersectBoard)}
                     White:
-                    %s
+${whiteBoard()}
                     Black:
-                    %s
+${blackBoard()}
                     """)
-                    .formatted(BitboardUtils.toString(intersectBoard), whiteBoard(), blackBoard()))
         }
     }
 

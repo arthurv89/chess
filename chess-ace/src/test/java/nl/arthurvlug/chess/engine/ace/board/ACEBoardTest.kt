@@ -57,7 +57,7 @@ class ACEBoardTest {
     }
 
     private fun createAlgorithm(configuration: AceConfiguration): AlphaBetaPruningAlgorithm {
-        val algorithm = AlphaBetaPruningAlgorithm(configuration)
+        val algorithm = AlphaBetaPruningAlgorithm(configuration, InitialACEBoard.createInitialACEBoard())
         algorithm.setEventBus(EventBus())
         return algorithm
     }

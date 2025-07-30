@@ -44,7 +44,7 @@ import kotlin.math.max
 
 class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
     configuration: AceConfiguration,
-    initialACEBoard: ACEBoard = InitialACEBoard.createInitialACEBoard()
+    initialACEBoard: ACEBoard
 ) {
     private val log by slf4j
 
@@ -140,7 +140,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                         "Start thinking for %d ms on depth %d. PV line: %s",
                         maxThinkingTime,
                         depthNow,
-                        Arrays.stream(pv!!.line).boxed().filter { x: Int -> x != PrincipalVariation.NO_MOVE }
+                        Arrays.stream(pv.line).boxed().filter { x: Int -> x != PrincipalVariation.NO_MOVE }
                             .map { m: Int? ->
                                 UnapplyableMoveUtils.toShortString(
                                     m!!

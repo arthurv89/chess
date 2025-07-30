@@ -47,6 +47,8 @@ public class InitialACEBoard extends ACEBoard {
 	}
 
 	public static InitialACEBoard createInitialACEBoard() {
-		return new InitialACEBoard();
+		InitialACEBoard initialACEBoard = new InitialACEBoard();
+		initialACEBoard.finalizeBitboards();
+		return initialACEBoard;
 	}
 }

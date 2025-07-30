@@ -43,13 +43,18 @@ public class ACEBoardUtils {
 	private static String dumper(final ACEBoard engineBoard, final Predicate<? super Field> fieldPredicate) {
 		return Arrays.stream(ACEBoard.class.getDeclaredFields())
 				.filter(fieldPredicate)
-				.map(f -> fieldString(engineBoard, ACEBoard.class, f))
+				.map(f -> Optional.ofNullable(fieldString(engineBoard, ACEBoard.class, f)))
+				.flatMap(x -> x.stream())
 				.collect(Collectors.joining("\n"));
 	}
 
 	private static String fieldString(final ACEBoard engineBoard, final Class<ACEBoard> engineBoardClass, final Field f) {
 		try {
 			final String fieldName = f.getName();
+			if(fieldName.equals("Companion")) {
+				return null;
+			}
+
 			final Field field = engineBoardClass.getDeclaredField(fieldName);
 			field.setAccessible(true);
 			final Object o = field.get(engineBoard);
