@@ -372,7 +372,6 @@ public class AlphaBetaPruningAlgorithm {
                 hasValidMove = true;
             }
 
-//			debugMoveStack(val);
 			thinkingEngineBoard.unapply(move,
 					white_king_or_rook_queen_side_moved,
 					white_king_or_rook_king_side_moved,
@@ -669,5 +668,9 @@ public class AlphaBetaPruningAlgorithm {
 
 	private static String toIndent(List<Integer> generatedMoves) {
 		return generatedMoves.stream().map(x -> "  ").collect(Collectors.joining());
+	}
+
+	public boolean debugBreakpoint() {
+		return stringDump(thinkingEngineBoard).contains("......♚♜");
 	}
 }

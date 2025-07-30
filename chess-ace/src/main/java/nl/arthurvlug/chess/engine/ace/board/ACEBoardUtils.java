@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType;
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils;
@@ -14,9 +13,6 @@ import nl.arthurvlug.chess.utils.StringToBoardConverter;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
-import nl.arthurvlug.chess.utils.board.pieces.PieceToChessSymbolConverter;
-
-import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.from;
 
 public class ACEBoardUtils {
 	public static ACEBoard initializedBoard(final Color toMoveColor, String board) {
@@ -68,13 +64,7 @@ public class ACEBoardUtils {
 				} else if(o instanceof int[][] arr) {
 					value = Arrays.deepToString(arr);
 				} else if(o instanceof byte[] arr) {
-					value = "\n" + IntStream.iterate(7, i -> i >= 0, i -> i - 1)
-							.mapToObj(i -> IntStream.range(0, 8)
-									.mapToObj(j -> Optional.ofNullable(ColoredPieceType.from(arr[i * 8 + j]))
-											.map(ColoredPiece::getCharacterString)
-											.orElse("."))
-									.collect(Collectors.joining()))
-							.collect(Collectors.joining("\n"));
+					value = "\n" + piecesToString(arr);
 				} else {
 					throw new RuntimeException("Could not convert " + o.getClass());
 				}
@@ -83,6 +73,16 @@ public class ACEBoardUtils {
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static String piecesToString(byte[] arr) {
+		return IntStream.iterate(7, i -> i >= 0, i -> i - 1)
+				.mapToObj(i -> IntStream.range(0, 8)
+						.mapToObj(j -> Optional.ofNullable(ColoredPieceType.from(arr[i * 8 + j]))
+								.map(ColoredPiece::getCharacterString)
+								.orElse("."))
+						.collect(Collectors.joining()))
+				.collect(Collectors.joining("\n"));
 	}
 
 	private static String longToBinaryLineString(Long l) {

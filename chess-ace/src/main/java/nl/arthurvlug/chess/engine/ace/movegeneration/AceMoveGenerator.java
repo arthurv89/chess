@@ -14,8 +14,10 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoard;
 import static nl.arthurvlug.chess.engine.ColorUtils.WHITE;
 import static nl.arthurvlug.chess.engine.ColorUtils.opponent;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.NO_PIECE;
-import static nl.arthurvlug.chess.engine.ace.board.ACEBoard.first_row;
-import static nl.arthurvlug.chess.engine.ace.board.ACEBoard.last_row;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.e1Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.e8Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.first_row;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.last_row;
 import static nl.arthurvlug.chess.engine.ace.movegeneration.Xray.*;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldIdx;
 
@@ -197,8 +199,8 @@ public class AceMoveGenerator {
 	static List<Integer> castlingMoves(final ACEBoard engineBoard) throws KingEatingException {
 		final List<Integer> moves = new ArrayList<>();
 		if(ColorUtils.isWhite(engineBoard.toMove)) {
-			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.white_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE], ACEBoard.e1Bitboard);
-			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.white_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE], ACEBoard.e1Bitboard);
+			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.white_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE], e1Bitboard);
+			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.white_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE], e1Bitboard);
 			if(canCastleQueenSide) {
 				Integer move = UnapplyableMoveUtils.createMove((byte) 4, (byte) 2, NO_PIECE, engineBoard);
 				moves.add(move);
@@ -208,8 +210,8 @@ public class AceMoveGenerator {
 				moves.add(move);
 			}
 		} else {
-			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.black_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE], ACEBoard.e8Bitboard);
-			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.black_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE], ACEBoard.e8Bitboard);
+			boolean canCastleQueenSide = canCastle(engineBoard, engineBoard.black_king_or_rook_queen_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_QUEEN_SIZE], e8Bitboard);
+			boolean canCastleKingSide = canCastle(engineBoard, engineBoard.black_king_or_rook_king_side_moved, Xray.castling_xray[engineBoard.toMove][CASTLE_KING_SIZE], e8Bitboard);
 			if(canCastleQueenSide) {
 				Integer move = UnapplyableMoveUtils.createMove((byte) 60, (byte) 58, NO_PIECE, engineBoard);
 				moves.add(move);

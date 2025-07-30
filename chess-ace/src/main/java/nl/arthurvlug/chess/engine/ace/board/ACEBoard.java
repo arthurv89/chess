@@ -25,6 +25,31 @@ import nl.arthurvlug.chess.utils.board.pieces.PieceTypeBytes;
 
 import static nl.arthurvlug.chess.engine.ColorUtils.*;
 import static nl.arthurvlug.chess.engine.ace.ColoredPieceType.*;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.a1Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.a1FieldIdx;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.a8Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.a8FieldIdx;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.c1Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.c8Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.d1Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.d1FieldIdx;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.d8Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.d8FieldIdx;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.e1Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.e8Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.f1Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.f1FieldIdx;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.f8Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.f8FieldIdx;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.first_row;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.g1Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.g8Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.h1Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.h1FieldIdx;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.h8Bitboard;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.h8FieldIdx;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.last_row;
+import static nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.zobristRandomTable;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldIdx;
 import static nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils.bitboardFromFieldName;
 import static nl.arthurvlug.chess.utils.MoveUtils.DEBUG;
@@ -65,36 +90,7 @@ public class ACEBoard {
 	// TODO: Implement
 	private int repeatedMove = 0;
 
-	// Black rook positions
-	private static final long a8Bitboard = bitboardFromFieldName("a8");
-	private static final long d8Bitboard = bitboardFromFieldName("d8");
-	private static final long f8Bitboard = bitboardFromFieldName("f8");
-	private static final long h8Bitboard = bitboardFromFieldName("h8");
-	// King positions
-	private static final long g8Bitboard = bitboardFromFieldName("g8");
-	private static final long c8Bitboard = bitboardFromFieldName("c8");
-	public static final long e8Bitboard = bitboardFromFieldName("e8");
-
-	// White castling positions
-	private static final long a1Bitboard = bitboardFromFieldName("a1");
-	private static final long d1Bitboard = bitboardFromFieldName("d1");
-	private static final long f1Bitboard = bitboardFromFieldName("f1");
-	private static final long h1Bitboard = bitboardFromFieldName("h1");
-	// King positions
-	private static final long g1Bitboard = bitboardFromFieldName("g1");
-	private static final long c1Bitboard = bitboardFromFieldName("c1");
-	public static final long e1Bitboard = bitboardFromFieldName("e1");
-
-	public final static long first_row = bitboardFromFieldName("a1 b1 c1 d1 e1 f1 g1 h1");
-	public final static long last_row = bitboardFromFieldName("a8 b8 c8 d8 e8 f8 g8 h8");
-
-	private final static short d1FieldIdx = FieldUtils.fieldIdx("d1");
-	private final static short f1FieldIdx = FieldUtils.fieldIdx("f1");
-	private final static short d8FieldIdx = FieldUtils.fieldIdx("d8");
-	private final static short f8FieldIdx = FieldUtils.fieldIdx("f8");
-
 	private int zobristHash;
-	private static int[][] zobristRandomTable = new int[64][13];
 
 	public Stack<Integer> plyStack = new Stack<>();
 //	public boolean incFiftyClock;
@@ -130,6 +126,7 @@ public class ACEBoard {
 			throw new RuntimeException("Could not determine moving piece while executing " + UnapplyableMoveUtils.toString(move));
 		}
 		apply(move);
+		System.out.println("XX");
 	}
 
 	public short coloredPiece(String fieldName) {
@@ -192,6 +189,9 @@ public class ACEBoard {
 		xorMove(targetBitboard, fromBitboard, coloredMovingPiece, move, true);
 		xorTakePiece(move, targetBitboard, targetIdx);
 
+		int x = 1;
+		breakpoint();
+
 		pieces[fromIdx] = NO_PIECE;
 		pieces[targetIdx] = coloredMovingPiece;
 
@@ -201,6 +201,7 @@ public class ACEBoard {
 //			fiftyMove = 0;
 //		}
 		toMove = opponent(toMove);
+		breakpoint();
 
 		finalizeBitboardsAfterApply(fromIdx, targetIdx, coloredMovingPiece, UnapplyableMove.takePiece(move));
 
@@ -361,6 +362,7 @@ public class ACEBoard {
 			}
 			recalculateWhiteOccupiedSquares();
 		}
+		breakpoint();
 	}
 
 	private void takeWhiteRook(final long targetBitboard) {
@@ -445,23 +447,19 @@ public class ACEBoard {
 	}
 
 	private void moveWhiteBishop(final long fromBitboard, final long targetBitboard) {
-		white_bishops ^= fromBitboard;
-		white_bishops ^= targetBitboard;
+		white_bishops ^= fromBitboard ^ targetBitboard;
 	}
 
 	private void moveBlackBishop(final long fromBitboard, final long targetBitboard) {
-		black_bishops ^= fromBitboard;
-		black_bishops ^= targetBitboard;
+		black_bishops ^= fromBitboard ^ targetBitboard;
 	}
 
 	private void moveBlackKnight(final long fromBitboard, final long targetBitboard) {
-		black_knights ^= fromBitboard;
-		black_knights ^= targetBitboard;
+		black_knights ^= fromBitboard ^ targetBitboard;
 	}
 
 	private void moveWhiteKnight(final long fromBitboard, final long targetBitboard) {
-		white_knights ^= fromBitboard;
-		white_knights ^= targetBitboard;
+		white_knights ^= fromBitboard ^ targetBitboard;
 	}
 
 	private void moveWhiteRook(final long fromBitboard, final long targetBitboard) {
@@ -471,8 +469,7 @@ public class ACEBoard {
 		else if(fromBitboard == h1Bitboard) {
 			white_king_or_rook_king_side_moved = true;
 		}
-		white_rooks ^= fromBitboard;
-		white_rooks ^= targetBitboard;
+		white_rooks ^= fromBitboard ^ targetBitboard;
 	}
 
 	private void moveBlackRook(final long fromBitboard, final long targetBitboard) {
@@ -482,49 +479,46 @@ public class ACEBoard {
 		else if(fromBitboard == h8Bitboard) {
 			black_king_or_rook_king_side_moved = true;
 		}
-		black_rooks ^= fromBitboard;
-		black_rooks ^= targetBitboard;
+		black_rooks ^= fromBitboard ^ targetBitboard;
 	}
 
 	private void moveBlackQueen(final long fromBitboard, final long targetBitboard) {
-		black_queens ^= fromBitboard;
-		black_queens ^= targetBitboard;
+		black_queens ^= fromBitboard ^ targetBitboard;
 	}
 
 	private void moveWhiteQueen(final long fromBitboard, final long targetBitboard) {
-		white_queens ^= fromBitboard;
-		white_queens ^= targetBitboard;
+		white_queens ^= fromBitboard ^ targetBitboard;
 	}
 
 	private void moveWhiteKing(final long fromBitboard, final long targetBitboard, final boolean isApply) {
-		white_kings ^= fromBitboard;
-		white_kings ^= targetBitboard;
-		if(isApply) {
+        white_kings ^= fromBitboard ^ targetBitboard;
+
+		if (isApply) {
 			if (fromBitboard == e1Bitboard) {
+				white_king_or_rook_king_side_moved = true;
+				white_king_or_rook_queen_side_moved = true;
 				if (targetBitboard == c1Bitboard) {
-					white_king_or_rook_queen_side_moved = true;
-					white_rooks ^= a1Bitboard;
-					white_rooks ^= d1Bitboard;
+					white_rooks = white_rooks ^ a1Bitboard ^ d1Bitboard;
 					pieces[d1FieldIdx] = WHITE_ROOK_BYTE;
+					pieces[a1FieldIdx] = NO_PIECE;
 				} else if (targetBitboard == g1Bitboard) {
-					white_king_or_rook_king_side_moved = true;
-					white_rooks ^= h1Bitboard;
-					white_rooks ^= f1Bitboard;
+					white_rooks = white_rooks ^ h1Bitboard ^ f1Bitboard;
 					pieces[f1FieldIdx] = WHITE_ROOK_BYTE;
+					pieces[h1FieldIdx] = NO_PIECE;
 				}
 			}
 		} else {
 			if (targetBitboard == e1Bitboard) {
 				if (fromBitboard == c1Bitboard) {
-					white_king_or_rook_queen_side_moved = false;
-					white_rooks ^= a1Bitboard;
-					white_rooks ^= d1Bitboard;
+					white_king_or_rook_queen_side_moved = true;
+					white_rooks = white_rooks ^ a1Bitboard ^ d1Bitboard;
+					pieces[a1FieldIdx] = WHITE_ROOK_BYTE;
 					pieces[d1FieldIdx] = NO_PIECE;
 				} else if (fromBitboard == g1Bitboard) {
-					white_king_or_rook_king_side_moved = false;
-					white_rooks ^= h1Bitboard;
-					white_rooks ^= f1Bitboard;
-					pieces[d8FieldIdx] = NO_PIECE;
+					white_king_or_rook_king_side_moved = true;
+					white_rooks = white_rooks ^ h1Bitboard ^ f1Bitboard;
+					pieces[h1FieldIdx] = WHITE_ROOK_BYTE;
+					pieces[f1FieldIdx] = NO_PIECE;
 				}
 			}
 		}
@@ -537,33 +531,34 @@ public class ACEBoard {
 		// Handle castling
 		if(isApply) {
 			if (fromBitboard == e8Bitboard) {
+				black_king_or_rook_king_side_moved = true;
+				black_king_or_rook_queen_side_moved = true;
 				if (targetBitboard == c8Bitboard) {
-					black_king_or_rook_queen_side_moved = true;
-					black_rooks ^= a8Bitboard;
-					this.black_rooks ^= d8Bitboard;
+					black_rooks = black_rooks ^ a8Bitboard ^ d8Bitboard;
 					pieces[d8FieldIdx] = BLACK_ROOK_BYTE;
+					pieces[a8FieldIdx] = NO_PIECE;
 				} else if (targetBitboard == g8Bitboard) {
-					black_king_or_rook_king_side_moved = true;
-					black_rooks ^= h8Bitboard;
-					black_rooks ^= f8Bitboard;
+					black_rooks = black_rooks ^ h8Bitboard ^ f8Bitboard;
 					pieces[f8FieldIdx] = BLACK_ROOK_BYTE;
+					pieces[h8FieldIdx] = NO_PIECE;
 				}
 			}
 		} else {
 			if (targetBitboard == e8Bitboard) {
 				if (fromBitboard == c8Bitboard) {
 					black_king_or_rook_queen_side_moved = false;
-					black_rooks ^= a8Bitboard;
-					black_rooks ^= d8Bitboard;
+					black_rooks = black_rooks ^ a8Bitboard ^ d8Bitboard;
+					pieces[a8FieldIdx] = BLACK_ROOK_BYTE;
 					pieces[d8FieldIdx] = NO_PIECE;
 				} else if (fromBitboard == g8Bitboard) {
 					black_king_or_rook_king_side_moved = false;
-					black_rooks ^= h8Bitboard;
-					black_rooks ^= f8Bitboard;
+					black_rooks = black_rooks ^ h8Bitboard ^ f8Bitboard;
+					pieces[h8FieldIdx] = BLACK_ROOK_BYTE;
 					pieces[f8FieldIdx] = NO_PIECE;
 				}
 			}
 		}
+		System.out.println("yY");
 	}
 
 	public void finalizeBitboards() {
@@ -577,7 +572,7 @@ public class ACEBoard {
 		computeZobristHash();
 	}
 
-	private void finalizeBitboardsAfterApply(final int fromIdx, final int targetIdx,
+	public void finalizeBitboardsAfterApply(final int fromIdx, final int targetIdx,
 											 final byte movingPiece, final byte takenPiece) {
 		mutateGeneralBoardOccupation();
 		mutateZobristHash(fromIdx, targetIdx, movingPiece, takenPiece);
@@ -803,5 +798,9 @@ public class ACEBoard {
 
 	public byte[] getPieces() {
 		return pieces;
+	}
+
+	public boolean breakpoint() {
+		return ACEBoardUtils.stringDump(this).contains("♚♜\n");
 	}
 }
