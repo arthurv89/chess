@@ -18,7 +18,12 @@ public class ACEBoardUtilsTest {
 
 		int move = UnapplyableMoveUtils.createMove("e2e4", aceBoard);
 		aceBoard.apply(move);
-		aceBoard.unapply(move, false, false, false, false);
+		aceBoard.unapply(move,
+				false,
+				false,
+				false,
+				false,
+				0);
 		assertThat(ACEBoardUtils.stringDump(aceBoard)).isEqualTo(ACEBoardUtils.stringDump(clone));
 
 		assertThat(ACEBoardUtils.stringDump(aceBoard)).isEqualTo("""

@@ -279,6 +279,7 @@ class ACEBoardTest {
         val white_king_or_rook_king_side_moved = newBoard.white_king_or_rook_king_side_moved
         val black_king_or_rook_queen_side_moved = newBoard.black_king_or_rook_queen_side_moved
         val black_king_or_rook_king_side_moved = newBoard.black_king_or_rook_king_side_moved
+        val fiftyMove = newBoard.fiftyMove
         //		boolean incFiftyClock = newBoard.incFiftyClock;
         newBoard.apply(move)
         newBoard.unapply(
@@ -286,7 +287,8 @@ class ACEBoardTest {
             white_king_or_rook_queen_side_moved,
             white_king_or_rook_king_side_moved,
             black_king_or_rook_queen_side_moved,
-            black_king_or_rook_king_side_moved
+            black_king_or_rook_king_side_moved,
+            fiftyMove
         )
         org.junit.jupiter.api.Assertions.assertEquals(
             ACEBoardUtils.stringDump(oldBoard),
@@ -325,7 +327,14 @@ class ACEBoardTest {
         val move = UnapplyableMoveUtils.createMove("d1d8", board)
         board.apply(move)
 
-        board.unapply(move, true, true, true, true)
+        board.unapply(
+            move,
+            true,
+            true,
+            true,
+            true,
+            0
+        )
 
         assertThat(ACEBoardUtils.stringDump(board)).isEqualTo(ACEBoardUtils.stringDump(oldBoard))
     }
@@ -370,7 +379,14 @@ class ACEBoardTest {
                 """.trimIndent()
         )
 
-        board.unapply(move, true, true, true, true)
+        board.unapply(
+            move,
+            true,
+            true,
+            true,
+            true,
+            0
+        )
         assertThat(ACEBoardUtils.stringDump(clonedBoard)).isEqualTo(ACEBoardUtils.stringDump(board))
     }
 
@@ -422,6 +438,7 @@ class ACEBoardTest {
 				  "black_king_or_rook_queen_side_moved" : true,
 				  "black_king_or_rook_king_side_moved" : false,
 				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 2, 0, 7, 7, 9, 7, 0, 0, 9, 0, 0, 0, 0, 10 ],
+				  "fiftyMove" : 0,
 				  "repeatedMove" : 0,
 				  "zobristHash" : -513536744,
 				  "plyStack" : [ 198045 ]
@@ -452,6 +469,7 @@ class ACEBoardTest {
 				  "black_king_or_rook_queen_side_moved" : true,
 				  "black_king_or_rook_king_side_moved" : false,
 				  "pieces" : [ 4, 0, 0, 5, 6, 0, 0, 4, 1, 0, 0, 0, 0, 1, 1, 1, 11, 0, 1, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 7, 1, 8, 0, 0, 0, 7, 0, 0, 12, 0, 7, 0, 7, 0, 2, 0, 7, 7, 9, 7, 0, 0, 9, 0, 0, 0, 0, 10 ],
+				  "fiftyMove" : 1,
 				  "repeatedMove" : 0,
 				  "zobristHash" : -607014438,
 				  "plyStack" : [ 198045, 198045 ]
@@ -466,6 +484,7 @@ class ACEBoardTest {
         val white_king_or_rook_king_side_moved = engineBoard.white_king_or_rook_king_side_moved
         val black_king_or_rook_queen_side_moved = engineBoard.black_king_or_rook_queen_side_moved
         val black_king_or_rook_king_side_moved = engineBoard.black_king_or_rook_king_side_moved
+        val fiftyMove = engineBoard.fiftyMove
 
         //		int fiftyMove = engineBoard.getFiftyMove();
 //		boolean incFiftyClock = engineBoard.incFiftyClock;
@@ -484,7 +503,8 @@ class ACEBoardTest {
             white_king_or_rook_queen_side_moved,
             white_king_or_rook_king_side_moved,
             black_king_or_rook_queen_side_moved,
-            black_king_or_rook_king_side_moved
+            black_king_or_rook_king_side_moved,
+            fiftyMove
         )
 
         assertThat(engineBoard.string()).isEqualTo(engineBoardStringBefore)
@@ -528,6 +548,7 @@ class ACEBoardTest {
 				  "black_king_or_rook_queen_side_moved" : true,
 				  "black_king_or_rook_king_side_moved" : true,
 				  "pieces" : [ 6, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 12, 10, 0, 0, 0, 0, 0, 0 ],
+				  "fiftyMove" : 0,
 				  "repeatedMove" : 0,
 				  "zobristHash" : -678140938,
 				  "plyStack" : [ ]
@@ -549,6 +570,7 @@ class ACEBoardTest {
         val white_king_or_rook_king_side_moved = aceBoard.white_king_or_rook_king_side_moved
         val black_king_or_rook_queen_side_moved = aceBoard.black_king_or_rook_queen_side_moved
         val black_king_or_rook_king_side_moved = aceBoard.black_king_or_rook_king_side_moved
+        val fiftyMove = aceBoard.fiftyMove
 
         val expected = ACEBoardUtils.stringDump(aceBoard)
 
@@ -558,7 +580,8 @@ class ACEBoardTest {
             white_king_or_rook_queen_side_moved,
             white_king_or_rook_king_side_moved,
             black_king_or_rook_queen_side_moved,
-            black_king_or_rook_king_side_moved
+            black_king_or_rook_king_side_moved,
+            fiftyMove
         )
 
         val actual = ACEBoardUtils.stringDump(aceBoard)

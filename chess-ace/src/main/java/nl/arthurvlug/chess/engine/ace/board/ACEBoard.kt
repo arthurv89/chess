@@ -1,14 +1,10 @@
 package nl.arthurvlug.chess.engine.ace.board
 
-import com.google.common.base.Joiner
-import com.google.common.base.Predicate
-import com.google.common.base.Predicates
-import com.google.common.base.Splitter
-import com.google.common.collect.Lists
 import nl.arthurvlug.chess.engine.ColorUtils
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType
 import nl.arthurvlug.chess.engine.ace.KingEatingException
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils
+import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils.stringDump
 import nl.arthurvlug.chess.engine.ace.board.AceBoardDebugUtils.checkConsistency
 import nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.*
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator
@@ -17,12 +13,9 @@ import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils
 import nl.arthurvlug.chess.utils.MoveUtils
 import nl.arthurvlug.chess.utils.board.FieldUtils
-import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils
 import nl.arthurvlug.chess.utils.board.pieces.PieceType
 import nl.arthurvlug.chess.utils.board.pieces.PieceTypeBytes
-import java.lang.Long.numberOfLeadingZeros
 import java.lang.Long.numberOfTrailingZeros
-import java.util.Collections
 import java.util.Random
 import java.util.Stack
 
@@ -79,7 +72,7 @@ open class ACEBoard protected constructor() {
         private set
 
     //	// TODO: Implement
-    //	private int fiftyMove = 0;
+    var fiftyMove: Int = 0;
     // TODO: Implement
     val repeatedMove: Int = 0
 
@@ -185,15 +178,17 @@ open class ACEBoard protected constructor() {
 
         val x = 1
         breakpoint()
-
         pieces[fromIdx.toInt()] = ColoredPieceType.NO_PIECE
         pieces[targetIdx.toInt()] = coloredMovingPiece
 
+        breakpoint()
         xorMove(targetBitboard, fromBitboard, coloredMovingPiece, move, true)
+        breakpoint()
         xorTakePiece(move, targetBitboard, targetIdx.toInt())
+        breakpoint()
 
         //		if(incFiftyClock) {
-//			fiftyMove++;
+        	fiftyMove++;
 //		} else {
 //			fiftyMove = 0;
 //		}
@@ -206,6 +201,7 @@ open class ACEBoard protected constructor() {
             coloredMovingPiece,
             UnapplyableMove.takePiece(move)
         )
+        breakpoint()
 
         if (MoveUtils.DEBUG) {
             checkConsistency()
@@ -217,7 +213,8 @@ open class ACEBoard protected constructor() {
         white_king_or_rook_queen_side_moved_before: Boolean,
         white_king_or_rook_king_side_moved_before: Boolean,
         black_king_or_rook_queen_side_moved_before: Boolean,
-        black_king_or_rook_king_side_moved_before: Boolean
+        black_king_or_rook_king_side_moved_before: Boolean,
+        fiftyMoveBefore: Int
     ) {
         plyStack.pop()
         toMove = ColorUtils.opponent(toMove)
@@ -230,16 +227,21 @@ open class ACEBoard protected constructor() {
         val fromBitboard = BitboardUtils.bitboardFromFieldIdx(fromIdx)
 
         // This is a reverse move
+        breakpoint()
         pieces[targetIdx.toInt()] = ColoredPieceType.NO_PIECE
         pieces[fromIdx.toInt()] = coloredMovingPiece
+        breakpoint()
 
         xorMove(fromBitboard, targetBitboard, coloredMovingPiece, move, false)
+        breakpoint()
         xorTakePiece(move, targetBitboard, targetIdx.toInt())
+        breakpoint()
 
         this.white_king_or_rook_queen_side_moved = white_king_or_rook_queen_side_moved_before
         this.white_king_or_rook_king_side_moved = white_king_or_rook_king_side_moved_before
         this.black_king_or_rook_queen_side_moved = black_king_or_rook_queen_side_moved_before
         this.black_king_or_rook_king_side_moved = black_king_or_rook_king_side_moved_before
+        this.fiftyMove = fiftyMoveBefore
 
         finalizeBitboardsAfterApply(
             fromIdx.toInt(),
@@ -247,8 +249,8 @@ open class ACEBoard protected constructor() {
             coloredMovingPiece,
             UnapplyableMove.takePiece(move)
         )
+        breakpoint()
 
-        //		this.fiftyMove = fiftyMove_before;
         if (MoveUtils.DEBUG) {
             checkConsistency()
         }
@@ -296,6 +298,7 @@ open class ACEBoard protected constructor() {
     }
 
     private fun xorTakePiece(move: Int, targetBitboard: Long, targetIdx: Int) {
+        breakpoint()
         val takePiece = UnapplyableMove.takePiece(move)
         if (ColorUtils.isWhite(toMove.toInt())) {
             when (takePiece) {
@@ -566,7 +569,6 @@ open class ACEBoard protected constructor() {
                 }
             }
         }
-        println("yY")
     }
 
     fun finalizeBitboards() {
@@ -734,10 +736,6 @@ open class ACEBoard protected constructor() {
         }
     }
 
-    //	public int getFiftyMove() {
-    //		// TODO: Implement using fiftyMove
-    //		return 0;
-    //	}
     fun getToMove(): Int {
         return toMove.toInt()
     }
@@ -751,7 +749,8 @@ open class ACEBoard protected constructor() {
     }
 
     fun breakpoint(): Boolean {
-        return ACEBoardUtils.stringDump(this).contains("♚♜\n")
+        val breakpointHit = stringDump(this).contains(".♙....♙.")
+        return breakpointHit
     }
 
     companion object {

@@ -12,6 +12,7 @@ import nl.arthurvlug.chess.engine.ace.KingEatingException
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils
+import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils.stringDump
 import nl.arthurvlug.chess.engine.ace.board.AceBoardDebugUtils.string
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator
@@ -223,6 +224,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         val white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved
         val black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved
         val black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved
+        val fiftyMove = thinkingEngineBoard.fiftyMove
 
         //		boolean incFiftyClock = thinkingEngineBoard.incFiftyClock;
         val line = PrincipalVariation()
@@ -268,7 +270,8 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                     white_king_or_rook_queen_side_moved,
                     white_king_or_rook_king_side_moved,
                     black_king_or_rook_queen_side_moved,
-                    black_king_or_rook_king_side_moved
+                    black_king_or_rook_king_side_moved,
+                    fiftyMove
                 )
                 val blackOccupiedSquaresAfter =
                     BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
@@ -278,14 +281,15 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 continue
             }
             // Do a recursive search
-            val `val` = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1, ImmutableList.of(move))
+            val recursionVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1, ImmutableList.of(move))
             //			debugMoveStack(val);
             thinkingEngineBoard.unapply(
                 move,
                 white_king_or_rook_queen_side_moved,
                 white_king_or_rook_king_side_moved,
                 black_king_or_rook_queen_side_moved,
-                black_king_or_rook_king_side_moved
+                black_king_or_rook_king_side_moved,
+                fiftyMove
             )
             val blackOccupiedSquaresAfter =
                 BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
@@ -293,7 +297,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 throw RuntimeException("Uh oh!")
             }
 
-            score = max(`val`.toDouble(), score.toDouble()).toInt()
+            score = max(recursionVal.toDouble(), score.toDouble()).toInt()
             if (score > alpha) {
                 updatePv(pv!!, line, move)
                 if (cutoffEnabled && score >= beta) {
@@ -326,6 +330,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         movesPlayed: List<Int>
     ): Int {
         var alpha = alpha
+        debugBreakpoint()
         val indent = toIndent(movesPlayed)
 
         LogUtils.logDebug("To move: " + thinkingEngineBoard.toMove, indent)
@@ -367,6 +372,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         val white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved
         val black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved
         val black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved
+        val fiftyMove = thinkingEngineBoard.fiftyMove
 
         //		boolean incFiftyClock = thinkingEngineBoard.incFiftyClock;
         var score = alpha
@@ -418,7 +424,8 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 white_king_or_rook_queen_side_moved,
                 white_king_or_rook_king_side_moved,
                 black_king_or_rook_queen_side_moved,
-                black_king_or_rook_king_side_moved
+                black_king_or_rook_king_side_moved,
+                fiftyMove
             )
             val dumpAfterUnapply = ACEBoardUtils.stringDump(thinkingEngineBoard)
             val thinkingEngineBoardAfter: String = thinkingEngineBoard.string()
@@ -512,6 +519,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         val white_king_or_rook_king_side_moved = thinkingEngineBoard.white_king_or_rook_king_side_moved
         val black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved
         val black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved
+        val fiftyMove = thinkingEngineBoard.fiftyMove
 
         //		boolean incFiftyClock = thinkingEngineBoard.incFiftyClock;
         for (move in takeMoves) {
@@ -526,7 +534,8 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 white_king_or_rook_queen_side_moved,
                 white_king_or_rook_king_side_moved,
                 black_king_or_rook_queen_side_moved,
-                black_king_or_rook_king_side_moved
+                black_king_or_rook_king_side_moved,
+                fiftyMove
             )
             val blackOccupiedSquaresAfter =
                 BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
@@ -708,10 +717,6 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         this.eventBus = eventBus
     }
 
-    fun debugBreakpoint(): Boolean {
-        return ACEBoardUtils.stringDump(thinkingEngineBoard).contains("......♚♜")
-    }
-
     companion object {
         private const val CURRENT_PLAYER_WINS = 1000000000
         private const val OTHER_PLAYER_WINS = -CURRENT_PLAYER_WINS
@@ -763,5 +768,10 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
 
     fun getCutoffs(): Int {
         return cutoffs
+    }
+
+    fun debugBreakpoint(): Boolean {
+//        return ACEBoardUtils.stringDump(thinkingEngineBoard).contains("......♚♜")
+        return thinkingEngineBoard.breakpoint()
     }
 }

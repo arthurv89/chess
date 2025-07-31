@@ -7,13 +7,15 @@ public class AceBoardTestUtils {
     public static UnapplyFlags defaultUnapplyFlags = new UnapplyFlags(true,
             true,
             true,
-            true);
+            true,
+            0);
 
     public static UnapplyFlags getUnapplyFlags(ACEBoard engineBoard) {
         return new UnapplyFlags(engineBoard.white_king_or_rook_queen_side_moved,
                 engineBoard.white_king_or_rook_king_side_moved,
                 engineBoard.black_king_or_rook_queen_side_moved,
-                engineBoard.black_king_or_rook_king_side_moved);
+                engineBoard.black_king_or_rook_king_side_moved,
+                engineBoard.getFiftyMove());
     }
 
     public static void unapply(ACEBoard engineBoard, int move, UnapplyFlags unapplyFlags) {
@@ -21,6 +23,7 @@ public class AceBoardTestUtils {
                 unapplyFlags.whiteKingOrRookQueenSideMoved(),
                 unapplyFlags.whiteKingOrRookKingSideMoved(),
                 unapplyFlags.blackKingOrRookQueenSideMoved(),
-                unapplyFlags.blackKingOrRookKingSideMoved());
+                unapplyFlags.blackKingOrRookKingSideMoved(),
+                unapplyFlags.fiftyMove());
     }
 }
