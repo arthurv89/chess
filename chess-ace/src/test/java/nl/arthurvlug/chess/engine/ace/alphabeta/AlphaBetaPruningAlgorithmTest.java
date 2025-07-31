@@ -104,7 +104,7 @@ public class AlphaBetaPruningAlgorithmTest {
 			........
 			♙♙......
 			♔♖......  */
-		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, DEFAULT_SEARCH_DEPTH));
+		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, 3));
 
 		assertEquals("b4c2", move.toString());
 	}
@@ -144,7 +144,7 @@ public class AlphaBetaPruningAlgorithmTest {
 				♔.......
 				""");
 
-		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, DEFAULT_SEARCH_DEPTH));
+		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, 3));
 		assertEquals("a5a6", move.toString());
 	}
 
@@ -339,7 +339,7 @@ public class AlphaBetaPruningAlgorithmTest {
                 ........
                 ........
                 """);
-		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, DEFAULT_SEARCH_DEPTH));
+		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, 3));
 		assertEquals(MoveUtils.toMove("g7g8n"), move);
 	}
 
@@ -470,7 +470,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void shouldCheckMateWithPawn() {
 		final ACEBoard engineBoard = createEngineBoard("b1c3 d7d5 e2e4 e7e6 e4d5 e6d5 d2d4 g8f6 g1f3 c8g4 d1e2 f8e7 e2b5 b8c6 b5b7 g4d7 f1b5 a8b8 b7a6 b8b6 a6a4 a7a6 b5e2 c6b4 a4b3 b4d3 e2d3 b6b3 a2b3 c7c5 a1a6 c5d4 f3d4 e7c5 c1e3 d8e7 a6a8 d7c8 a8c8 e8d7 d3f5 d7d6 c3b5 d6e5");
-		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, DEFAULT_SEARCH_DEPTH));
+		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, 3));
 		assertThat(move.toString()).isEqualTo("f2f4");
 	}
 
@@ -562,7 +562,7 @@ public class AlphaBetaPruningAlgorithmTest {
                 ........
                 """);
 
-		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, DEFAULT_SEARCH_DEPTH));
+		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, 3));
 		assertThat(move.toString()).isEqualTo("c4c5");
 	}
 
