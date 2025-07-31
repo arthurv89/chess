@@ -12,7 +12,6 @@ import nl.arthurvlug.chess.engine.ace.KingEatingException
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils
-import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils.stringDump
 import nl.arthurvlug.chess.engine.ace.board.AceBoardDebugUtils.string
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator
@@ -205,6 +204,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
     }
 
     fun alphaBetaRoot(depth: Int): Int? {
+        breakpoint()
         if (depth == 0) {
             return calculateScore(thinkingEngineBoard)
         }
@@ -215,6 +215,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         } catch (e: KingEatingException) {
             return null
         }
+        breakpoint()
 
         //		final List<Integer> generatedMoves = Lists.newArrayList(priorityMove.get());
         var alpha = OTHER_PLAYER_WINS * 2
@@ -235,8 +236,10 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         if (pvMove != PrincipalVariation.NO_MOVE) {
             swapPvMove(generatedMoves, pvMove)
         }
+        breakpoint()
         LogUtils.logDebug("Root: Moves after []: %s".formatted(movesToString(generatedMoves)))
         for (move in generatedMoves) {
+            breakpoint()
             LogUtils.logDebug(
                 "Root: Start Move: %s, score=%d. PV: [%d] %s".formatted(
                     UnapplyableMoveUtils.toShortString(
@@ -244,6 +247,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                     ), score, alpha, pv
                 )
             )
+            breakpoint()
             var newHeight: Int? = null
             if (move == generatedMoves[0]) {
                 newHeight = 1
@@ -253,7 +257,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
 //			final int fiftyMove = thinkingEngineBoard.getFiftyMove();
             val blackOccupiedSquaresBefore =
                 BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
+            breakpoint()
             thinkingEngineBoard.apply(move)
+            breakpoint()
             try {
                 thinkingEngineBoard.generateMoves()
             } catch (e: KingEatingException) {
@@ -265,6 +271,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                         )
                     )
                 )
+                breakpoint()
                 thinkingEngineBoard.unapply(
                     move,
                     white_king_or_rook_queen_side_moved,
@@ -273,6 +280,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                     black_king_or_rook_king_side_moved,
                     fiftyMove
                 )
+                breakpoint()
                 val blackOccupiedSquaresAfter =
                     BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
                 if (blackOccupiedSquaresAfter != blackOccupiedSquaresBefore) {
@@ -283,6 +291,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             // Do a recursive search
             val recursionVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1, ImmutableList.of(move))
             //			debugMoveStack(val);
+            breakpoint()
             thinkingEngineBoard.unapply(
                 move,
                 white_king_or_rook_queen_side_moved,
@@ -291,6 +300,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 black_king_or_rook_king_side_moved,
                 fiftyMove
             )
+            breakpoint()
             val blackOccupiedSquaresAfter =
                 BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
             if (blackOccupiedSquaresAfter != blackOccupiedSquaresBefore) {
@@ -330,7 +340,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         movesPlayed: List<Int>
     ): Int {
         var alpha = alpha
-        debugBreakpoint()
+        breakpoint()
         val indent = toIndent(movesPlayed)
 
         LogUtils.logDebug("To move: " + thinkingEngineBoard.toMove, indent)
@@ -402,8 +412,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             )
             // Do a recursive search
             val dumpBeforeApply = ACEBoardUtils.stringDump(thinkingEngineBoard)
-            val thinkingEngineBoardBefore: String = thinkingEngineBoard.string()
+            breakpoint()
             thinkingEngineBoard.apply(move)
+            breakpoint()
 
             var newHeight: Int? = null
             if (pvHeight != null && move == generatedMoves.first()) {
@@ -414,11 +425,13 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             } else {
                 ImmutableList.of()
             }
+            breakpoint()
             val recursiveVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, height + 1, newMovesPlayed)
             if (!isLost(recursiveVal)) {
                 hasValidMove = true
             }
 
+            breakpoint()
             thinkingEngineBoard.unapply(
                 move,
                 white_king_or_rook_queen_side_moved,
@@ -427,9 +440,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 black_king_or_rook_king_side_moved,
                 fiftyMove
             )
+            breakpoint()
             val dumpAfterUnapply = ACEBoardUtils.stringDump(thinkingEngineBoard)
-            val thinkingEngineBoardAfter: String = thinkingEngineBoard.string()
-            if (dumpAfterUnapply != dumpBeforeApply) {
+            if (dumpBeforeApply != dumpAfterUnapply) {
                 throw RuntimeException("Uh oh!")
             }
 
@@ -770,7 +783,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         return cutoffs
     }
 
-    fun debugBreakpoint(): Boolean {
+    private fun breakpoint(): Boolean {
 //        return ACEBoardUtils.stringDump(thinkingEngineBoard).contains("......♚♜")
         return thinkingEngineBoard.breakpoint()
     }

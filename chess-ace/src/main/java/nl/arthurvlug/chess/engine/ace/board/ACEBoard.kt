@@ -4,6 +4,7 @@ import nl.arthurvlug.chess.engine.ColorUtils
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType
 import nl.arthurvlug.chess.engine.ace.KingEatingException
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils
+import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils.piecesToString
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils.stringDump
 import nl.arthurvlug.chess.engine.ace.board.AceBoardDebugUtils.checkConsistency
 import nl.arthurvlug.chess.engine.ace.board.StaticAceBoard.*
@@ -11,7 +12,7 @@ import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceTakeMoveGenerator
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils
-import nl.arthurvlug.chess.utils.MoveUtils
+import nl.arthurvlug.chess.utils.MoveUtils.DEBUG
 import nl.arthurvlug.chess.utils.board.FieldUtils
 import nl.arthurvlug.chess.utils.board.pieces.PieceType
 import nl.arthurvlug.chess.utils.board.pieces.PieceTypeBytes
@@ -110,7 +111,7 @@ open class ACEBoard protected constructor() {
     fun apply(sMove: String) {
         val move = UnapplyableMoveUtils.createMove(sMove, this)
         val movingPiece = UnapplyableMove.coloredMovingPiece(move)
-        if (MoveUtils.DEBUG && movingPiece == ColoredPieceType.NO_PIECE) {
+        if (DEBUG && movingPiece == ColoredPieceType.NO_PIECE) {
             throw RuntimeException(
                 "Could not determine moving piece while executing " + UnapplyableMoveUtils.toString(
                     move
@@ -168,8 +169,10 @@ open class ACEBoard protected constructor() {
 //		incFiftyClock = true;
         plyStack.push(move)
         // TODO: Fix this by creating a more efficient Move object
+        breakpoint()
         val fromIdx = UnapplyableMove.fromIdx(move)
         val fromBitboard = BitboardUtils.bitboardFromFieldIdx(fromIdx)
+        breakpoint()
 
         val targetIdx = UnapplyableMove.targetIdx(move)
         val targetBitboard = BitboardUtils.bitboardFromFieldIdx(targetIdx)
@@ -179,12 +182,13 @@ open class ACEBoard protected constructor() {
         val x = 1
         breakpoint()
         pieces[fromIdx.toInt()] = ColoredPieceType.NO_PIECE
+        breakpoint()
         pieces[targetIdx.toInt()] = coloredMovingPiece
 
         breakpoint()
         xorMove(targetBitboard, fromBitboard, coloredMovingPiece, move, true)
         breakpoint()
-        xorTakePiece(move, targetBitboard, targetIdx.toInt())
+        xorTakePiece(move, targetBitboard, targetIdx.toInt(), true)
         breakpoint()
 
         //		if(incFiftyClock) {
@@ -203,7 +207,7 @@ open class ACEBoard protected constructor() {
         )
         breakpoint()
 
-        if (MoveUtils.DEBUG) {
+        if (DEBUG) {
             checkConsistency()
         }
     }
@@ -228,13 +232,12 @@ open class ACEBoard protected constructor() {
 
         // This is a reverse move
         breakpoint()
-        pieces[targetIdx.toInt()] = ColoredPieceType.NO_PIECE
         pieces[fromIdx.toInt()] = coloredMovingPiece
         breakpoint()
 
         xorMove(fromBitboard, targetBitboard, coloredMovingPiece, move, false)
         breakpoint()
-        xorTakePiece(move, targetBitboard, targetIdx.toInt())
+        xorTakePiece(move, targetBitboard, targetIdx.toInt(), false)
         breakpoint()
 
         this.white_king_or_rook_queen_side_moved = white_king_or_rook_queen_side_moved_before
@@ -251,7 +254,7 @@ open class ACEBoard protected constructor() {
         )
         breakpoint()
 
-        if (MoveUtils.DEBUG) {
+        if (DEBUG) {
             checkConsistency()
         }
     }
@@ -297,39 +300,36 @@ open class ACEBoard protected constructor() {
             black_pawns or black_knights or black_bishops or black_rooks or black_queens or black_kings
     }
 
-    private fun xorTakePiece(move: Int, targetBitboard: Long, targetIdx: Int) {
+    private fun xorTakePiece(move: Int, targetBitboard: Long, targetIdx: Int, isApply: Boolean) {
         breakpoint()
         val takePiece = UnapplyableMove.takePiece(move)
+        if(!isApply) {
+            pieces[targetIdx] = takePiece
+        }
         if (ColorUtils.isWhite(toMove.toInt())) {
             when (takePiece) {
                 ColoredPieceType.NO_PIECE -> return
                 ColoredPieceType.BLACK_PAWN_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.BLACK_PAWN_BYTE
                     black_pawns = black_pawns xor targetBitboard
                 }
 
                 ColoredPieceType.BLACK_KNIGHT_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.BLACK_KNIGHT_BYTE
                     black_knights = black_knights xor targetBitboard
                 }
 
                 ColoredPieceType.BLACK_BISHOP_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.BLACK_BISHOP_BYTE
                     black_bishops = black_bishops xor targetBitboard
                 }
 
                 ColoredPieceType.BLACK_ROOK_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.BLACK_ROOK_BYTE
                     takeBlackRook(targetBitboard)
                 }
 
                 ColoredPieceType.BLACK_QUEEN_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.BLACK_QUEEN_BYTE
                     black_queens = black_queens xor targetBitboard
                 }
 
                 ColoredPieceType.BLACK_KING_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.BLACK_KING_BYTE
                     black_kings = black_kings xor targetBitboard
                 }
             }
@@ -339,32 +339,26 @@ open class ACEBoard protected constructor() {
             when (takePiece) {
                 ColoredPieceType.NO_PIECE -> return
                 ColoredPieceType.WHITE_PAWN_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.WHITE_PAWN_BYTE
                     white_pawns = white_pawns xor targetBitboard
                 }
 
                 ColoredPieceType.WHITE_KNIGHT_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.WHITE_KNIGHT_BYTE
                     white_knights = white_knights xor targetBitboard
                 }
 
                 ColoredPieceType.WHITE_BISHOP_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.WHITE_BISHOP_BYTE
                     white_bishops = white_bishops xor targetBitboard
                 }
 
                 ColoredPieceType.WHITE_ROOK_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.WHITE_ROOK_BYTE
                     takeWhiteRook(targetBitboard)
                 }
 
                 ColoredPieceType.WHITE_QUEEN_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.WHITE_QUEEN_BYTE
                     white_queens = white_queens xor targetBitboard
                 }
 
                 ColoredPieceType.WHITE_KING_BYTE -> {
-                    pieces[targetIdx] = ColoredPieceType.WHITE_PAWN_BYTE
                     white_kings = white_kings xor targetBitboard
                 }
             }
@@ -749,7 +743,31 @@ open class ACEBoard protected constructor() {
     }
 
     fun breakpoint(): Boolean {
-        val breakpointHit = stringDump(this).contains(".♙....♙.")
+//        val match = stringDump(this).contains(
+//            "pieces=\n" +
+//                    "......♚.\n" +
+//                    ".....♟♟♟\n" +
+//                    "....♟...\n" +
+//                    ".♟......\n" +
+//                    "♙.......\n" +
+//                    ".♙....♙.\n" +
+//                    "♔.......\n" +
+//                    "........"
+//        )
+        val match = (
+            stringDump(this).hashCode() == -97317686 ||
+            piecesToString(pieces) == "" +
+                    "......♚.\n" +
+                    ".....♟♟♟\n" +
+                    "....♟...\n" +
+                    ".♟......\n" +
+                    "♙.......\n" +
+                    ".♙....♙.\n" +
+                    "♔.......\n" +
+                    "........" ||
+            pieces[FieldUtils.fieldIdx("g3").toInt()] == ColoredPieceType.BLACK_PAWN_BYTE
+        );
+        val breakpointHit = DEBUG && match
         return breakpointHit
     }
 

@@ -26,6 +26,8 @@ import static nl.arthurvlug.chess.engine.ace.board.InitialACEBoard.createInitial
 import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.DEFAULT_EVALUATOR;
 import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.DEFAULT_QUIESCE_MAX_DEPTH;
 import static nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration.DEFAULT_SEARCH_DEPTH;
+import static nl.arthurvlug.chess.engine.utils.AceBoardTestUtils.createEngineBoard;
+import static nl.arthurvlug.chess.engine.utils.AceBoardTestUtils.createEngineBoardForMoves;
 import static nl.arthurvlug.chess.utils.LogUtils.logDebug;
 import static nl.arthurvlug.chess.utils.board.pieces.PieceType.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -344,7 +346,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void shouldNotGiveAwayRook() {
 		final List<String> moves = ImmutableList.of("e2e4", "d7d5", "e4d5", "g8f6", "d2d4", "f6d5", "g1f3", "b8c6", "c2c4", "d5f6", "b1c3", "c8g4", "d4d5", "g4f3", "d1f3", "c6e5", "f3d1", "e7e6", "c1f4", "f8d6", "f4e5", "d6e5", "d5e6", "d8d1", "a1d1", "f7e6", "f1e2", "e8g8", "e1g1", "e5c3", "b2c3", "f6e4", "e2g4", "e6e5", "d1d7", "a8c8", "d7e7", "c8b8", "e7e5", "e4c3", "e5e7", "c7c5", "e7c7", "c3e4", "f2f3", "e4c3", "f1e1", "g8h8", "e1e7", "b8d8", "e7g7", "d8d1", "g1f2", "c3e4", "f2e2", "e4c3", "e2f2", "c3e4", "f2e3", "d1e1", "e3d3", "f8d8", "c7d7", "d8d7", "g7d7", "e4f6", "d7b7");
-		final ACEBoard engineBoard = createEngineBoard(moves);
+		final ACEBoard engineBoard = createEngineBoardForMoves(moves);
 
 		final Move move = getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, DEFAULT_SEARCH_DEPTH));
 		assertThat(move.toString()).isNotEqualTo("e1b1");
@@ -353,14 +355,8 @@ public class AlphaBetaPruningAlgorithmTest {
 	@Test
 	public void shouldCreateMove() {
 		final List<String> moves = ImmutableList.of("e2e4", "d7d5", "e4d5", "g8f6", "b1c3", "f6d5", "d1f3", "e7e6", "f1c4", "d5b4", "c4b3", "b8c6", "g1e2", "f8c5", "e1g1", "e8g8", "d2d3", "c6a5", "f3g3", "a5b3", "a2b3", "b4c2", "c1h6");
-		final ACEBoard engineBoard = createEngineBoard(moves);
+		final ACEBoard engineBoard = createEngineBoardForMoves(moves);
 		getAceResponse(createAlgorithm(engineBoard, DEFAULT_EVALUATOR, DEFAULT_SEARCH_DEPTH));// Should not throw an exception
-	}
-
-	private ACEBoard createEngineBoard(final List<String> moves) {
-		final ACEBoard engineBoard = createInitialACEBoard();
-		engineBoard.apply(moves);
-		return engineBoard;
 	}
 
 	@Test
@@ -368,16 +364,16 @@ public class AlphaBetaPruningAlgorithmTest {
 	public void shouldNotMoveKing() {
 		final List<String> beforeMoves = ImmutableList.copyOf("e2e4 d7d5 e4e5 b8c6 d2d4 e7e6 f2f4 d8h4".split(" "));
 		final List<String> g3Moves = ImmutableList.<String>builder().addAll(beforeMoves).add("g2g3").build();
-		final ACEBoard g3EngineBoard = createEngineBoard(g3Moves);
+		final ACEBoard g3EngineBoard = createEngineBoardForMoves(g3Moves);
 		final Integer g3Score = new SimplePieceEvaluator().evaluate(g3EngineBoard);
 		assertThat(g3Score).isEqualTo(-50);
 
 		final List<String> ke2Moves = ImmutableList.<String>builder().addAll(beforeMoves).add("e1e2").build();
-		final ACEBoard ke2EngineBoard = createEngineBoard(ke2Moves);
+		final ACEBoard ke2EngineBoard = createEngineBoardForMoves(ke2Moves);
 		final Integer ke1Score = new SimplePieceEvaluator().evaluate(ke2EngineBoard);
 		assertThat(ke1Score).isEqualTo(-35);
 
-		final ACEBoard beforeEngineBoard = createEngineBoard(beforeMoves);
+		final ACEBoard beforeEngineBoard = createEngineBoardForMoves(beforeMoves);
 
 		final Move move = getAceResponse(createAlgorithm(beforeEngineBoard, new SimplePieceEvaluator(), Integer.MAX_VALUE));// Should not throw an exception
 		assertThat(move.toString()).isEqualTo("e1d2");
@@ -542,15 +538,10 @@ public class AlphaBetaPruningAlgorithmTest {
 
 //	@Test
 //	public void whiteShouldNotCastleWhenInCheck() throws KingEatingException {
-//		final ACEBoard board = createEngineBoard("d2d4 d7d5 b1c3 g8f6 g1f3 c8g4 c1f4 c7c6 e2e3 d8b6 a1b1 e7e6 f1d3 f8b4 a2a3 b4c3 b2c3 b6a5 b1b7 a5c3");
+//		final ACEBoard board = createEngineBoardForMoves("d2d4 d7d5 b1c3 g8f6 g1f3 c8g4 c1f4 c7c6 e2e3 d8b6 a1b1 e7e6 f1d3 f8b4 a2a3 b4c3 b2c3 b6a5 b1b7 a5c3");
 //		final List<Integer> moves = board.generateMoves();
 //		logDebug(UnapplyableMoveUtils.listToString(moves));
 //	}
-
-	private ACEBoard createEngineBoard(final String movesString) {
-		final List<String> moves = ImmutableList.copyOf(movesString.split(" "));
-		return createEngineBoard(moves);
-	}
 
 	@Test
 	public void shouldTakeBackQueen() {
@@ -612,7 +603,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	}
 
 	private void checkMove(final List<String> moves, final Function<Move, Boolean> expect, final int depth, final BoardEvaluator evaluator, final int quiesceMaxDepth) {
-		final ACEBoard aceBoard = createEngineBoard(moves);
+		final ACEBoard aceBoard = createEngineBoardForMoves(moves);
 		final ACE ace = new ACE(depth, evaluator, quiesceMaxDepth, "ACE", new EventBus(), aceBoard);
 		final Move move = ace.startThinking().toBlocking().first();
 		logDebug("Move is: " + move);
