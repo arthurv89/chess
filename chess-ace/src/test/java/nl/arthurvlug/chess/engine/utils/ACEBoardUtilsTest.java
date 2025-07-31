@@ -192,6 +192,7 @@ public class ACEBoardUtilsTest {
 				........
 				♙♙♙♙♙♙♙♙
 				♖♘♗♕♔♗♘♖
+				fiftyMove=0
 				repeatedMove=0
 				zobristHash=-1072491330
 				plyStack=[]""");
