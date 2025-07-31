@@ -754,20 +754,19 @@ open class ACEBoard protected constructor() {
 //                    "♔.......\n" +
 //                    "........"
 //        )
-        val match = (
-            stringDump(this).hashCode() == -97317686 ||
-            piecesToString(pieces) == "" +
-                    "......♚.\n" +
-                    ".....♟♟♟\n" +
-                    "....♟...\n" +
-                    ".♟......\n" +
-                    "♙.......\n" +
-                    ".♙....♙.\n" +
-                    "♔.......\n" +
-                    "........" ||
-            pieces[FieldUtils.fieldIdx("g3").toInt()] == ColoredPieceType.BLACK_PAWN_BYTE
-        );
-        val breakpointHit = DEBUG && match
+        val breakpointHit = DEBUG && (
+                stringDump(this).hashCode() == -97317686 ||
+                        piecesToString(pieces) == "" +
+                        "......♚.\n" +
+                        ".....♟♟♟\n" +
+                        "....♟...\n" +
+                        ".♟......\n" +
+                        "♙.......\n" +
+                        ".♙....♙.\n" +
+                        "♔.......\n" +
+                        "........" ||
+                        pieces[FieldUtils.fieldIdx("g3").toInt()] == ColoredPieceType.BLACK_PAWN_BYTE
+                )
         return breakpointHit
     }
 

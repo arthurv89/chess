@@ -14,7 +14,7 @@ import nl.arthurvlug.chess.gui.game.player.Player;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 
 public class ApplicationModule extends AbstractModule {
-	private int computerTime = 10; // in minutes
+	private int computerTime = 1; // in minutes
 	private Color computerColor = Color.BLACK;
 
 	@Override
@@ -60,7 +60,7 @@ public class ApplicationModule extends AbstractModule {
 	}
 
 	private Game aceBlackOnlineSyncGame(final EventBus eventBus) {
-		Clock whiteClock = new Clock(100, 0);
+		Clock whiteClock = new Clock(1, 0);
 		Clock blackClock = new Clock(computerTime, 0);
 
 		Player whitePlayer = new HumanPlayer();

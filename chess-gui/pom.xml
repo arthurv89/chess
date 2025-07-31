@@ -11,6 +11,24 @@
 
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<mainClass>nl.arthurvlug.chess.gui.runner.Main_Chess</mainClass>
+					<arguments>
+						<argument>--add-opens</argument>
+						<argument>java.base/java.lang=ALL-UNNAMED</argument>
+					</arguments>
+					<systemPropertyVariables>
+						<javax.xml.parsers.SAXParserFactory>com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl</javax.xml.parsers.SAXParserFactory>
+					</systemPropertyVariables>
+					<vmArgs>--add-modules java.xml</vmArgs>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 
 	<dependencies>
