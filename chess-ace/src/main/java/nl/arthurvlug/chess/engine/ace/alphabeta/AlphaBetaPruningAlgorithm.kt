@@ -18,8 +18,6 @@ import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams
-import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils
-import nl.arthurvlug.chess.utils.LogUtils
 import nl.arthurvlug.chess.utils.LogUtils.logDebug
 import nl.arthurvlug.chess.utils.MoveUtils
 import nl.arthurvlug.chess.utils.MoveUtils.DEBUG
@@ -489,7 +487,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 }
             }
 
-            score = max(score.toDouble(), recursiveVal.toDouble()).toInt()
+            score = max(score, recursiveVal)
             if (score > alpha) {
                 if (cutoffEnabled && score >= beta) {
                     if(LOAD_TEST) {
@@ -537,7 +535,11 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
 
     private fun quiesceSearch(alpha: Int, beta: Int, depth: Int, height: Int, movesPlayed: List<Int>): Int {
         var alpha = alpha
-        val indent = toIndent(movesPlayed)
+        val indent = if(DEBUG) {
+            toIndent(movesPlayed)
+        } else {
+            ""
+        }
         performBrakeActions()
         var score = calculateScore(thinkingEngineBoard)
         eventBus!!.post(ThinkEvent(iterator))
@@ -576,7 +578,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
 
         for (move in takeMoves) {
             thinkingEngineBoard.apply(move)
-            val `val` = -quiesceSearch(-beta, -alpha, depth - 1, height + 1, movesPlayed)
+            val recursionValue = -quiesceSearch(-beta, -alpha, depth - 1, height + 1, movesPlayed)
             thinkingEngineBoard.unapply(
                 move,
                 white_king_or_rook_queen_side_moved,
@@ -585,9 +587,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 black_king_or_rook_king_side_moved,
                 fiftyMove
             )
-            score = max(score.toDouble(), `val`.toDouble()).toInt()
+            score = max(score, recursionValue)
             if (score > alpha) {
-                if (cutoffEnabled && `val` >= beta) {
+                if (cutoffEnabled && recursionValue >= beta) {
                     // Beta cut-off
                     if(LOAD_TEST) {
                         cutoffs++
