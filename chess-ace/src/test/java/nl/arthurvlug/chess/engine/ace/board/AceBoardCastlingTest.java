@@ -21,7 +21,6 @@ public class AceBoardCastlingTest {
 
 	@BeforeEach
     public void before() {
-        MoveUtils.DEBUG = true;
 		engineBoard = initializedBoard(WHITE, """
 				♜...♚..♜
 				........

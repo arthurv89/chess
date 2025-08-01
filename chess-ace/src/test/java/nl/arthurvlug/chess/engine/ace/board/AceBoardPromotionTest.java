@@ -28,11 +28,6 @@ public class AceBoardPromotionTest {
 				.......♟
 				....♔...""";
 
-	@BeforeEach
-    public void before() {
-        MoveUtils.DEBUG = true;
-    }
-
 	@Test
 	public void testPromotionWhite() {
 		engineBoard = initializedBoard(WHITE, board);

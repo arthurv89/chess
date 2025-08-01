@@ -98,29 +98,6 @@ open class ACEBoard protected constructor() {
         }
     }
 
-    fun apply(moveList: List<String>) {
-        if (moveList.isEmpty()) {
-            return
-        }
-
-        for (sMove in moveList) {
-            apply(sMove)
-        }
-    }
-
-    fun apply(sMove: String) {
-        val move = UnapplyableMoveUtils.createMove(sMove, this)
-        val movingPiece = UnapplyableMove.coloredMovingPiece(move)
-        if (DEBUG && movingPiece == ColoredPieceType.NO_PIECE) {
-            throw RuntimeException(
-                "Could not determine moving piece while executing " + UnapplyableMoveUtils.toString(
-                    move
-                )
-            )
-        }
-        apply(move)
-    }
-
     fun coloredPiece(fieldName: String?): Byte {
         return coloredPiece(FieldUtils.fieldIdx(fieldName))
     }
@@ -169,10 +146,10 @@ open class ACEBoard protected constructor() {
 //		incFiftyClock = true;
         plyStack.push(move)
         // TODO: Fix this by creating a more efficient Move object
-        breakpoint()
+        DEBUG && breakpoint()
         val fromIdx = UnapplyableMove.fromIdx(move)
         val fromBitboard = BitboardUtils.bitboardFromFieldIdx(fromIdx)
-        breakpoint()
+        DEBUG && breakpoint()
 
         val targetIdx = UnapplyableMove.targetIdx(move)
         val targetBitboard = BitboardUtils.bitboardFromFieldIdx(targetIdx)
@@ -180,16 +157,16 @@ open class ACEBoard protected constructor() {
         val coloredMovingPiece = UnapplyableMove.coloredMovingPiece(move)
 
         val x = 1
-        breakpoint()
+        DEBUG && breakpoint()
         pieces[fromIdx.toInt()] = ColoredPieceType.NO_PIECE
-        breakpoint()
+        DEBUG && breakpoint()
         pieces[targetIdx.toInt()] = coloredMovingPiece
 
-        breakpoint()
+        DEBUG && breakpoint()
         xorMove(targetBitboard, fromBitboard, coloredMovingPiece, move, true)
-        breakpoint()
+        DEBUG && breakpoint()
         xorTakePiece(move, targetBitboard, targetIdx.toInt(), true)
-        breakpoint()
+        DEBUG && breakpoint()
 
         //		if(incFiftyClock) {
         	fiftyMove++;
@@ -197,7 +174,7 @@ open class ACEBoard protected constructor() {
 //			fiftyMove = 0;
 //		}
         toMove = ColorUtils.opponent(toMove)
-        breakpoint()
+        DEBUG && breakpoint()
 
         finalizeBitboardsAfterApply(
             fromIdx.toInt(),
@@ -205,7 +182,7 @@ open class ACEBoard protected constructor() {
             coloredMovingPiece,
             UnapplyableMove.takePiece(move)
         )
-        breakpoint()
+        DEBUG && breakpoint()
 
         if (DEBUG) {
             checkConsistency()
@@ -231,14 +208,14 @@ open class ACEBoard protected constructor() {
         val fromBitboard = BitboardUtils.bitboardFromFieldIdx(fromIdx)
 
         // This is a reverse move
-        breakpoint()
+        DEBUG && breakpoint()
         pieces[fromIdx.toInt()] = coloredMovingPiece
-        breakpoint()
+        DEBUG && breakpoint()
 
         xorMove(fromBitboard, targetBitboard, coloredMovingPiece, move, false)
-        breakpoint()
+        DEBUG && breakpoint()
         xorTakePiece(move, targetBitboard, targetIdx.toInt(), false)
-        breakpoint()
+        DEBUG && breakpoint()
 
         this.white_king_or_rook_queen_side_moved = white_king_or_rook_queen_side_moved_before
         this.white_king_or_rook_king_side_moved = white_king_or_rook_king_side_moved_before
@@ -252,7 +229,7 @@ open class ACEBoard protected constructor() {
             coloredMovingPiece,
             UnapplyableMove.takePiece(move)
         )
-        breakpoint()
+        DEBUG && breakpoint()
 
         if (DEBUG) {
             checkConsistency()
@@ -301,7 +278,7 @@ open class ACEBoard protected constructor() {
     }
 
     private fun xorTakePiece(move: Int, targetBitboard: Long, targetIdx: Int, isApply: Boolean) {
-        breakpoint()
+        DEBUG && breakpoint()
         val takePiece = UnapplyableMove.takePiece(move)
         if(!isApply) {
             pieces[targetIdx] = takePiece
@@ -364,7 +341,7 @@ open class ACEBoard protected constructor() {
             }
             recalculateWhiteOccupiedSquares()
         }
-        breakpoint()
+        DEBUG && breakpoint()
     }
 
     private fun takeWhiteRook(targetBitboard: Long) {

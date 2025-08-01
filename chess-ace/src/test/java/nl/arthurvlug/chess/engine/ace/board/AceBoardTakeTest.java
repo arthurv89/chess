@@ -28,11 +28,6 @@ public class AceBoardTakeTest {
 				.......♙
 				....♔...""";
 
-	@BeforeEach
-    public void before() {
-        MoveUtils.DEBUG = true;
-    }
-
 	@Test
 	public void testTakeWhite() {
 		engineBoard = initializedBoard(WHITE, board);

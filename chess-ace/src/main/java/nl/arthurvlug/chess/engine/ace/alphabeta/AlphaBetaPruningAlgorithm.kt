@@ -12,7 +12,6 @@ import nl.arthurvlug.chess.engine.ace.KingEatingException
 import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils
-import nl.arthurvlug.chess.engine.ace.board.AceBoardDebugUtils.string
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator
@@ -21,7 +20,10 @@ import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils
 import nl.arthurvlug.chess.utils.LogUtils
+import nl.arthurvlug.chess.utils.LogUtils.logDebug
 import nl.arthurvlug.chess.utils.MoveUtils
+import nl.arthurvlug.chess.utils.MoveUtils.DEBUG
+import nl.arthurvlug.chess.utils.MoveUtils.LOAD_TEST
 import nl.arthurvlug.chess.utils.ThinkEvent
 import nl.arthurvlug.chess.utils.board.FieldUtils
 import nl.arthurvlug.chess.utils.board.pieces.PieceType
@@ -99,18 +101,17 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         }
     }
 
-    fun startThinking(engineBoard: ACEBoard): Observable<Move?> {
+    fun startThinking(engineBoard: ACEBoard, infinite: Boolean): Observable<Move?> {
         this.currentEngineBoard = engineBoard
-        return startThinking()
+        return startThinking(infinite)
     }
 
-    fun startThinking(): Observable<Move?> {
+    fun startThinking(infinite: Boolean): Observable<Move?> {
         return Observable.create { sub: Subscriber<in Move?> ->
-            this.subscriber =
-                sub
+            this.subscriber = sub
             Thread {
                 try {
-                    think()
+                    think(infinite)
                     sub.onCompleted()
                 } catch (e: Exception) {
                     sub.onError(e)
@@ -119,12 +120,25 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         }
     }
 
-    private fun think() {
-        info("New thinking process")
+    private fun think(infinite: Boolean) {
+        while(true) {
+            thinkAndEmit()
+            if(!infinite) {
+                return
+            }
+        }
+    }
+
+    private fun thinkAndEmit() {
+        if(DEBUG) {
+            info("New thinking process")
+        }
         newIncomingState = Optional.empty()
-        cutoffs = 0
-        nodesEvaluated = 0
-        hashHits = 0
+        if(LOAD_TEST) {
+            cutoffs = 0
+            nodesEvaluated = 0
+            hashHits = 0
+        }
 
 
         pv = PrincipalVariation()
@@ -133,22 +147,26 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             depthNow = startDepth
             while (depthNow <= depth) {
                 thinkingEngineBoard = currentEngineBoard.cloneBoard()
-                info(
-                    String.format(
-                        "Start thinking for %d ms on depth %d. PV line: %s",
-                        maxThinkingTime,
-                        depthNow,
-                        Arrays.stream(pv.line).boxed().filter { x: Int -> x != PrincipalVariation.NO_MOVE }
-                            .map { m: Int? ->
-                                UnapplyableMoveUtils.toShortString(
-                                    m!!
-                                )
-                            }.collect(Collectors.toList())
+                if(DEBUG) {
+                    info(
+                        String.format(
+                            "Start thinking for %d ms on depth %d. PV line: %s",
+                            maxThinkingTime,
+                            depthNow,
+                            Arrays.stream(pv.line).boxed().filter { x: Int -> x != PrincipalVariation.NO_MOVE }
+                                .map { m: Int? ->
+                                    UnapplyableMoveUtils.toShortString(
+                                        m!!
+                                    )
+                                }.collect(Collectors.toList())
+                        )
                     )
-                )
+                }
                 val bestMove = alphaBetaRoot(depthNow)
                 if (bestMove == null) {
-                    err("No best move")
+                    if(DEBUG) {
+                        err("No best move")
+                    }
                     emitNewMove(null)
                     return
                 }
@@ -157,29 +175,40 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                     return
                 }
                 if (depthNow > 1000) {
-                    err("depth is extremely high")
+                    if(DEBUG) {
+                        err("depth is extremely high")
+                    }
                     return
                 }
-                info(String.format("Done thinking %d moves.", depthNow))
+                if(DEBUG) {
+                    info(String.format("Done thinking %d moves.", depthNow))
+                }
                 depthNow++
             }
-            info(String.format("Done thinking ALL %d moves.", depth))
+            if(DEBUG) {
+                info(String.format("Done thinking ALL %d moves.", depth))
+            }
         } catch (e: NewEngineBoardException) {
             // TODO: Where is newIncomingEngineBoard set?
             thinkingEngineBoard = newIncomingEngineBoard.get()
             newIncomingEngineBoard = Optional.empty()
             pv = PrincipalVariation()
         } catch (e: OpponentMoveCameInException) {
-            err("Our turn!")
+            if(DEBUG) {
+                err("Our turn!")
+            }
             val incomingState = newIncomingState.get()
             newIncomingState = Optional.empty()
 
             val move = incomingState.move
             if (move != null) {
                 val newMove = MoveUtils.toEngineMove(move)
-                err("New move was: $newMove")
+                if(DEBUG) {
+                    err("New move was: $newMove")
+                }
 
-                if (pv!!.pvHead == UnapplyableMoveUtils.createMove(newMove, currentEngineBoard)) {
+                val iMove = UnapplyableMoveUtils.createMove(newMove, currentEngineBoard)
+                if (pv.pvHead == iMove) {
                     System.arraycopy(pv!!.rawLine, 1, pv!!.rawLine, 0, pv!!.rawLine.size - 1)
                     startDepth = depthNow - 1
                 } else {
@@ -187,24 +216,28 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                     startDepth = 1
                 }
 
-                info("Applying $newMove")
-                currentEngineBoard.apply(newMove)
+                if(DEBUG) {
+                    info("Applying $newMove")
+                }
+                currentEngineBoard.apply(iMove)
             }
 
             maxThinkingTime = thinkingTime(incomingState.thinkingParams)
-            info("Set max thinking time to $maxThinkingTime")
+            if(DEBUG) {
+                info("Set max thinking time to $maxThinkingTime")
+            }
             timer = Stopwatch.createStarted()
             iterator = 0
         } catch (e: OutOfThinkingTimeException) {
             // Out of time: just play the move
-            val move = pv!!.pvHead
-            System.arraycopy(pv!!.rawLine, 1, pv!!.rawLine, 0, pv!!.rawLine.size - 1)
+            val move = pv.pvHead
+            System.arraycopy(pv.rawLine, 1, pv.rawLine, 0, pv.rawLine.size - 1)
             applyAndEmitMove(move)
         }
     }
 
     fun alphaBetaRoot(depth: Int): Int? {
-        breakpoint()
+        DEBUG && breakpoint()
         if (depth == 0) {
             return calculateScore(thinkingEngineBoard)
         }
@@ -215,7 +248,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         } catch (e: KingEatingException) {
             return null
         }
-        breakpoint()
+        DEBUG && breakpoint()
 
         //		final List<Integer> generatedMoves = Lists.newArrayList(priorityMove.get());
         var alpha = OTHER_PLAYER_WINS * 2
@@ -236,42 +269,44 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         if (pvMove != PrincipalVariation.NO_MOVE) {
             swapPvMove(generatedMoves, pvMove)
         }
-        breakpoint()
-        LogUtils.logDebug("Root: Moves after []: %s".formatted(movesToString(generatedMoves)))
+        DEBUG && breakpoint()
+        if (DEBUG) {
+            logDebug("Root: Moves after []: %s".formatted(movesToString(generatedMoves)))
+        }
         for (move in generatedMoves) {
-            breakpoint()
-            LogUtils.logDebug(
-                "Root: Start Move: %s, score=%d. PV: [%d] %s".formatted(
-                    UnapplyableMoveUtils.toShortString(
-                        move
-                    ), score, alpha, pv
+            DEBUG && breakpoint()
+            if (DEBUG) {
+                logDebug(
+                    "Root: Start Move: %s, score=%d. PV: [%d] %s".formatted(
+                        UnapplyableMoveUtils.toShortString(
+                            move
+                        ), score, alpha, pv
+                    )
                 )
-            )
-            breakpoint()
+            }
+            DEBUG && breakpoint()
             var newHeight: Int? = null
             if (move == generatedMoves[0]) {
                 newHeight = 1
             }
 
-            //			info("Investigating " + UnapplyableMoveUtils.toString(move));
-//			final int fiftyMove = thinkingEngineBoard.getFiftyMove();
-            val blackOccupiedSquaresBefore =
-                BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
-            breakpoint()
+            DEBUG && breakpoint()
             thinkingEngineBoard.apply(move)
-            breakpoint()
+            DEBUG && breakpoint()
             try {
                 thinkingEngineBoard.generateMoves()
             } catch (e: KingEatingException) {
                 // The applied move is not valid. Ignore
-                LogUtils.logDebug(
-                    "Root: The applied move %s is not valid. Ignore".formatted(
-                        UnapplyableMoveUtils.toShortString(
-                            move
+                if (DEBUG) {
+                    logDebug(
+                        "Root: The applied move %s is not valid. Ignore".formatted(
+                            UnapplyableMoveUtils.toShortString(
+                                move
+                            )
                         )
                     )
-                )
-                breakpoint()
+                }
+                DEBUG && breakpoint()
                 thinkingEngineBoard.unapply(
                     move,
                     white_king_or_rook_queen_side_moved,
@@ -280,18 +315,13 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                     black_king_or_rook_king_side_moved,
                     fiftyMove
                 )
-                breakpoint()
-                val blackOccupiedSquaresAfter =
-                    BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
-                if (blackOccupiedSquaresAfter != blackOccupiedSquaresBefore) {
-                    throw RuntimeException("Uh oh!")
-                }
+                DEBUG && breakpoint()
                 continue
             }
             // Do a recursive search
             val recursionVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1, ImmutableList.of(move))
             //			debugMoveStack(val);
-            breakpoint()
+            DEBUG && breakpoint()
             thinkingEngineBoard.unapply(
                 move,
                 white_king_or_rook_queen_side_moved,
@@ -300,33 +330,36 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 black_king_or_rook_king_side_moved,
                 fiftyMove
             )
-            breakpoint()
-            val blackOccupiedSquaresAfter =
-                BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
-            if (blackOccupiedSquaresAfter != blackOccupiedSquaresBefore) {
-                throw RuntimeException("Uh oh!")
-            }
+            DEBUG && breakpoint()
 
-            score = max(recursionVal.toDouble(), score.toDouble()).toInt()
+            score = max(recursionVal, score)
             if (score > alpha) {
-                updatePv(pv!!, line, move)
+                updatePv(pv, line, move)
                 if (cutoffEnabled && score >= beta) {
-                    cutoffs++
-                    LogUtils.logDebug(String.format("[ABPruning Root] Best move score: %d", score))
+                    if(LOAD_TEST) {
+                        cutoffs++
+                    }
+                    if(DEBUG) {
+                        logDebug(String.format("[ABPruning Root] Best move score: %d", score))
+                    }
                     return move
                 }
                 alpha = score
                 bestMove = move
             }
-            LogUtils.logDebug(
+            if (DEBUG) {
+                logDebug(
                 "Root: End Move: %s, score=%d. PV: [%d] %s".formatted(
                     UnapplyableMoveUtils.toShortString(
                         move
                     ), score, alpha, pv
                 )
             )
+                }
         }
-        info("[ABPruning Root] Best move score: $alpha")
+        if(DEBUG) {
+            info("[ABPruning Root] Best move score: $alpha")
+        }
         return bestMove
     }
 
@@ -340,22 +373,25 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         movesPlayed: List<Int>
     ): Int {
         var alpha = alpha
-        breakpoint()
-        val indent = toIndent(movesPlayed)
+        DEBUG && breakpoint()
+        val indent = if(DEBUG) {
+            toIndent(movesPlayed)
+        } else {
+            ""
+        }
 
-        LogUtils.logDebug("To move: " + thinkingEngineBoard.toMove, indent)
-        //		logDebug("AlphaBeta. Depth=%s".formatted(depth), indent);
+        if(DEBUG) {
+            logDebug("To move: " + thinkingEngineBoard.toMove, indent)
+        }
         performBrakeActions()
 
-        //		if (thinkingEngineBoard.getFiftyMove() >= 50 || thinkingEngineBoard.getRepeatedMove() >= 3) {
-//			logDebug("50 move / repeated move", indent);
-//			return 0;
-//		}
         var hashf = TranspositionTable.hashfALPHA
         val zobristHash = thinkingEngineBoard.zobristHash
         val hashElement = transpositionTable[zobristHash]
         if (hashElement != null) {
-            hashHits++
+            if(LOAD_TEST) {
+                hashHits++
+            }
             if (hashElement.depth >= depth) {
                 if (hashElement.flags == TranspositionTable.hashfEXACT) return hashElement.`val`
                 if ((hashElement.flags == TranspositionTable.hashfALPHA) && (hashElement.`val` <= alpha)) return alpha
@@ -373,7 +409,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         try {
             generatedMoves = thinkingEngineBoard.generateMoves()
         } catch (e: KingEatingException) {
-            LogUtils.logDebug("Stopping because the player can now take the king", indent)
+            if(DEBUG) {
+                logDebug("Stopping because the player can now take the king", indent)
+            }
             return CURRENT_PLAYER_WINS - height
         }
 
@@ -393,28 +431,31 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             }
         }
 
-        LogUtils.logDebug(
-            "Moves after []: %s - %s".formatted(
-                movesToString(movesPlayed),
-                movesToString(generatedMoves)
-            ), indent
-        )
-        var hasValidMove = false
-        //		final int fiftyMove = thinkingEngineBoard.getFiftyMove();
-        for (move in generatedMoves) {
-            LogUtils.logDebug(
-                "Start Move: %s, score=%d. PV: [%d] %s".formatted(
-                    UnapplyableMoveUtils.toShortString(move),
-                    score,
-                    alpha,
-                    pv
+        if(DEBUG) {
+            logDebug(
+                "Moves after []: %s - %s".formatted(
+                    movesToString(movesPlayed),
+                    movesToString(generatedMoves)
                 ), indent
             )
+        }
+        var hasValidMove = false
+        for (move in generatedMoves) {
+            if (DEBUG) {
+                logDebug(
+                    "Start Move: %s, score=%d. PV: [%d] %s".formatted(
+                        UnapplyableMoveUtils.toShortString(move),
+                        score,
+                        alpha,
+                        pv
+                    ), indent
+                )
+            }
             // Do a recursive search
             val dumpBeforeApply = ACEBoardUtils.stringDump(thinkingEngineBoard)
-            breakpoint()
+            DEBUG && breakpoint()
             thinkingEngineBoard.apply(move)
-            breakpoint()
+            DEBUG && breakpoint()
 
             var newHeight: Int? = null
             if (pvHeight != null && move == generatedMoves.first()) {
@@ -425,13 +466,13 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             } else {
                 ImmutableList.of()
             }
-            breakpoint()
+            DEBUG && breakpoint()
             val recursiveVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, height + 1, newMovesPlayed)
             if (!isLost(recursiveVal)) {
                 hasValidMove = true
             }
 
-            breakpoint()
+            DEBUG && breakpoint()
             thinkingEngineBoard.unapply(
                 move,
                 white_king_or_rook_queen_side_moved,
@@ -440,19 +481,25 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 black_king_or_rook_king_side_moved,
                 fiftyMove
             )
-            breakpoint()
-            val dumpAfterUnapply = ACEBoardUtils.stringDump(thinkingEngineBoard)
-            if (dumpBeforeApply != dumpAfterUnapply) {
-                throw RuntimeException("Uh oh!")
+            DEBUG && breakpoint()
+            if(DEBUG) {
+                val dumpAfterUnapply = ACEBoardUtils.stringDump(thinkingEngineBoard)
+                if (dumpBeforeApply != dumpAfterUnapply) {
+                    throw RuntimeException("Uh oh!")
+                }
             }
 
             score = max(score.toDouble(), recursiveVal.toDouble()).toInt()
             if (score > alpha) {
                 if (cutoffEnabled && score >= beta) {
-                    cutoffs++
+                    if(LOAD_TEST) {
+                        cutoffs++
+                    }
                     transpositionTable[depth, score, TranspositionTable.hashfBETA, move] =
                         zobristHash
-                    LogUtils.logDebug("BETA CUT OFF. $score >= $beta", indent)
+                    if(DEBUG) {
+                        logDebug("BETA CUT OFF. $score >= $beta", indent)
+                    }
                     return score
                 }
                 updatePv(pline, line, move)
@@ -460,35 +507,22 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 alpha = score
                 hashf = TranspositionTable.hashfEXACT
             }
-            LogUtils.logDebug(
-                "End Move: %s, score=%d. PV: [%d] %s".formatted(
-                    UnapplyableMoveUtils.toShortString(move),
-                    score,
-                    alpha,
-                    pv
-                ), indent
-            )
+            if (DEBUG) {
+                logDebug(
+                    "End Move: %s, score=%d. PV: [%d] %s".formatted(
+                        UnapplyableMoveUtils.toShortString(move),
+                        score,
+                        alpha,
+                        pv
+                    ), indent
+                )
+            }
         }
 
         if (!hasValidMove) {
-//			thinkingEngineBoard.toMove = opponent(thinkingEngineBoard.toMove);
-//			thinkingEngineBoard.apply(bestMove);
-//			boolean isCheckmate = thinkingEngineBoard.canTakeKing();
-//			if(isCheckmate) {
-//				return score;
-//			}
-
             thinkingEngineBoard.toMove = ColorUtils.opponent(thinkingEngineBoard.toMove)
             thinkingEngineBoard.mutateGeneralBoardOccupation()
-            //			thinkingEngineBoard.apply(bestMove);
             val opponentCanTakeKing = thinkingEngineBoard.canTakeKing()
-
-            //			thinkingEngineBoard.unapply(bestMove,
-//					thinkingEngineBoard.white_king_or_rook_queen_side_moved,
-//					thinkingEngineBoard.white_king_or_rook_king_side_moved,
-//					thinkingEngineBoard.black_king_or_rook_queen_side_moved,
-//					thinkingEngineBoard.black_king_or_rook_king_side_moved,
-//					thinkingEngineBoard.getFiftyMoveClock());
             thinkingEngineBoard.toMove = ColorUtils.opponent(thinkingEngineBoard.toMove)
 
             if (!opponentCanTakeKing) {
@@ -512,11 +546,15 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         }
 
         if (score >= beta) {
-            LogUtils.logDebug("Beta cutoff", indent)
+            if(DEBUG) {
+                logDebug("Beta cutoff", indent)
+            }
             return score
         }
         if (score > alpha) {
-            LogUtils.logDebug("Alpha cutoff", indent)
+            if(DEBUG) {
+                logDebug("Alpha cutoff", indent)
+            }
             alpha = score
         }
 
@@ -524,7 +562,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         try {
             takeMoves = thinkingEngineBoard.generateTakeMoves()
         } catch (e: KingEatingException) {
-            LogUtils.logDebug("Eating king", indent)
+            if(DEBUG) {
+                logDebug("Eating king", indent)
+            }
             return CURRENT_PLAYER_WINS - height
         }
 
@@ -534,14 +574,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         val black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved
         val fiftyMove = thinkingEngineBoard.fiftyMove
 
-        //		boolean incFiftyClock = thinkingEngineBoard.incFiftyClock;
         for (move in takeMoves) {
-//			final int fiftyMove = thinkingEngineBoard.getFiftyMove();
-            val blackOccupiedSquaresBefore =
-                BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
             thinkingEngineBoard.apply(move)
             val `val` = -quiesceSearch(-beta, -alpha, depth - 1, height + 1, movesPlayed)
-            //			debugMoveStack(val);
             thinkingEngineBoard.unapply(
                 move,
                 white_king_or_rook_queen_side_moved,
@@ -550,32 +585,31 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 black_king_or_rook_king_side_moved,
                 fiftyMove
             )
-            val blackOccupiedSquaresAfter =
-                BitboardUtils.toString(thinkingEngineBoard.occupiedSquares[ColorUtils.BLACK.toInt()])
-            if (blackOccupiedSquaresAfter != blackOccupiedSquaresBefore) {
-                throw RuntimeException("Uh oh!")
-            }
-
-            //			debugMoveStack("Evaluating board\n{}Score: {}\n", thinkingEngineBoard.string(), val);
             score = max(score.toDouble(), `val`.toDouble()).toInt()
             if (score > alpha) {
                 if (cutoffEnabled && `val` >= beta) {
                     // Beta cut-off
-                    cutoffs++
-                    LogUtils.logDebug("Beta cut-off", indent)
+                    if(LOAD_TEST) {
+                        cutoffs++
+                    }
+                    if(DEBUG) {
+                        logDebug("Beta cut-off", indent)
+                    }
                     return beta
                 }
 
                 alpha = score
             }
-            LogUtils.logDebug(
-                "End Move: %s, score=%d. PV: [%d] %s".formatted(
-                    UnapplyableMoveUtils.toShortString(move),
-                    score,
-                    alpha,
-                    pv
-                ), indent
-            )
+            if (DEBUG) {
+                logDebug(
+                    "End Move: %s, score=%d. PV: [%d] %s".formatted(
+                        UnapplyableMoveUtils.toShortString(move),
+                        score,
+                        alpha,
+                        pv
+                    ), indent
+                )
+            }
         }
         return score
     }
@@ -598,12 +632,16 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
     private fun applyAndEmitMove(unapplyableMove: Int) {
         val bestMove = toMove(unapplyableMove)
 
-        info("Applying after emitting: " + UnapplyableMoveUtils.toString(unapplyableMove))
+        if(DEBUG) {
+            info("Applying after emitting: " + UnapplyableMoveUtils.toString(unapplyableMove))
+        }
         currentEngineBoard.apply(unapplyableMove)
 
         // Start thinking about the next move
         // Emit the move that we found
-        info("Emitting move $bestMove")
+        if(DEBUG) {
+            info("Emitting move $bestMove")
+        }
         emitNewMove(bestMove)
     }
 
@@ -612,7 +650,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
     }
 
     private fun emitNewMove(move: Move?) {
-        info("Emitting new move: $move")
+        if(DEBUG) {
+            info("Emitting new move: $move")
+        }
         this.maxThinkingTime = Int.MAX_VALUE
         iterator = 0
         subscriber!!.onNext(move)
@@ -643,18 +683,24 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             return
         }
 
-        //		info(String.format("Time spent %d/%d ms", timer.elapsed(TimeUnit.MILLISECONDS), maxThinkingTime));
+        //		if(DEBUG) {info(String.format("Time spent %d/%d ms", timer.elapsed(TimeUnit.MILLISECONDS), maxThinkingTime));
         // TODO: Wrap the incoming events into an IncomingEvent object and check here whether is Optional.empty or not
         if (newIncomingEngineBoard.isPresent) {
-            err("New incoming engineboard: $newIncomingEngineBoard")
+            if(DEBUG) {
+                err("New incoming engineboard: $newIncomingEngineBoard")
+            }
             throw NewEngineBoardException()
         } else if (newIncomingState.isPresent) {
-            err("Opponent move came in: $newIncomingState")
+            if(DEBUG) {
+                err("Opponent move came in: $newIncomingState")
+            }
             throw OpponentMoveCameInException()
         } else {
             val moveAtHeight = pv!!.getMoveAtHeight(0)
             if (moveAtHeight != null && timer.elapsed(TimeUnit.MILLISECONDS) > maxThinkingTime) {
-                err("Out of time. Playing move " + UnapplyableMoveUtils.toString(moveAtHeight) + " at depth " + (depthNow - 1))
+                if(DEBUG) {
+                    err("Out of time. Playing move " + UnapplyableMoveUtils.toString(moveAtHeight) + " at depth " + (depthNow - 1))
+                }
                 throw OutOfThinkingTimeException()
             }
         }
@@ -683,7 +729,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
     }
 
     private fun calculateScore(board: ACEBoard): Int {
-        nodesEvaluated++
+        if(LOAD_TEST) {
+            nodesEvaluated++
+        }
         val score = evaluator.evaluate(board)
 
         if (board.getToMove() == ColorUtils.BLACK.toInt()) {

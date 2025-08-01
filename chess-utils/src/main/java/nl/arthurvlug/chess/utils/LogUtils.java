@@ -9,14 +9,10 @@ public class LogUtils {
     }
 
     public static void logDebug(final Object message) {
-        if(MoveUtils.DEBUG) {
-            log.debug("{}", message);
-        }
+        log.debug("{}", message);
     }
 
     private void sysout(final String message) {
-        if(MoveUtils.DEBUG) {
-            log.info(message);
-        }
+        log.info(message);
     }
 }

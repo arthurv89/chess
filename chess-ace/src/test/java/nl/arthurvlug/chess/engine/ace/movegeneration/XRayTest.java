@@ -9,11 +9,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class XRayTest {
-	@BeforeEach
-	public void before() {
-		MoveUtils.DEBUG = false;
-	}
-
 	@Test
 	public void testKingXRay() {
 		long[] xray = Xray.king_xray;

@@ -1,7 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.board
 
 import com.fasterxml.jackson.core.type.TypeReference
-import com.google.common.collect.ImmutableList
 import com.google.common.eventbus.EventBus
 import nl.arthurvlug.chess.engine.ColorUtils
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType
@@ -14,22 +13,16 @@ import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils
 import nl.arthurvlug.chess.engine.utils.AceBoardTestUtils
-import nl.arthurvlug.chess.utils.MoveUtils
 import nl.arthurvlug.chess.utils.board.pieces.Color
 import nl.arthurvlug.chess.utils.board.pieces.PieceStringUtils
 import nl.arthurvlug.chess.utils.jackson.JacksonUtils
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.Collections
+import nl.arthurvlug.chess.engine.utils.AceBoardTestUtils.apply
 import kotlin.math.min
 
 class ACEBoardTest {
-    @BeforeEach
-    fun before() {
-        MoveUtils.DEBUG = true
-    }
-
     @Test
     fun testUnapplyAfterCastlingPutsRookBack() {
         val engineBoard = ACEBoardUtils.initializedBoard(
@@ -74,7 +67,7 @@ class ACEBoardTest {
     @Test
     fun testAfterPlayingMoves() {
         val copyBoard = startPositionBoard.cloneBoard(ColorUtils.BLACK, false)
-        copyBoard.apply(ImmutableList.of("f8f7"))
+        copyBoard.apply("f8f7")
         val blackToMove = copyBoard.cloneBoard(ColorUtils.opponent(copyBoard.toMove), false)
         verifyCopyBoard(blackToMove)
     }
@@ -565,7 +558,6 @@ class ACEBoardTest {
         val move = UnapplyableMoveUtils.createMove("b5f1", aceBoard)
         assertThat(move).isEqualTo(459105)
 
-        MoveUtils.DEBUG = false
         val white_king_or_rook_queen_side_moved = aceBoard.white_king_or_rook_queen_side_moved
         val white_king_or_rook_king_side_moved = aceBoard.white_king_or_rook_king_side_moved
         val black_king_or_rook_queen_side_moved = aceBoard.black_king_or_rook_queen_side_moved

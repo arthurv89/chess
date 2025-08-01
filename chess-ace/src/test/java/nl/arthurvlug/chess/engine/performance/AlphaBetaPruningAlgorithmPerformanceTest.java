@@ -1,5 +1,6 @@
 package nl.arthurvlug.chess.engine.performance;
 
+import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
@@ -19,11 +20,12 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 		log.debug("");
 		log.debug("Starting performance test for depth {}", depth);
 		final InitialACEBoard board = InitialACEBoard.createInitialACEBoard();
-		board.finalizeBitboards();
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration(), board);
+		algorithm.setEventBus(new EventBus());
+		algorithm.depth = 4;
 		
 		final DateTime start = DateTime.now();
-		algorithm.startThinking(board);
+		algorithm.startThinking(false).toBlocking().first();
 		final DateTime end = DateTime.now();
 		
 		final int nodesSearched = algorithm.getNodesEvaluated();

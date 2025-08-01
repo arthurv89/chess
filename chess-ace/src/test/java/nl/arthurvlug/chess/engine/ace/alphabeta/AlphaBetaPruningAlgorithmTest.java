@@ -36,11 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AlphaBetaPruningAlgorithmTest {
-	@BeforeEach
-	public void before() {
-		MoveUtils.DEBUG = true;
-	}
-
 	//	@Ignore
 	@Test
 	public void testNodesSearched1() {
@@ -416,7 +411,6 @@ public class AlphaBetaPruningAlgorithmTest {
 
 	@Test
 	public void checkCanStalemateButShouldNot() {
-		MoveUtils.DEBUG = true;
 		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, """
                 .......♚
                 .......♙
@@ -434,7 +428,6 @@ public class AlphaBetaPruningAlgorithmTest {
 
 	@Test
 	public void checkCanStalemateByTakingButShouldNot() {
-		MoveUtils.DEBUG = true;
 		final ACEBoard engineBoard = ACEBoardUtils.initializedBoard(Color.WHITE, """
                 ......♚.
                 ......♙.

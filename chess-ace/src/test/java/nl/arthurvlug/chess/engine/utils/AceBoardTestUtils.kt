@@ -1,10 +1,13 @@
 package nl.arthurvlug.chess.engine.utils
 
 import com.google.common.collect.ImmutableList
+import nl.arthurvlug.chess.engine.ace.ColoredPieceType
+import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils
 import nl.arthurvlug.chess.engine.ace.board.ACEBoard
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard
 import nl.arthurvlug.chess.engine.ace.board.UnapplyFlags
-import nl.arthurvlug.chess.utils.MoveUtils
+import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
+import nl.arthurvlug.chess.utils.MoveUtils.DEBUG
 
 object AceBoardTestUtils {
     @JvmField
@@ -25,6 +28,27 @@ object AceBoardTestUtils {
             engineBoard.black_king_or_rook_king_side_moved,
             engineBoard.fiftyMove
         )
+    }
+
+    fun ACEBoard.apply(moveList: List<String>) {
+        if (moveList.isEmpty()) {
+            return
+        }
+
+        for (sMove in moveList) {
+            apply(sMove)
+        }
+    }
+
+    fun ACEBoard.apply(sMove: String) {
+        val move = UnapplyableMoveUtils.createMove(sMove, this)
+        if (DEBUG) {
+            val movingPiece = UnapplyableMove.coloredMovingPiece(move)
+            if(movingPiece == ColoredPieceType.NO_PIECE) {
+                throw RuntimeException("Could not determine moving piece while executing " + UnapplyableMoveUtils.toString(move))
+            }
+        }
+        apply(move)
     }
 
     @JvmStatic

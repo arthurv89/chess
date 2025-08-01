@@ -54,7 +54,6 @@ ${blackBoard()}
         return string(pieces::contains);
     }
 
-
     fun ACEBoard.string(): String {
         checkConsistency()
         return string(Predicates.alwaysTrue())

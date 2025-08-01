@@ -47,7 +47,7 @@ public class ACE extends CustomEngine {
 
 	@Override
 	public Observable<Move> startThinking() {
-		return searchAlgorithm.startThinking();
+		return searchAlgorithm.startThinking(true);
 	}
 
 	@Override

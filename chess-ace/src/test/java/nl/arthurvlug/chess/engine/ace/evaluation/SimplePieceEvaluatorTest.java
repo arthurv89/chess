@@ -15,7 +15,6 @@ public class SimplePieceEvaluatorTest {
 	private SimplePieceEvaluator evaluator;
 	@BeforeEach
 	public void before() {
-		MoveUtils.DEBUG = false;
 		evaluator = new SimplePieceEvaluator();
 	}
 	
