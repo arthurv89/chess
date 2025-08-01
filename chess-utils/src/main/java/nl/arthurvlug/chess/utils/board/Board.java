@@ -6,14 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
+
 import lombok.Getter;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 import nl.arthurvlug.chess.utils.board.pieces.PieceType;
 import nl.arthurvlug.chess.utils.game.Move;
 
 public class Board {
-	private static final Function<ColoredPiece, String> PIECE_TO_STRING = input -> input.getCharacterString();
+	private static final Function<ColoredPiece, Character> PIECE_TO_CHAR = input -> input.getCharacter();
 	
 	@Getter
 	private ImmutableList<Field> fields;
@@ -115,7 +115,7 @@ public class Board {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < fields.size(); i++) {
-			sb.append(fields.get(i).getPiece().map(PIECE_TO_STRING).orElse(" "));
+			sb.append(fields.get(i).getPiece().map(PIECE_TO_CHAR).orElse(' '));
 			
 			if((i+1)%8 == 0 && i < 62) {
 				sb.append("\n");

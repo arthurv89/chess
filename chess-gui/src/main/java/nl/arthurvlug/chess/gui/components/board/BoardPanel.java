@@ -59,7 +59,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 		drawBoard(board, g2);
 
 		drag.ifPresent(d -> {
-			drawStringOnLocation(d.getCurrentMouseLocation(), d.getPieceString(), g2);
+			drawCharOnLocation(d.getCurrentMouseLocation(), d.getPieceChar(), g2);
 		});
 	}
 
@@ -81,19 +81,19 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 		if(coloredPieceOption.isPresent()) {
 			final int fieldCenterX = (int) (xField * fieldSize() + 0.9 * fieldSize());
 			final int fieldCenterY = (int) ((7 - yField) * fieldSize() + 0.75 * fieldSize());
-			final String pieceString = chessFont.pieceString(coloredPieceOption.get());
+			final char pieceChar = chessFont.pieceChar(coloredPieceOption.get());
 			final Font font = calculateFont();
-			final Coordinates coordinates = calculatePosition(pieceString, font, fieldCenterX, fieldCenterY, g2);
+			final Coordinates coordinates = calculatePosition(pieceChar, font, fieldCenterX, fieldCenterY, g2);
 
-			drawStringOnLocation(coordinates, pieceString, g2);
+			drawCharOnLocation(coordinates, pieceChar, g2);
 		}
 	}
 
-	private Coordinates calculatePosition(final String pieceString, final Font font,
+	private Coordinates calculatePosition(final char pieceString, final Font font,
 										  final int fieldCenterX, final int fieldCenterY,
 										  final Graphics2D g2) {
 		// Determine font and position of the string
-		int stringWidth = g2.getFontMetrics(font).stringWidth(pieceString);
+		int stringWidth = g2.getFontMetrics(font).stringWidth(String.valueOf(pieceString));
 
 		int xPos = (int) Math.round(fieldCenterX - 0.5 * stringWidth);
 		int yPos = Math.round(fieldCenterY + BOARD_OFFSET);
@@ -139,14 +139,23 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 		return (int) Math.round(0.8 * fieldSize());
 	}
 
-	private void drawStringOnLocation(final Coordinates coordinates,
-									  final String pieceString,
-									  final Graphics2D g2) {
+	private void drawCharOnLocation(final Coordinates coordinates,
+									final char pieceString,
+									final Graphics2D g2) {
 		g2.setColor(Color.BLACK);
 		g2.setFont(calculateFont());
-		g2.drawString(pieceString,
+		g2.drawString(String.valueOf(convertPiece(pieceString)),
 				(int) (coordinates.getX() + (0.6-1) * fieldSize()),
 				(int) (coordinates.getY() + (.95-1) * fontSize()));
+	}
+
+	// Converts a char
+	private char convertPiece(char pieceChar) {
+        return switch (pieceChar) {
+            case 'b' -> 'l';
+            case 'B' -> 'L';
+            default -> pieceChar;
+        };
 	}
 
 	@Override
@@ -154,7 +163,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 		calculateCurrentMouseField(e).ifPresent(mf -> {
 			game.getBoard().getField(mf.getX(), mf.getY()).getPiece().ifPresent(selectedPiece -> {
 				board = Board.cloneWithoutPiece(game.getBoard(), mf);
-				drag = Optional.of(new Drag(currentMouseLocation(e), selectedPiece.getCharacterString(), mf, mf));
+				drag = Optional.of(new Drag(currentMouseLocation(e), selectedPiece.getCharacter(), mf, mf));
 				repaint();
 			});
 		});
@@ -164,7 +173,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 	public void mouseDragged(final MouseEvent e) {
 		final Optional<Coordinates> mouseField = calculateCurrentMouseField(e);
 		mouseField.ifPresent(mf -> {
-			drag = Optional.of(new Drag(currentMouseLocation(e), drag.get().getPieceString(), drag.get().getBeginField(), mf));
+			drag = Optional.of(new Drag(currentMouseLocation(e), drag.get().getPieceChar(), drag.get().getBeginField(), mf));
 			repaint();
 		});
 	}

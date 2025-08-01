@@ -14,7 +14,7 @@ public class ColoredPiece {
 		this.color = color;
 	}
 
-	public String getCharacterString() {
-		return PieceStringUtils.toCharacterString(this, PieceStringUtils.pieceToChessSymbolMap);
+	public char getCharacter() {
+		return PieceStringUtils.toCharacter(this, PieceStringUtils.pieceToChessSymbolMap);
 	}
 }

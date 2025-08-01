@@ -12,7 +12,7 @@ public class TrueTypeFont extends AbstractChessFont {
 	}
 
 	@Override
-	public String pieceString(ColoredPiece coloredPieceOption) {
-		return PieceStringUtils.toCharacterString(coloredPieceOption, PieceStringUtils.pieceToCharacterConverter);
+	public char pieceChar(ColoredPiece coloredPieceOption) {
+		return PieceStringUtils.toCharacter(coloredPieceOption, PieceStringUtils.pieceToCharacterConverter);
 	}
 }

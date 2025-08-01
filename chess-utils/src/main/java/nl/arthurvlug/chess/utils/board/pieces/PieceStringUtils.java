@@ -14,7 +14,11 @@ public class PieceStringUtils {
 		return Character.toString(toCharacter(pieceType, color, converter));
 	}
 
-	private static char toCharacter(final PieceType pieceType, final Color color, final PieceConverter converter) {
+	public static char toCharacter(final ColoredPiece coloredPiece, final PieceConverter converter) {
+		return toCharacter(coloredPiece.getPieceType(), coloredPiece.getColor(), converter);
+	}
+
+	public static char toCharacter(final PieceType pieceType, final Color color, final PieceConverter converter) {
 		return converter.convert(pieceType, color);
 	}
 

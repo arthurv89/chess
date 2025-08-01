@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 import nl.arthurvlug.chess.gui.game.Game;
 import nl.arthurvlug.chess.utils.board.pieces.ColoredPiece;
 
-import com.atlassian.fugue.Option;
 import com.google.inject.Inject;
 
 @SuppressWarnings("serial")
@@ -39,7 +38,7 @@ public class DrawPane extends JPanel {
 	private void drawPiece(Graphics2D g, int x, int y) {
 		Optional<ColoredPiece> coloredPieceOption = game.getBoard().getPiece(x, y);
 		if (coloredPieceOption.isPresent()) {
-			String pieceString = coloredPieceOption.get().getCharacterString();
+			String pieceString = String.valueOf(coloredPieceOption.get().getCharacter());
 
 			// Determine font and position of the string
 			Font font = g.getFont().deriveFont((float) fontSize());

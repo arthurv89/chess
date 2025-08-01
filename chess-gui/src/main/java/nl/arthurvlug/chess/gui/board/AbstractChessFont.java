@@ -25,5 +25,5 @@ public abstract class AbstractChessFont {
 		return font;
 	}
 
-	public abstract String pieceString(ColoredPiece coloredPieceOption);
+	public abstract char pieceChar(ColoredPiece coloredPieceOption);
 }

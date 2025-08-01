@@ -83,9 +83,12 @@ public class ACEBoardUtils {
 	public static String piecesToString(byte[] arr) {
 		return IntStream.iterate(7, i -> i >= 0, i -> i - 1)
 				.mapToObj(i -> IntStream.range(0, 8)
-						.mapToObj(j -> Optional.ofNullable(ColoredPieceType.from(arr[i * 8 + j]))
-								.map(ColoredPiece::getCharacterString)
-								.orElse("."))
+						.mapToObj(j -> String.valueOf(
+								Optional.ofNullable(ColoredPieceType.from(arr[i * 8 + j]))
+									.map(ColoredPiece::getCharacter)
+									.orElse('.')
+							)
+						)
 						.collect(Collectors.joining()))
 				.collect(Collectors.joining("\n"));
 	}

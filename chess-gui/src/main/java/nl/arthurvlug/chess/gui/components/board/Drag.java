@@ -8,7 +8,7 @@ import nl.arthurvlug.chess.utils.board.Coordinates;
 @Getter
 public class Drag {
 	private final Coordinates currentMouseLocation;
-	private final String pieceString;
+	private final char pieceChar;
 	private final Coordinates beginField;
 	private final Coordinates currentField;
 }
