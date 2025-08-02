@@ -99,11 +99,6 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         }
     }
 
-    fun startThinking(engineBoard: ACEBoard, infinite: Boolean): Observable<Move?> {
-        this.currentEngineBoard = engineBoard
-        return startThinking(infinite)
-    }
-
     fun startThinking(infinite: Boolean): Observable<Move?> {
         return Observable.create { sub: Subscriber<in Move?> ->
             this.subscriber = sub
@@ -207,11 +202,9 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
 
                 val iMove = UnapplyableMoveUtils.createMove(newMove, currentEngineBoard)
                 if (pv.pvHead == iMove) {
-                    System.arraycopy(pv!!.rawLine, 1, pv!!.rawLine, 0, pv!!.rawLine.size - 1)
-                    startDepth = depthNow - 1
+                    System.arraycopy(pv.rawLine, 1, pv.rawLine, 0, pv.rawLine.size - 1)
                 } else {
                     pv = PrincipalVariation()
-                    startDepth = 1
                 }
 
                 if(DEBUG) {
@@ -749,27 +742,12 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         Collections.swap(moves, 0, idx)
     }
 
-    private fun findPrioPosition(generatedMoves: List<Int>, prioMove: Int, i: Int): Stream<Int> {
-        if (generatedMoves[i] == prioMove) {
-            return Stream.of(i)
-        }
-        return Stream.empty()
-    }
-
-    private fun shouldPause(): Boolean {
-        return moveListContainsAll("f1e1", "g7g6")
-    }
-
     fun setDepth(depth: Int) {
         this.depth = depth
     }
 
     fun disableQuiesce() {
         this.quiesceEnabled = false
-    }
-
-    fun useSimplePieceEvaluator() {
-        this.evaluator = SimplePieceEvaluator()
     }
 
     fun setName(name: String?) {
