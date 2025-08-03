@@ -15,6 +15,8 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
+import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove.fromIdx
+import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove.targetIdx
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams
 import nl.arthurvlug.chess.utils.LogUtils.logDebug
@@ -47,6 +49,9 @@ class AlphaBetaPruningAlgorithm(
     private var currentEngineBoard: ACEBoard
     private var maxThinkingTime = Int.MAX_VALUE
     private var timer: Stopwatch = Stopwatch.createUnstarted()
+
+    private val killerMoves = Array(128) { IntArray(2) }
+    val historyHeuristic = Array(64) { IntArray(64) } // from->to
 
     @Getter
     private var nodesEvaluated = 0
@@ -308,7 +313,7 @@ class AlphaBetaPruningAlgorithm(
                 continue
             }
             // Do a recursive search
-            val recursionVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1, ImmutableList.of(move))
+            val recursionVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1, ImmutableList.of(move), 0)
             //			debugMoveStack(val);
             DEBUG && breakpoint()
             thinkingEngineBoard.unapply(
@@ -328,6 +333,8 @@ class AlphaBetaPruningAlgorithm(
                     if(LOAD_TEST) {
                         cutoffs++
                     }
+                    updateKiller(0, move)
+                    updateHistory(move, depth)
                     if(DEBUG) {
                         logDebug(String.format("[ABPruning Root] Best move score: %d", score))
                     }
@@ -355,7 +362,8 @@ class AlphaBetaPruningAlgorithm(
         pline: PrincipalVariation,
         pvHeight: Int?,
         height: Int,
-        movesPlayed: List<Int>
+        movesPlayed: List<Int>,
+        ply: Int
     ): Int {
         DEBUG && breakpoint()
 
@@ -419,7 +427,7 @@ class AlphaBetaPruningAlgorithm(
             }
         }
         val ttMove = ttEntry?.best
-//        orderMoves(generatedMoves, ply, ttMove, pvMove)
+        orderMoves(generatedMoves, ply, ttMove, pvMove)
 
 //        if(DEBUG) {
 //            logDebug(
@@ -462,7 +470,7 @@ class AlphaBetaPruningAlgorithm(
             }
 
             DEBUG && breakpoint()
-            val recursiveVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, height + 1, newMovesPlayed)
+            val recursiveVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, height + 1, newMovesPlayed, ply + 1)
             if (!isLost(recursiveVal)) {
                 hasValidMove = true
             }
@@ -486,18 +494,19 @@ class AlphaBetaPruningAlgorithm(
 
             score = max(score, recursiveVal)
             if (score > alpha) {
+                updatePv(pline, line, move)
                 if (cutoffEnabled && score >= beta) {
                     if(LOAD_TEST) {
                         cutoffs++
                     }
-                    transpositionTable[depth, score, TranspositionTable.hashfBETA, move] =
-                        zobristHash
+                    updateKiller(0, move)
+                    updateHistory(move, depth)
+                    transpositionTable[depth, score, TranspositionTable.hashfBETA, move] = zobristHash
                     if(DEBUG) {
                         logDebug("BETA CUT OFF. $score >= $beta", indent)
                     }
                     return score
                 }
-                updatePv(pline, line, move)
                 bestMove = move
                 alpha = score
                 hashf = TranspositionTable.hashfEXACT
@@ -518,6 +527,27 @@ class AlphaBetaPruningAlgorithm(
 
         transpositionTable[depth, alpha, hashf, bestMove] = zobristHash
         return score
+    }
+
+    private fun orderMoves(moves: MutableList<Int>, depth: Int, ttMove: Int?, pvMove: Int?): Array<IntArray> {
+        val killers = killerMoves[depth]
+
+        val buckets= Array(5) { IntArray(moves.size) }
+        val counts = IntArray(5)
+
+        moves.forEach { move ->
+            val bucket = when {
+                move == pvMove -> 0
+                UnapplyableMove.takePiece(move) != ColoredPieceType.NO_PIECE -> 1
+                move == ttMove -> 2
+                move == killers[0] || move == killers[1] -> 3
+                else -> 4
+            }
+//            val bucket = 0
+            val c = counts[bucket]++
+            buckets[bucket][c] = move
+        }
+        return buckets
     }
 
     private fun quiesceSearch(alpha: Int, beta: Int, depth: Int, height: Int, movesPlayed: List<Int>): Int {
@@ -773,8 +803,8 @@ class AlphaBetaPruningAlgorithm(
 		fun toMove(unapplyableMove: Int): Move {
             val promotionType = promotionType(unapplyableMove)
             val bestMove = Move(
-                FieldUtils.coordinates(UnapplyableMove.fromIdx(unapplyableMove).toInt()),
-                FieldUtils.coordinates(UnapplyableMove.targetIdx(unapplyableMove).toInt()),
+                FieldUtils.coordinates(fromIdx(unapplyableMove).toInt()),
+                FieldUtils.coordinates(targetIdx(unapplyableMove).toInt()),
                 promotionType
             )
             return bestMove
@@ -808,5 +838,17 @@ class AlphaBetaPruningAlgorithm(
     private fun breakpoint(): Boolean {
 //        return ACEBoardUtils.stringDump(thinkingEngineBoard).contains("......♚♜")
         return thinkingEngineBoard.breakpoint()
+    }
+
+
+    fun updateKiller(depth: Int, move: Int) {
+        if (killerMoves[depth][0] != move) {
+            killerMoves[depth][1] = killerMoves[depth][0]
+            killerMoves[depth][0] = move
+        }
+    }
+
+    fun updateHistory(move: Int, depth: Int) {
+        historyHeuristic[fromIdx(move).toInt()][targetIdx(move).toInt()] += depth * depth
     }
 }
