@@ -22,7 +22,7 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 		final InitialACEBoard board = InitialACEBoard.createInitialACEBoard();
 		final AlphaBetaPruningAlgorithm algorithm = new AlphaBetaPruningAlgorithm(new AceConfiguration(), board);
 		algorithm.setEventBus(new EventBus());
-		algorithm.depth = 4;
+		algorithm.depth = depth;
 		
 		final DateTime start = DateTime.now();
 		algorithm.startThinking(false).toBlocking().first();

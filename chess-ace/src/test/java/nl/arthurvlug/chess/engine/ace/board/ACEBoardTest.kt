@@ -20,6 +20,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.Collections
 import nl.arthurvlug.chess.engine.utils.AceBoardTestUtils.apply
+import nl.arthurvlug.chess.engine.utils.AceBoardTestUtils.unapply
 import kotlin.math.min
 
 class ACEBoardTest {
@@ -42,7 +43,7 @@ class ACEBoardTest {
         val dumpBefore = ACEBoardUtils.stringDump(engineBoard)
         val move = UnapplyableMoveUtils.createMove("e8g8", engineBoard)
         engineBoard.apply(move)
-        AceBoardTestUtils.unapply(engineBoard, move, unapplyFlags)
+        engineBoard.unapply(move, unapplyFlags)
         val dumpAfter = ACEBoardUtils.stringDump(engineBoard)
 
         // Check that the rook moves back to h8 after considering castling king-side

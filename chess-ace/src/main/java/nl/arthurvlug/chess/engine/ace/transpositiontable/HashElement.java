@@ -1,10 +1,9 @@
 package nl.arthurvlug.chess.engine.ace.transpositiontable;
 
 public class HashElement {
-	int key;
-	Integer best;
-	public int val;
-	int hashf;
+	public int key;
+	public Integer best;
+	public int value;
+	public int hashf;
 	public int depth;
-	public int flags;
 }

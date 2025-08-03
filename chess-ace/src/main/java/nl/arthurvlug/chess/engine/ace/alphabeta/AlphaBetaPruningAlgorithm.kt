@@ -14,7 +14,6 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoard
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator
-import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
 import nl.arthurvlug.chess.engine.ace.transpositiontable.TranspositionTable
 import nl.arthurvlug.chess.engine.customEngine.ThinkingParams
@@ -36,11 +35,10 @@ import java.util.Collections
 import java.util.Optional
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
-import java.util.stream.Stream
 import kotlin.concurrent.Volatile
 import kotlin.math.max
 
-class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
+class AlphaBetaPruningAlgorithm(
     configuration: AceConfiguration,
     initialACEBoard: ACEBoard
 ) {
@@ -261,14 +259,14 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             swapPvMove(generatedMoves, pvMove)
         }
         DEBUG && breakpoint()
-        if (DEBUG) {
-            logDebug("Root: Moves after []: %s".formatted(movesToString(generatedMoves)))
-        }
+//        if (DEBUG) {
+//            logDebug("Root: Moves after []: %s".formatted(movesToString(generatedMoves)))
+//        }
         for (move in generatedMoves) {
             DEBUG && breakpoint()
             if (DEBUG) {
                 logDebug(
-                    "Root: Start Move: %s, score=%d. PV: [%d] %s".formatted(
+                    "Root: Move: %s, score=%d. PV: [%d] %s".formatted(
                         UnapplyableMoveUtils.toShortString(
                             move
                         ), score, alpha, pv
@@ -339,14 +337,10 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 bestMove = move
             }
             if (DEBUG) {
-                logDebug(
-                "Root: End Move: %s, score=%d. PV: [%d] %s".formatted(
-                    UnapplyableMoveUtils.toShortString(
-                        move
-                    ), score, alpha, pv
+                logDebug("Root: End Move: %s, score=%d. PV: [%d] %s".formatted(
+                    UnapplyableMoveUtils.toShortString(move), score, alpha, pv)
                 )
-            )
-                }
+            }
         }
         if(DEBUG) {
             info("[ABPruning Root] Best move score: $alpha")
@@ -363,38 +357,40 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         height: Int,
         movesPlayed: List<Int>
     ): Int {
-        var alpha = alpha
         DEBUG && breakpoint()
+
+        if (depth == 0) {
+            // IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
+            return quiesceSearch(alpha, beta, quiesceMaxDepth, height, movesPlayed)
+        }
+
+        var alpha = alpha
         val indent = if(DEBUG) {
             toIndent(movesPlayed)
         } else {
             ""
         }
 
-        if(DEBUG) {
-            logDebug("To move: " + thinkingEngineBoard.toMove, indent)
-        }
         performBrakeActions()
 
-        var hashf = TranspositionTable.hashfALPHA
         val zobristHash = thinkingEngineBoard.zobristHash
-        val hashElement = transpositionTable[zobristHash]
-        if (hashElement != null) {
-            if(LOAD_TEST) {
-                hashHits++
-            }
-            if (hashElement.depth >= depth) {
-                if (hashElement.flags == TranspositionTable.hashfEXACT) return hashElement.`val`
-                if ((hashElement.flags == TranspositionTable.hashfALPHA) && (hashElement.`val` <= alpha)) return alpha
-                if ((hashElement.flags == TranspositionTable.hashfBETA) && (hashElement.`val` >= beta)) return beta
+        val ttEntry = transpositionTable[zobristHash]
+        ttEntry?.let {
+            if (it.depth >= depth) {
+                val value = it.value
+                when (it.hashf) {
+                    TranspositionTable.hashfEXACT ->
+                        return value
+                    TranspositionTable.hashfALPHA -> if (value <= alpha)
+                        return alpha
+                    TranspositionTable.hashfBETA  -> if (value >= beta)
+                        return beta
+                }
             }
         }
 
+
         val line = PrincipalVariation()
-        if (depth == 0) {
-            // IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
-            return quiesceSearch(alpha, beta, quiesceMaxDepth, height, movesPlayed)
-        }
 
         val generatedMoves: List<Int>
         try {
@@ -412,29 +408,32 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
         val black_king_or_rook_queen_side_moved = thinkingEngineBoard.black_king_or_rook_queen_side_moved
         val black_king_or_rook_king_side_moved = thinkingEngineBoard.black_king_or_rook_king_side_moved
         val fiftyMove = thinkingEngineBoard.fiftyMove
+        var hashf = TranspositionTable.hashfALPHA
 
         //		boolean incFiftyClock = thinkingEngineBoard.incFiftyClock;
         var score = alpha
+        val pvMove = pline.getMoveAtHeight(height) ?: PrincipalVariation.NO_MOVE
         if (pvHeight != null) {
-            val pvMove = pline.getMoveAtHeight(pvHeight)
             if (pvMove != PrincipalVariation.NO_MOVE) {
                 swapPvMove(generatedMoves, pvMove)
             }
         }
+        val ttMove = ttEntry?.best
+//        orderMoves(generatedMoves, ply, ttMove, pvMove)
 
-        if(DEBUG) {
-            logDebug(
-                "Moves after []: %s - %s".formatted(
-                    movesToString(movesPlayed),
-                    movesToString(generatedMoves)
-                ), indent
-            )
-        }
+//        if(DEBUG) {
+//            logDebug(
+//                "Moves after []: %s - %s".formatted(
+//                    movesToString(movesPlayed),
+//                    movesToString(generatedMoves)
+//                ), indent
+//            )
+//        }
         var hasValidMove = false
         for (move in generatedMoves) {
             if (DEBUG) {
                 logDebug(
-                    "Start Move: %s, score=%d. PV: [%d] %s".formatted(
+                    "Move: %s, score=%d. PV: [%d] %s".formatted(
                         UnapplyableMoveUtils.toShortString(move),
                         score,
                         alpha,
@@ -443,7 +442,11 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 )
             }
             // Do a recursive search
-            val dumpBeforeApply = ACEBoardUtils.stringDump(thinkingEngineBoard)
+            val dumpBeforeApply = if(DEBUG) {
+                ACEBoardUtils.stringDump(thinkingEngineBoard)
+            } else {
+                ""
+            }
             DEBUG && breakpoint()
             thinkingEngineBoard.apply(move)
             DEBUG && breakpoint()
@@ -452,11 +455,12 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             if (pvHeight != null && move == generatedMoves.first()) {
                 newHeight = pvHeight + 1
             }
-            val newMovesPlayed = if (MoveUtils.DEBUG) {
-                ImmutableList.builder<Int>().addAll(movesPlayed).add(move).build()
+            val newMovesPlayed = if (DEBUG) {
+                movesPlayed + move
             } else {
-                ImmutableList.of()
+                listOf()
             }
+
             DEBUG && breakpoint()
             val recursiveVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, height + 1, newMovesPlayed)
             if (!isLost(recursiveVal)) {
@@ -497,16 +501,6 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
                 bestMove = move
                 alpha = score
                 hashf = TranspositionTable.hashfEXACT
-            }
-            if (DEBUG) {
-                logDebug(
-                    "End Move: %s, score=%d. PV: [%d] %s".formatted(
-                        UnapplyableMoveUtils.toShortString(move),
-                        score,
-                        alpha,
-                        pv
-                    ), indent
-                )
             }
         }
 
@@ -597,7 +591,7 @@ class AlphaBetaPruningAlgorithm @JvmOverloads constructor(
             }
             if (DEBUG) {
                 logDebug(
-                    "End Move: %s, score=%d. PV: [%d] %s".formatted(
+                    "Move: %s, score=%d. PV: [%d] %s".formatted(
                         UnapplyableMoveUtils.toShortString(move),
                         score,
                         alpha,

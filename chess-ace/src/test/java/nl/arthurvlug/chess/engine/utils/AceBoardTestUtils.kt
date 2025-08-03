@@ -52,8 +52,8 @@ object AceBoardTestUtils {
     }
 
     @JvmStatic
-    fun unapply(engineBoard: ACEBoard, move: Int, unapplyFlags: UnapplyFlags) {
-        engineBoard.unapply(
+    fun ACEBoard.unapply(move: Int, unapplyFlags: UnapplyFlags) {
+        unapply(
             move,
             unapplyFlags.whiteKingOrRookQueenSideMoved,
             unapplyFlags.whiteKingOrRookKingSideMoved,

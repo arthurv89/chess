@@ -93,6 +93,7 @@ public abstract class CustomEngine extends UCIEngine {
 						}
 
 					} catch (IOException e) {
+						log.error("ERROR: ", e);
 						throw new RuntimeException(e);
 					}
 				}

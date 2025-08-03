@@ -3,7 +3,6 @@ package nl.arthurvlug.chess.engine.ace.board
 import nl.arthurvlug.chess.engine.ColorUtils
 import nl.arthurvlug.chess.engine.ace.ColoredPieceType
 import nl.arthurvlug.chess.engine.ace.KingEatingException
-import nl.arthurvlug.chess.engine.ace.UnapplyableMoveUtils
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils.piecesToString
 import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils.stringDump
 import nl.arthurvlug.chess.engine.ace.board.AceBoardDebugUtils.checkConsistency
@@ -180,7 +179,8 @@ open class ACEBoard protected constructor() {
             fromIdx.toInt(),
             targetIdx.toInt(),
             coloredMovingPiece,
-            UnapplyableMove.takePiece(move)
+            UnapplyableMove.takePiece(move),
+            UnapplyableMove.promotionPiece(move)
         )
         DEBUG && breakpoint()
 
@@ -227,7 +227,8 @@ open class ACEBoard protected constructor() {
             fromIdx.toInt(),
             targetIdx.toInt(),
             coloredMovingPiece,
-            UnapplyableMove.takePiece(move)
+            UnapplyableMove.takePiece(move),
+            UnapplyableMove.promotionPiece(move)
         )
         DEBUG && breakpoint()
 
@@ -554,11 +555,14 @@ open class ACEBoard protected constructor() {
     }
 
     fun finalizeBitboardsAfterApply(
-        fromIdx: Int, targetIdx: Int,
-        movingPiece: Byte, takenPiece: Byte
+        fromIdx: Int,
+        targetIdx: Int,
+        movingPiece: Byte,
+        takenPiece: Byte,
+        promotionPiece: Byte
     ) {
         mutateGeneralBoardOccupation()
-        mutateZobristHash(fromIdx, targetIdx, movingPiece, takenPiece)
+        mutateZobristHash(fromIdx, targetIdx, movingPiece, takenPiece, promotionPiece)
     }
 
     fun mutateGeneralBoardOccupation() {
@@ -569,12 +573,17 @@ open class ACEBoard protected constructor() {
         enemy_and_empty_board = occupiedSquares[opponent.toInt()] or unoccupied_board
     }
 
-    private fun mutateZobristHash(fromIdx: Int, targetIdx: Int, movingPiece: Byte, takenPiece: Byte) {
-        zobristHash = (zobristHash.toLong() xor bitsToSwap(fromIdx, movingPiece)).toInt()
-        zobristHash = (zobristHash.toLong() xor bitsToSwap(targetIdx, movingPiece)).toInt()
-        if (takenPiece != ColoredPieceType.NO_PIECE) {
-            zobristHash = (zobristHash.toLong() xor bitsToSwap(targetIdx, takenPiece)).toInt()
-        }
+    private fun mutateZobristHash(
+        fromIdx: Int,
+        targetIdx: Int,
+        movingPiece: Byte,
+        takenPiece: Byte,
+        promotionPiece: Byte
+    ) {
+        zobristHash = zobristHash xor
+                bitsToSwap(fromIdx, movingPiece) xor
+                bitsToSwap(targetIdx, if(promotionPiece != ColoredPieceType.NO_PIECE) promotionPiece else movingPiece) xor
+                bitsToSwap(targetIdx, takenPiece)
     }
 
     // Only to be calculated once. After that, it should recalculate the hash using incremental updates
@@ -583,13 +592,13 @@ open class ACEBoard protected constructor() {
         for (fieldIdx in 0..63) {
             val coloredPiece: Byte = coloredPiece(fieldIdx.toByte())
             if (coloredPiece != ColoredPieceType.NO_PIECE) {
-                zobristHash = (zobristHash.toLong() xor bitsToSwap(fieldIdx.toInt(), coloredPiece)).toInt()
+                zobristHash = zobristHash xor bitsToSwap(fieldIdx, coloredPiece)
             }
         }
     }
 
-    private fun bitsToSwap(fieldIdx: Int, coloredPiece: Byte): Long {
-        return zobristPieceHash(fieldIdx, coloredPiece).toLong()
+    private fun bitsToSwap(fieldIdx: Int, coloredPiece: Byte): Int {
+        return zobristPieceHash(fieldIdx, coloredPiece)
     }
 
     private fun zobristPieceHash(fieldIdx: Int, coloredPiece: Byte): Int {
@@ -689,7 +698,7 @@ open class ACEBoard protected constructor() {
     }
 
     @Throws(KingEatingException::class)
-    fun generateMoves(): List<Int> {
+    fun generateMoves(): MutableList<Int> {
         return AceMoveGenerator.generateMoves(this)
     }
 

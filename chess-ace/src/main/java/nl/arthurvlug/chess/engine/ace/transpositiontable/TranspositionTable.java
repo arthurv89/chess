@@ -3,10 +3,10 @@ package nl.arthurvlug.chess.engine.ace.transpositiontable;
 import com.google.common.base.Preconditions;
 
 public class TranspositionTable {
-	private HashElement[] hash_table;
+	private final HashElement[] hash_table;
 	public static final int hashfEXACT = 1;
-	public static int hashfALPHA = 2;
-	public static int hashfBETA = 4;
+	public static final int hashfALPHA = 2;
+	public static final int hashfBETA = 4;
 
 	private final int TableSizeMask;
 
@@ -41,7 +41,7 @@ public class TranspositionTable {
 			phashe = new HashElement();
 		}
 		phashe.key = zobristHash;
-		phashe.val = val;
+		phashe.value = val;
 		phashe.best = bestMove;
 		phashe.hashf = hashf;
 		phashe.depth = depth;
