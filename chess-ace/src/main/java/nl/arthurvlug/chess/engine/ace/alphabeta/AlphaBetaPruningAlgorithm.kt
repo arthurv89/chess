@@ -47,6 +47,7 @@ class AlphaBetaPruningAlgorithm(
 ) {
     private val log by slf4j
 
+    private val transpositionTable = TranspositionTable(HASH_TABLE_LENGTH)
     private var currentEngineBoard: ACEBoard
     private var maxThinkingTime = Int.MAX_VALUE
     private var timer: Stopwatch = Stopwatch.createUnstarted()
@@ -86,7 +87,7 @@ class AlphaBetaPruningAlgorithm(
     private var iterator = 0
     private var subscriber: Subscriber<in Move?>? = null
     private var depthNow = 0
-    lateinit var pv: PrincipalVariation
+    var pv: PrincipalVariation = PrincipalVariation()
 
     @JvmField
 	var cutoffEnabled: Boolean = true
@@ -141,7 +142,7 @@ class AlphaBetaPruningAlgorithm(
 
 
         pv = PrincipalVariation()
-        var startDepth = 0
+        val startDepth = 0
         try {
             depthNow = startDepth
             while (depthNow <= depth) {
@@ -808,7 +809,6 @@ class AlphaBetaPruningAlgorithm(
         //	private static final int HASH_TABLE_LENGTH = 128; // Must be a power or 2
         private const val HASH_TABLE_LENGTH = 1048576 // Must be a power or 2
 
-        private val transpositionTable = TranspositionTable(HASH_TABLE_LENGTH)
         private fun isLost(`val`: Int): Boolean {
             return `val` <= OTHER_PLAYER_WINS / 2
         }
@@ -885,5 +885,9 @@ class AlphaBetaPruningAlgorithm(
         val result = block()
         stats[section.ordinal] += (System.nanoTime() - start)
         return result
+    }
+
+    override fun toString(): String {
+        return "AlphaBetaPruningAlgorithm(currentEngineBoard=$currentEngineBoard, maxThinkingTime=$maxThinkingTime, timer=$timer, stats=${stats.contentToString()}, killerMoves=${killerMoves.contentToString()}, historyHeuristic=${historyHeuristic.contentToString()}, nodesEvaluated=$nodesEvaluated, cutoffs=$cutoffs, hashHits=$hashHits, evaluator=$evaluator, quiesceMaxDepth=$quiesceMaxDepth, depth=$depth, quiesceEnabled=$quiesceEnabled, thinkingEngineBoard=$thinkingEngineBoard, newIncomingState=$newIncomingState, newIncomingEngineBoard=$newIncomingEngineBoard, incomingMoves=$incomingMoves, name=$name, eventBus=$eventBus, iterator=$iterator, subscriber=$subscriber, depthNow=$depthNow, pv=$pv, cutoffEnabled=$cutoffEnabled)"
     }
 }

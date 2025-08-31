@@ -32,8 +32,6 @@ public abstract class CustomEngine extends UCIEngine {
 	private BufferedWriter errorWriter;
 	
 
-
-
 	@Override
 	protected void initializeEngine() throws IOException {
 		PipedInputStream in = new PipedInputStream();

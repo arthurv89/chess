@@ -1,8 +1,6 @@
 package nl.arthurvlug.chess.engine.ace.movegeneration;
 
-import nl.arthurvlug.chess.engine.customEngine.EngineMove;
-
-public class UnapplyableMove extends EngineMove {
+public class UnapplyableMove {
 	private static final int FROM_IDX_BITS = 6;
 	private static final int TARGET_IDX_BITS = 6;
 	private static final int TAKE_PIECE_IDX_BITS = 4;

@@ -11,6 +11,7 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoardUtils;
 import nl.arthurvlug.chess.engine.ace.configuration.AceConfiguration;
 import nl.arthurvlug.chess.engine.ace.evaluation.SimplePieceEvaluator;
 import nl.arthurvlug.chess.engine.ace.evaluation.BoardEvaluator;
+import nl.arthurvlug.chess.engine.utils.AceBoardTestUtils;
 import nl.arthurvlug.chess.utils.MoveUtils;
 import nl.arthurvlug.chess.utils.board.FieldUtils;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
@@ -221,7 +222,7 @@ public class AlphaBetaPruningAlgorithmTest {
 	}
 
 	private Move getAceResponse(AlphaBetaPruningAlgorithm algorithm) {
-		algorithm.pv = new PrincipalVariation();
+		algorithm.setPv(new PrincipalVariation());
 		Integer unapplyableMove = algorithm.alphaBetaRoot(algorithm.depth);
 		if(unapplyableMove == null) {
 			return null;
