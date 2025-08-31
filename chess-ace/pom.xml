@@ -25,6 +25,7 @@
 								<goal>shade</goal>
 							</goals>
 							<configuration>
+								<createDependencyReducedPom>false</createDependencyReducedPom>
 								<finalName>engine-${git.commit.id.abbrev}</finalName>
 								<transformers>
 									<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
