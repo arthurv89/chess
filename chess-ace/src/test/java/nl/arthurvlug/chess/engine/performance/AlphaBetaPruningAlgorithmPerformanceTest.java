@@ -35,5 +35,6 @@ public class AlphaBetaPruningAlgorithmPerformanceTest {
 		log.info("{} nodes searched", nodesSearched);
 		log.info("{} cut-offs", algorithm.getCutoffs());
 		log.info("{} nodes per second", (int) (nodesSearched / secondsTaken));
+		log.info("Stats: {}", algorithm.getStats());
 	}
 }

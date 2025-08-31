@@ -50,6 +50,8 @@ class AlphaBetaPruningAlgorithm(
     private var maxThinkingTime = Int.MAX_VALUE
     private var timer: Stopwatch = Stopwatch.createUnstarted()
 
+    val stats = LongArray(StatsType.values().size)
+
     private val killerMoves = Array(128) { IntArray(2) }
     val historyHeuristic = Array(64) { IntArray(64) } // from->to
 
@@ -238,7 +240,9 @@ class AlphaBetaPruningAlgorithm(
 
         val generatedMoves: List<Int>
         try {
-            generatedMoves = thinkingEngineBoard.generateMoves()
+            generatedMoves = profile(StatsType.MOVE_GEN) {
+                thinkingEngineBoard.generateMoves()
+            }
         } catch (e: KingEatingException) {
             return null
         }
@@ -272,9 +276,7 @@ class AlphaBetaPruningAlgorithm(
             if (DEBUG) {
                 logDebug(
                     "Root: Move: %s, score=%d. PV: [%d] %s".formatted(
-                        UnapplyableMoveUtils.toShortString(
-                            move
-                        ), score, alpha, pv
+                        UnapplyableMoveUtils.toShortString(move), score, alpha, pv
                     )
                 )
             }
@@ -285,10 +287,14 @@ class AlphaBetaPruningAlgorithm(
             }
 
             DEBUG && breakpoint()
-            thinkingEngineBoard.apply(move)
+            profile(StatsType.APPLY) {
+                thinkingEngineBoard.apply(move)
+            }
             DEBUG && breakpoint()
             try {
-                thinkingEngineBoard.generateMoves()
+                profile(StatsType.MOVE_GEN) {
+                    thinkingEngineBoard.generateMoves()
+                }
             } catch (e: KingEatingException) {
                 // The applied move is not valid. Ignore
                 if (DEBUG) {
@@ -301,6 +307,26 @@ class AlphaBetaPruningAlgorithm(
                     )
                 }
                 DEBUG && breakpoint()
+                profile(StatsType.UNAPPLY) {
+                    thinkingEngineBoard.unapply(
+                        move = move,
+                        white_king_or_rook_queen_side_moved_before = white_king_or_rook_queen_side_moved,
+                        white_king_or_rook_king_side_moved_before = white_king_or_rook_king_side_moved,
+                        black_king_or_rook_queen_side_moved_before = black_king_or_rook_queen_side_moved,
+                        black_king_or_rook_king_side_moved_before = black_king_or_rook_king_side_moved,
+                        fiftyMoveBefore = fiftyMove
+                    )
+                }
+                DEBUG && breakpoint()
+                continue
+            }
+            // Do a recursive search
+            val recursionVal = profile(StatsType.ALPHA_BETA) {
+                -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1, ImmutableList.of(move), 0)
+            }
+            //			debugMoveStack(val);
+            DEBUG && breakpoint()
+            profile(StatsType.UNAPPLY) {
                 thinkingEngineBoard.unapply(
                     move,
                     white_king_or_rook_queen_side_moved,
@@ -309,21 +335,7 @@ class AlphaBetaPruningAlgorithm(
                     black_king_or_rook_king_side_moved,
                     fiftyMove
                 )
-                DEBUG && breakpoint()
-                continue
             }
-            // Do a recursive search
-            val recursionVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, 1, ImmutableList.of(move), 0)
-            //			debugMoveStack(val);
-            DEBUG && breakpoint()
-            thinkingEngineBoard.unapply(
-                move,
-                white_king_or_rook_queen_side_moved,
-                white_king_or_rook_king_side_moved,
-                black_king_or_rook_queen_side_moved,
-                black_king_or_rook_king_side_moved,
-                fiftyMove
-            )
             DEBUG && breakpoint()
 
             score = max(recursionVal, score)
@@ -369,11 +381,13 @@ class AlphaBetaPruningAlgorithm(
 
         if (depth == 0) {
             // IF blackCheck OR whiteCheck : depth ++, extended = true. Else:
-            return quiesceSearch(alpha, beta, quiesceMaxDepth, height, movesPlayed)
+            return profile(StatsType.QUIESCE) {
+                quiesceSearch(alpha, beta, quiesceMaxDepth, height, movesPlayed)
+            }
         }
 
         var alpha = alpha
-        val indent = if(DEBUG) {
+        val indent = if (DEBUG) {
             toIndent(movesPlayed)
         } else {
             ""
@@ -389,9 +403,11 @@ class AlphaBetaPruningAlgorithm(
                 when (it.hashf) {
                     TranspositionTable.hashfEXACT ->
                         return value
+
                     TranspositionTable.hashfALPHA -> if (value <= alpha)
                         return alpha
-                    TranspositionTable.hashfBETA  -> if (value >= beta)
+
+                    TranspositionTable.hashfBETA -> if (value >= beta)
                         return beta
                 }
             }
@@ -404,7 +420,7 @@ class AlphaBetaPruningAlgorithm(
         try {
             generatedMoves = thinkingEngineBoard.generateMoves()
         } catch (e: KingEatingException) {
-            if(DEBUG) {
+            if (DEBUG) {
                 logDebug("Stopping because the player can now take the king", indent)
             }
             return CURRENT_PLAYER_WINS - height
@@ -427,16 +443,18 @@ class AlphaBetaPruningAlgorithm(
             }
         }
         val ttMove = ttEntry?.best
-        orderMoves(generatedMoves, ply, ttMove, pvMove)
+        profile(StatsType.ORDER_MOVES) {
+            orderMoves(generatedMoves, ply, ttMove, pvMove)
+        }
 
-//        if(DEBUG) {
-//            logDebug(
-//                "Moves after []: %s - %s".formatted(
-//                    movesToString(movesPlayed),
-//                    movesToString(generatedMoves)
-//                ), indent
-//            )
-//        }
+        //        if(DEBUG) {
+        //            logDebug(
+        //                "Moves after []: %s - %s".formatted(
+        //                    movesToString(movesPlayed),
+        //                    movesToString(generatedMoves)
+        //                ), indent
+        //            )
+        //        }
         var hasValidMove = false
         for (move in generatedMoves) {
             if (DEBUG) {
@@ -450,7 +468,7 @@ class AlphaBetaPruningAlgorithm(
                 )
             }
             // Do a recursive search
-            val dumpBeforeApply = if(DEBUG) {
+            val dumpBeforeApply = if (DEBUG) {
                 ACEBoardUtils.stringDump(thinkingEngineBoard)
             } else {
                 ""
@@ -470,7 +488,9 @@ class AlphaBetaPruningAlgorithm(
             }
 
             DEBUG && breakpoint()
-            val recursiveVal = -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, height + 1, newMovesPlayed, ply + 1)
+            val recursiveVal = profile(StatsType.ALPHA_BETA) {
+                -alphaBeta(-beta, -alpha, depth - 1, line, newHeight, height + 1, newMovesPlayed, ply + 1)
+            }
             if (!isLost(recursiveVal)) {
                 hasValidMove = true
             }
@@ -485,7 +505,7 @@ class AlphaBetaPruningAlgorithm(
                 fiftyMove
             )
             DEBUG && breakpoint()
-            if(DEBUG) {
+            if (DEBUG) {
                 val dumpAfterUnapply = ACEBoardUtils.stringDump(thinkingEngineBoard)
                 if (dumpBeforeApply != dumpAfterUnapply) {
                     throw RuntimeException("Uh oh!")
@@ -496,13 +516,13 @@ class AlphaBetaPruningAlgorithm(
             if (score > alpha) {
                 updatePv(pline, line, move)
                 if (cutoffEnabled && score >= beta) {
-                    if(LOAD_TEST) {
+                    if (LOAD_TEST) {
                         cutoffs++
                     }
                     updateKiller(0, move)
                     updateHistory(move, depth)
                     transpositionTable[depth, score, TranspositionTable.hashfBETA, move] = zobristHash
-                    if(DEBUG) {
+                    if (DEBUG) {
                         logDebug("BETA CUT OFF. $score >= $beta", indent)
                     }
                     return score
@@ -821,6 +841,15 @@ class AlphaBetaPruningAlgorithm(
         private fun toIndent(generatedMoves: List<Int>): String {
             return generatedMoves.stream().map { x: Int? -> "  " }.collect(Collectors.joining())
         }
+
+        private enum class StatsType {
+            MOVE_GEN,
+            ORDER_MOVES,
+            APPLY,
+            UNAPPLY,
+            QUIESCE,
+            ALPHA_BETA
+        }
     }
 
     fun getIncomingMoves(): Observer<IncomingState> {
@@ -850,5 +879,12 @@ class AlphaBetaPruningAlgorithm(
 
     fun updateHistory(move: Int, depth: Int) {
         historyHeuristic[fromIdx(move).toInt()][targetIdx(move).toInt()] += depth * depth
+    }
+
+    private inline fun <T> profile(section: StatsType, block: () -> T): T {
+        val start = System.nanoTime()
+        val result = block()
+        stats[section.ordinal] += (System.nanoTime() - start)
+        return result
     }
 }
