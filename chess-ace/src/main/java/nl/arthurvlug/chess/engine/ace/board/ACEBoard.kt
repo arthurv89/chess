@@ -11,7 +11,7 @@ import nl.arthurvlug.chess.engine.ace.movegeneration.AceMoveGenerator
 import nl.arthurvlug.chess.engine.ace.movegeneration.AceTakeMoveGenerator
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
 import nl.arthurvlug.chess.engine.customEngine.movegeneration.BitboardUtils
-import nl.arthurvlug.chess.utils.MoveUtils.DEBUG
+import nl.arthurvlug.chess.utils.MoveUtils.ENGINE_DEBUG
 import nl.arthurvlug.chess.utils.board.FieldUtils
 import nl.arthurvlug.chess.utils.board.pieces.PieceType
 import nl.arthurvlug.chess.utils.board.pieces.PieceTypeBytes
@@ -145,10 +145,10 @@ open class ACEBoard protected constructor() {
 //		incFiftyClock = true;
         plyStack.push(move)
         // TODO: Fix this by creating a more efficient Move object
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
         val fromIdx = UnapplyableMove.fromIdx(move)
         val fromBitboard = BitboardUtils.bitboardFromFieldIdx(fromIdx)
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
 
         val targetIdx = UnapplyableMove.targetIdx(move)
         val targetBitboard = BitboardUtils.bitboardFromFieldIdx(targetIdx)
@@ -156,16 +156,16 @@ open class ACEBoard protected constructor() {
         val coloredMovingPiece = UnapplyableMove.coloredMovingPiece(move)
 
         val x = 1
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
         pieces[fromIdx.toInt()] = ColoredPieceType.NO_PIECE
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
         pieces[targetIdx.toInt()] = coloredMovingPiece
 
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
         xorMove(targetBitboard, fromBitboard, coloredMovingPiece, move, true)
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
         xorTakePiece(move, targetBitboard, targetIdx.toInt(), true)
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
 
         //		if(incFiftyClock) {
         	fiftyMove++;
@@ -173,7 +173,7 @@ open class ACEBoard protected constructor() {
 //			fiftyMove = 0;
 //		}
         toMove = ColorUtils.opponent(toMove)
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
 
         finalizeBitboardsAfterApply(
             fromIdx.toInt(),
@@ -182,9 +182,9 @@ open class ACEBoard protected constructor() {
             UnapplyableMove.takePiece(move),
             UnapplyableMove.promotionPiece(move)
         )
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
 
-        if (DEBUG) {
+        if (ENGINE_DEBUG) {
             checkConsistency()
         }
     }
@@ -208,14 +208,14 @@ open class ACEBoard protected constructor() {
         val fromBitboard = BitboardUtils.bitboardFromFieldIdx(fromIdx)
 
         // This is a reverse move
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
         pieces[fromIdx.toInt()] = coloredMovingPiece
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
 
         xorMove(fromBitboard, targetBitboard, coloredMovingPiece, move, false)
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
         xorTakePiece(move, targetBitboard, targetIdx.toInt(), false)
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
 
         this.white_king_or_rook_queen_side_moved = white_king_or_rook_queen_side_moved_before
         this.white_king_or_rook_king_side_moved = white_king_or_rook_king_side_moved_before
@@ -230,9 +230,9 @@ open class ACEBoard protected constructor() {
             UnapplyableMove.takePiece(move),
             UnapplyableMove.promotionPiece(move)
         )
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
 
-        if (DEBUG) {
+        if (ENGINE_DEBUG) {
             checkConsistency()
         }
     }
@@ -279,7 +279,7 @@ open class ACEBoard protected constructor() {
     }
 
     private fun xorTakePiece(move: Int, targetBitboard: Long, targetIdx: Int, isApply: Boolean) {
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
         val takePiece = UnapplyableMove.takePiece(move)
         if(!isApply) {
             pieces[targetIdx] = takePiece
@@ -342,7 +342,7 @@ open class ACEBoard protected constructor() {
             }
             recalculateWhiteOccupiedSquares()
         }
-        DEBUG && breakpoint()
+        ENGINE_DEBUG && breakpoint()
     }
 
     private fun takeWhiteRook(targetBitboard: Long) {
@@ -740,7 +740,7 @@ open class ACEBoard protected constructor() {
 //                    "♔.......\n" +
 //                    "........"
 //        )
-        val breakpointHit = DEBUG && (
+        val breakpointHit = ENGINE_DEBUG && (
                 stringDump(this).hashCode() == -97317686 ||
                         piecesToString(pieces) == "" +
                         "......♚.\n" +

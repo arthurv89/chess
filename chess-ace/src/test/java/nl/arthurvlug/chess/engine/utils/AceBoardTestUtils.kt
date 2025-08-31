@@ -7,7 +7,7 @@ import nl.arthurvlug.chess.engine.ace.board.ACEBoard
 import nl.arthurvlug.chess.engine.ace.board.InitialACEBoard
 import nl.arthurvlug.chess.engine.ace.board.UnapplyFlags
 import nl.arthurvlug.chess.engine.ace.movegeneration.UnapplyableMove
-import nl.arthurvlug.chess.utils.MoveUtils.DEBUG
+import nl.arthurvlug.chess.utils.MoveUtils.ENGINE_DEBUG
 
 object AceBoardTestUtils {
     @JvmField
@@ -42,7 +42,7 @@ object AceBoardTestUtils {
 
     fun ACEBoard.apply(sMove: String) {
         val move = UnapplyableMoveUtils.createMove(sMove, this)
-        if (DEBUG) {
+        if (ENGINE_DEBUG) {
             val movingPiece = UnapplyableMove.coloredMovingPiece(move)
             if(movingPiece == ColoredPieceType.NO_PIECE) {
                 throw RuntimeException("Could not determine moving piece while executing " + UnapplyableMoveUtils.toString(move))

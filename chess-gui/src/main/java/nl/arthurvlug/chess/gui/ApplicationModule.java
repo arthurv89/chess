@@ -14,9 +14,10 @@ import nl.arthurvlug.chess.gui.game.player.Player;
 import nl.arthurvlug.chess.utils.board.pieces.Color;
 
 public class ApplicationModule extends AbstractModule {
-	private int computerTime = 5; // in minutes
+	private static int computerTime = 1; // in minutes
 	private Color computerColor = Color.BLACK;
-	private final int humanTime = 10;
+	private static final int humanTime = 10;
+	private static final int depth = 2;
 
 	@Override
 	protected void configure() {
@@ -27,7 +28,7 @@ public class ApplicationModule extends AbstractModule {
 
 	@Provides
 	public Game createGame(final EventBus eventBus) {
-		final Game game = createOnlineSyncGame(eventBus);
+		final Game game = createAceVsAceGame(eventBus);
 		game.setEventBus(eventBus);
 		return game;
 	}
@@ -76,12 +77,12 @@ public class ApplicationModule extends AbstractModule {
 				.build();
 	}
 
-	private Game aceVsAceGame(final EventBus eventBus) {
+	private Game createAceVsAceGame(final EventBus eventBus) {
 		Clock whiteClock = new Clock(computerTime, 0);
 		Clock blackClock = new Clock(computerTime, 0);
 
-		Player whitePlayer = new ComputerPlayer(new ACE(6, "WHITE", eventBus));
-		Player blackPlayer = new ComputerPlayer(new ACE(6, "BLACK", eventBus));
+		Player whitePlayer = new ComputerPlayer(new ACE(depth, "WHITE", eventBus));
+		Player blackPlayer = new ComputerPlayer(new ACE(depth, "BLACK", eventBus));
 
 		return new Game.GameBuilder()
 				.whitePlayer(whitePlayer)

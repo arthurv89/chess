@@ -19,7 +19,8 @@ public class MoveUtils {
 	private static final Function<PieceType, String> TO_CHARACTER = pieceType -> {
 		return PieceStringUtils.toCharacterString(pieceType, Color.BLACK, PieceStringUtils.pieceToCharacterConverter); // Lowercase
 	};
-	public static final boolean DEBUG = false;
+	public static final boolean ENGINE_DEBUG = false;
+	public static final boolean NON_ENGINE_DEBUG = true;
 	public static final boolean LOAD_TEST = true;
 
 	public static String toEngineMoves(List<Move> moves) {

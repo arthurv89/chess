@@ -94,7 +94,7 @@ public abstract class UCIEngine implements Engine {
 //				ponder(move, ponderMove);
 
 			for (Subscriber<? super Move> moveSubscriber : moveSubscribers) {
-				log.debug(Markers.ENGINE, getName() + " -    Notifying listener for move " + move);
+				log.debug(Markers.ENGINE, "%s -    Notifying listener for move %s".formatted(getName(), move));
 				moveSubscriber.onNext(move);
 			}
 		}
